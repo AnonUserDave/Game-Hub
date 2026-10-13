@@ -1,0 +1,26 @@
+# Original game media and anything extracted from it stay on each owner's Mac.
+*.zip
+*.iso
+*.b6i
+*.b6t
+*.rom
+*.dsk
+Library/SourceMedia/
+Library/Imported/
+Library/Research/
+Library/NativeGames/*
+!Library/NativeGames/.gitkeep
+
+# Local builds, analysis engines, and personal settings.
+.build/
+.tools/
+.swiftpm/
+*.app/
+*.dSYM/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+*.log
+artifacts/
+
