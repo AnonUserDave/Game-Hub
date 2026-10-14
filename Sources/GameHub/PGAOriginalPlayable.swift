@@ -430,7 +430,8 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
 struct PGARoundSetup: Codable, Equatable {
     enum Pins: String, Codable, CaseIterable { case standard, varied }
     var players: [String] = ["Player"]
-    var teeIndex = PGAOriginalPlayableCourse.developmentTeeIndex
+    /// CGameSettings defaults to tee 2 (Amateur) (PGA2005-RULES.md §8).
+    var teeIndex = 2
     var pins: Pins = .standard
     var seed: UInt32 = 1
     /// Optional so saves from before game types decode; nil is stroke play.
@@ -448,14 +449,21 @@ struct PGARoundSetup: Codable, Equatable {
     var weatherRow: Int { max(0, min(7, weather ?? 0)) }
     var timeSlot: Int { max(0, min(4, timeOfDay ?? 2)) }
 
-    static let teeNames = ["Forward", "Middle", "Back", "Championship", "Tips"]
+    /// The original tee sets 0–3; index 4 is unnamed in the game and lies
+    /// beyond a line on many holes, so it is not offered (saves may still hold it).
+    static let teeNames = ["Forward", "Ladies", "Amateur", "Tournament", "Tips"]
+    static let offeredTees = 0..<4
 
+    /// Standard keeps authored pin 0 (development reference). Varied is the
+    /// original rotation (PGA2005-RULES.md §8): a byte 0–254 per hole and
+    /// pin = (byte % 5)·2 + 1 for the default pin type 0, clamped to the
+    /// hole's pin count.
     func pinIndices(holeCount: Int, available: [Int]) -> [Int] {
         guard pins == .varied else { return Array(repeating: 0, count: holeCount) }
         var random = PGARandom(seed: "pins-\(seed)")
-        return (0..<holeCount).map { random.int(max(1, available[$0])) }
+        return (0..<holeCount).map { min(max(1, available[$0]) - 1, (random.int(255) % 5) * 2 + 1) }
     }
-    var identity: String { "t\(teeIndex)p\(pins == .standard ? "0" : "r\(seed)")-n\(players.count)" }
+    var identity: String { "t\(teeIndex)p\(pins == .standard ? "0" : "o\(seed)")-n\(players.count)" }
     var valid: Bool {
         (1...4).contains(players.count) && players.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty && $0.count <= 24 }
             && (0...4).contains(teeIndex) && (conditions?.valid ?? true)

@@ -478,7 +478,7 @@ final class PGAGameSession: ObservableObject {
             if pressed("A") { audio?.play("interface.accept"); startRound() }
             else if pressed("Y"), savedRound != nil { audio?.play("interface.accept"); startRound(resume: true) }
             else if pressed("LB") { audio?.play("interface.click"); setup.teeIndex = max(0, setup.teeIndex - 1) }
-            else if pressed("RB") { audio?.play("interface.click"); setup.teeIndex = min(4, setup.teeIndex + 1) }
+            else if pressed("RB") { audio?.play("interface.click"); setup.teeIndex = min(PGARoundSetup.offeredTees.upperBound - 1, setup.teeIndex + 1) }
             else if pressed("X") { audio?.play("interface.click"); setup.pins = setup.pins == .standard ? .varied : .standard }
             else if pressed("Left") || pressed("Right") {
                 audio?.play("interface.click")

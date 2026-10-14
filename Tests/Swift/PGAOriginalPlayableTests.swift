@@ -271,7 +271,6 @@ final class PGAOriginalPlayableTests: XCTestCase {
         game.restoreHoleForTest(strokes: 4)
         for _ in 0..<16 { game.restoreHoleForTest(strokes: 4) }
         XCTAssertEqual(game.holeIndex, 17)
-        let tee = game.ball
         game.alignToCup(); game.selectClub(.iron7)
         game.aim(0.6)   // positive aim turns left: into Carmel Bay
         game.strike(power: 1, accuracy: 0)
@@ -281,6 +280,18 @@ final class PGAOriginalPlayableTests: XCTestCase {
         XCTAssertTrue(game.lie.playable, "dropped on a playable lie: \(game.lieLabel)")
         XCTAssertEqual(game.hole.boundaries?.check(game.ball), 0)
         XCTAssertTrue(game.message.hasPrefix("Water hazard"), game.message)
+    }
+
+    func testOriginalPinRotationAndTeeSets() {
+        var setup = PGARoundSetup()
+        XCTAssertEqual(setup.teeIndex, 2, "Amateur tees by default, as CGameSettings")
+        XCTAssertEqual(PGARoundSetup.offeredTees, 0..<4)
+        setup.pins = .varied; setup.seed = 123
+        let pins = setup.pinIndices(holeCount: 18, available: Array(repeating: 10, count: 18))
+        XCTAssertTrue(pins.allSatisfy { [1, 3, 5, 7, 9].contains($0) }, "(byte % 5) * 2 + 1 for pin type 0: \(pins)")
+        XCTAssertGreaterThan(Set(pins).count, 1)
+        XCTAssertTrue(setup.pinIndices(holeCount: 2, available: [1, 4]).enumerated().allSatisfy { $1 < [1, 4][$0] }, "clamped to the hole's pins")
+        XCTAssertEqual(setup.pinIndices(holeCount: 1, available: [1]), [0])
     }
 
     func testRoundSetupKeepsConditionsAcrossSaves() throws {

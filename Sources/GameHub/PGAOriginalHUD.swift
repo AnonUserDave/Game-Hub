@@ -285,7 +285,7 @@ struct PGARoundSetupView: View {
             }
             section("TEES") {
                 HStack(spacing: 6) {
-                    ForEach(0..<5, id: \.self) { index in
+                    ForEach(PGARoundSetup.offeredTees, id: \.self) { index in
                         Button { session.setup.teeIndex = index } label: {
                             VStack(spacing: 3) {
                                 Text(PGARoundSetup.teeNames[index]).font(.system(size: 11, weight: .semibold))
@@ -302,7 +302,7 @@ struct PGARoundSetupView: View {
                     HStack(spacing: 6) {
                         ForEach(PGARoundSetup.Pins.allCases, id: \.self) { pins in
                             Button { session.setup.pins = pins; if pins == .varied { session.setup.seed = UInt32.random(in: 1...999_999) } } label: {
-                                Text(pins == .standard ? "Standard" : "Varied (10 authored)").font(.system(size: 11, weight: .semibold))
+                                Text(pins == .standard ? "Standard" : "Original rotation").font(.system(size: 11, weight: .semibold))
                                     .frame(maxWidth: .infinity).padding(.vertical, 8)
                                     .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.pins == pins ? gold : .white.opacity(0.08)))
                                     .foregroundStyle(session.setup.pins == pins ? ink : .white)
