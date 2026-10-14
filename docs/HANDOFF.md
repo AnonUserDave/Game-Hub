@@ -20,6 +20,8 @@ The owner then requested an **active goal to complete all 16 other supplied titl
 
 `prepare_retro_media.py` decodes selected DOS3.3/T64/XEX/container data without execution. It recovered the actual309-line Conflict BASIC program, correcting the previous no-source claim; original listings/symbols stay ignored. Source-backed Asteroids arithmetic/control primitives and Windows PKR/PRE/CAB/collision-data tools are separate research foundations and do not register playable titles. Apple Panic, Crossfire and Night Driver reconstruction is underway. Keep prepared original JSON as well as binaries/textures ignored (`Library/Prepared/`, `Library/Imported/`, `Library/SourceMedia/`).
 
+The three Asteroids editions have source-bound native routines in `AsteroidsCore.swift`, selected-revision preparation, separate bank/load Ghidra profiles and [a precise research ledger](research/ASTEROIDS.md). Their 12 Swift/5 Python checks pass on M5, including all 65536 Atari2600 RNG states. Next work is each edition's actual main loop and entities; the helpers intentionally do not register generic shared Asteroids gameplay.
+
 ## Development environments
 
 **Son's M5 (current).** macOS 26.3, Xcode at `/Applications/Xcode.app` (Swift 6.3.1), Homebrew Python 3 with Pillow, Homebrew `unshield` 1.6.2 and OpenJDK 21/26. REA 6.4.0 is the global MCP server (`/opt/homebrew/bin/rea`), with a working Ghidra provider at `~/Desktop/Tools/ghidra_12.1.2`. REA's Ghidra session timed out during Engine.dll auto-analysis; direct `Tools/analyze_pga2005_ghidra.py` headless runs worked (88 s auto-analysis). Extracted DLLs are in the ignored `Library/SourceMedia/pga2005/engine/Executable`; the Ghidra database is in `Library/Research/ghidra-projects/pga2005-physics`. Git identity: the son's own.

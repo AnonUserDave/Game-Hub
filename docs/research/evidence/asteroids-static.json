@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "analysis_date": "2026-10-13",
+  "method": "direct Ghidra 12.1.2 static 6502 analysis; not REA Evidence; no target execution",
+  "hardware": "M5 Pro MacBook Pro, 24 GB, native ARM64; M1 performance unverified",
+  "references": [
+    {
+      "edition": "Atari 2600",
+      "archive": "Asteroids_Atari-2600_ROM_EN.zip",
+      "archive_sha256": "abe1676c4ae35515d8a48335535d311ea71ae7b6002507d9e493fbdb5656bbe9",
+      "member": "Asteroids_Atari-2600_ROM_EN/Game Files/Asteroids.A26",
+      "nested_member": null,
+      "payload_bytes": 8192,
+      "payload_sha256": "d1a6e808412b4535c7e54fc25414943a9418b1095b4d4969dc33290f7eaa72a4"
+    },
+    {
+      "edition": "Atari 7800",
+      "archive": "Asteroids_Atari-7800_ROM_EN.zip",
+      "archive_sha256": "a16d828e56aad75fc099aaa1523a2e6fff3cf1335fca2bda6a9f24543a9883e6",
+      "member": "Asteroids_Atari-7800_ROM_EN/Game Files/Asteroids.A78",
+      "nested_member": null,
+      "payload_bytes": 16512,
+      "payload_sha256": "ec6ef6179644041a9fb77fc6b7c917387219fc388dd5a0fbf8236677f279402e"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "archive": "Asteroids_Atari-8-bit_ROM_EN.zip",
+      "archive_sha256": "d60e45e03deb6764f00fdaa99846be8c5b15ac7f6b73f25ad5b040a63b2defcd",
+      "member": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US).zip",
+      "nested_member": "Asteroids (1981)(Atari)(US).xex",
+      "payload_bytes": 8717,
+      "payload_sha256": "1cf45090b216c2363131bac2e4db9101a3c162e31686d7fe30474eaba5b7f97f"
+    }
+  ],
+  "atari7800_header": {
+    "header_version": 1,
+    "title": "Asteroids",
+    "header_bytes": 128,
+    "rom_bytes": 16384,
+    "rom_sha256": "a1e293ed0e1af9ea6a7df257440a50e40a4ae9088d6bcf4800a5a6f51780183d",
+    "cartridge_flags": 0,
+    "controller_1": 1,
+    "controller_2": 1,
+    "region": 0
+  },
+  "atari8bit_load_records": [
+    {
+      "start": 21760,
+      "end": 30464,
+      "file_offset": 6,
+      "bytes": 8705,
+      "sha256": "e24b9792d19d4a8fdeb443bb7201b64b27ab283ec308dc067affea86e12dbf5f"
+    },
+    {
+      "start": 736,
+      "end": 737,
+      "file_offset": 8715,
+      "bytes": 2,
+      "sha256": "f65adc50d592c45d758f22edb9205067031a4f770e11856e9de25bd04341f380"
+    }
+  ],
+  "analysis_inputs": [
+    {
+      "profile": "2600-bank0",
+      "mapped_base": "0xd000",
+      "entry_points": [
+        "0xd000",
+        "0xd43c",
+        "0xd591",
+        "0xdb00"
+      ],
+      "sha256": "348cfa918f1fbe1d515c43c50685cc5cbb16cc7bbf4bcf2d57c2c741c48e7c42",
+      "exit_code": 0,
+      "auto_analysis_timed_out": false
+    },
+    {
+      "profile": "2600-bank1",
+      "mapped_base": "0xf000",
+      "entry_points": [
+        "0xf000",
+        "0xf9da"
+      ],
+      "sha256": "3ccd92051762384d8df8a11c43de58c8e0ed0b016f41a668db5eb1c35a651fe5",
+      "exit_code": 0,
+      "auto_analysis_timed_out": false
+    },
+    {
+      "profile": "7800-code",
+      "mapped_base": "0xc000",
+      "entry_points": [
+        "0xd000",
+        "0xd2fc"
+      ],
+      "sha256": "a1e293ed0e1af9ea6a7df257440a50e40a4ae9088d6bcf4800a5a6f51780183d",
+      "exit_code": 0,
+      "auto_analysis_timed_out": false
+    },
+    {
+      "profile": "8bit-code",
+      "mapped_base": "0x5500",
+      "entry_points": [
+        "0x5500",
+        "0x5504",
+        "0x5600",
+        "0x5617"
+      ],
+      "sha256": "e24b9792d19d4a8fdeb443bb7201b64b27ab283ec308dc067affea86e12dbf5f",
+      "exit_code": 0,
+      "auto_analysis_timed_out": false
+    }
+  ],
+  "recovered_windows": [
+    {
+      "edition": "Atari 2600",
+      "behavior": "16-bit random transition",
+      "mapped_start": "0xfae2",
+      "mapped_end_exclusive": "0xfaf0",
+      "payload_file_offset": 6882,
+      "bytes": 14,
+      "sha256": "559f679503a48c115c4d0175f7588e594ff38f19a80304e3318519cdec76cd8e"
+    },
+    {
+      "edition": "Atari 2600",
+      "behavior": "reset seed",
+      "mapped_start": "0xf9ea",
+      "mapped_end_exclusive": "0xf9f0",
+      "payload_file_offset": 6634,
+      "bytes": 6,
+      "sha256": "c6b51dd96725bd2c39a4d397893dd7b2216ab50b8e15ab79af6590534a1a810e"
+    },
+    {
+      "edition": "Atari 7800",
+      "behavior": "speed-dependent turning and image selection",
+      "mapped_start": "0xd32c",
+      "mapped_end_exclusive": "0xd3a6",
+      "payload_file_offset": 5036,
+      "bytes": 122,
+      "sha256": "9a9ac78b2a1bdeab7372fad011fa4f8ebf2dc88ece118d4bff80358c8d02ea4b"
+    },
+    {
+      "edition": "Atari 7800",
+      "behavior": "wave asteroid count and saucer timer",
+      "mapped_start": "0xf827",
+      "mapped_end_exclusive": "0xf85b",
+      "payload_file_offset": 14503,
+      "bytes": 52,
+      "sha256": "9524d2bf73dc5e935dcc4ca273668465337964c7e1afc56cd2b85ea08fe93800"
+    },
+    {
+      "edition": "Atari 7800",
+      "behavior": "four difficulty count limits and timer bases",
+      "mapped_start": "0xf896",
+      "mapped_end_exclusive": "0xf89e",
+      "payload_file_offset": 14614,
+      "bytes": 8,
+      "sha256": "5d0a593626946cd833a70c359db2a362c5575bd8b6e201f128cafe90b44fe31f"
+    },
+    {
+      "edition": "Atari 7800",
+      "behavior": "additive random transition",
+      "mapped_start": "0xf8b2",
+      "mapped_end_exclusive": "0xf8d3",
+      "payload_file_offset": 14642,
+      "bytes": 33,
+      "sha256": "19c4edc999d7b9063b24d21e140230d100916d3ec1537f4804f3aabb6ffb2fd7"
+    },
+    {
+      "edition": "Atari 7800",
+      "behavior": "random initialization from timer and original code",
+      "mapped_start": "0xd01e",
+      "mapped_end_exclusive": "0xd035",
+      "payload_file_offset": 4254,
+      "bytes": 23,
+      "sha256": "e843ea2ff5300ee87c9814730116f4d0dea290846f11d25496c78e540ee8b176"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "16-bit fixed-point position integration",
+      "mapped_start": "0x6186",
+      "mapped_end_exclusive": "0x61c5",
+      "payload_file_offset": 3212,
+      "bytes": 63,
+      "sha256": "aa78eeeae3b7ed794ddc0d744dcbd395fa451ab968ce6b697cc9ebe55114f37d"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "wrapping and ones-complement reflecting bounds",
+      "mapped_start": "0x61e9",
+      "mapped_end_exclusive": "0x626f",
+      "payload_file_offset": 3311,
+      "bytes": 134,
+      "sha256": "59b351d038e7e8c9985648e7439a76c993dbbb1ad65befd28c4f2145271f5043"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "spawn velocities from four independent hardware samples",
+      "mapped_start": "0x63c3",
+      "mapped_end_exclusive": "0x6400",
+      "payload_file_offset": 3785,
+      "bytes": 61,
+      "sha256": "a0d25567320e97c324aa32364026375bb4e292abbf698bdbb012f90ce8e65a65"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "spawn integer edge coordinates",
+      "mapped_start": "0x6400",
+      "mapped_end_exclusive": "0x6425",
+      "payload_file_offset": 3846,
+      "bytes": 37,
+      "sha256": "cd7ad6c46af2eea6fc763bcf73bbf39680f7406def42bd09ae5e29825fedc508"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "byte-coordinate projectile collisions",
+      "mapped_start": "0x6a71",
+      "mapped_end_exclusive": "0x6ad5",
+      "payload_file_offset": 5495,
+      "bytes": 100,
+      "sha256": "f664288c6f8d7c55029d0669ef25e799a8cb0793dbee1e1ff6387e674a65d56b"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "difficulty-dependent repeated score awards",
+      "mapped_start": "0x6c9a",
+      "mapped_end_exclusive": "0x6cbc",
+      "payload_file_offset": 6048,
+      "bytes": 34,
+      "sha256": "7c7b5cbcf0473eb607fb816c3aff543b565779aa519efa7380a2c3ad5b31a80e"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "BCD score increment and bonus life saturation",
+      "mapped_start": "0x7004",
+      "mapped_end_exclusive": "0x702c",
+      "payload_file_offset": 6922,
+      "bytes": 40,
+      "sha256": "ce79ac8ce383d77d45a2b84cf97862913d12f1f2c405a0d29a16fbb61497e26d"
+    },
+    {
+      "edition": "Atari 8-bit",
+      "behavior": "active-low joystick turn priority",
+      "mapped_start": "0x689a",
+      "mapped_end_exclusive": "0x68bb",
+      "payload_file_offset": 5024,
+      "bytes": 33,
+      "sha256": "c86fabbaab9a9e177fd065b52032f47292f6f16dc47d8c4d7d223eea837c3a8c"
+    }
+  ],
+  "limitations": [
+    "Incomplete gameplay reconstruction: recovered primitives are not playable modules.",
+    "Separate 2600 static imports do not simulate cartridge switching or resolve cross-bank flow.",
+    "8-bit hardware randomness takes explicit samples; no approximate generator substituted.",
+    "7800 RNG requires preexisting RAM beyond its 55-byte copied table; original initialization contents are unresolved.",
+    "No original-game behavior/visual comparison, audio/controller qualification, or sustained M1 acceptance."
+  ]
+}
