@@ -150,3 +150,30 @@ Not checked: live play of these features in the native UI, M1 anything.
 ## Son's M5 commentary and shot-event checkpoint (development check, not M1 acceptance)
 
 2026-10-13, Apple M5 Pro / 24 GB / macOS 26.3. Static Ghidra decompilation of Engine.dll recovered the class-2 shot-event builder, the commentary event classes and the interpreter's one-line/20 s rules ([research note](research/PGA2005-COMMENTARY.md)); the original game was not run. `python3 Tools/import_pga2005_audio.py` copied the 3,216 referenced commentary MP3s (156 MB) unchanged and wrote `commentary.json`. `python3 -m unittest discover -s Tests -p 'test_*.py'` passed 186 tests (1 skip). `./Tools/test.sh` passed 158 XCTest with 3 skips (two opt-in snapshots, Apple Panic media); the new engine test played one original commentary line through this Mac's default output and queued the next. On 36 synthetic Pebble shots the sliced flight preview matched every non-hazard rest exactly; a whole preview cost 11 ms mean / 48 ms worst in the debug test build, so it runs 150 ticks per frame. `./Tools/build.sh` produced an arm64 executable. No interactive round was listened to, the commentary orchestration is a native policy, and M1 performance is unverified.
+
+## Asteroids edition loops and Dig Dug source recovery
+
+2026-10-13, son's M5 Pro /24GB /macOS26.3 /ARM64 development only.
+`./Tools/test.sh` passes262 XCTest with five expected skips (four opt-in golf
+captures and no CoreAudio output); Python discovery passes245 tests; optimized
+`./Tools/build.sh` passes. Logs remain local at
+`/tmp/gamehub-asteroids-native-{swift,python,build}.log`.
+
+The new separate2600/7800/8-bit cores pass25/16/17 Swift cases and7/5/4 decoder
+cases, respectively. Checks include source schedules, motion/control arithmetic,
+finite entity/shot pools, split/score/life/wave/player consequences, startup
+dependencies, source-fenced snapshots and canonical rule/graphics tamper
+rejection. The2600 also passes660,000 source-frame steps over66 variations;
+the7800 checks196,608 damping states and10,000 passes per mode. All original
+packages were available locally; they stay out of Git.
+
+Dig Dug's two bounded packed byte formats recover23,044 intro bytes,19,333
+known relocated packed bytes and24,576 body bytes at `$6000..$BFFF`, retaining
+the trainer and game boundary and leaving optional patches unapplied. Six
+Python tests pass. The short-zero path retains both source increments and emits
+two zeros; the regression/hash/extent receipt reflects that correction.
+
+These are static reconstruction/native consistency checks. No original was
+executed or emulated, no new playable Asteroids/Dig Dug registry entry was
+added, no live UI/physical controller comparison occurred and no sustained M1
+acceptance was performed. The all16-title goal remains unfinished.

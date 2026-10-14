@@ -1,6 +1,14 @@
 # Asteroids: three separate source-bound native reconstructions
 
-Checkpoint: 2026-10-13. The three Asteroids editions now have reproducible extraction, direct static 6502 analysis, source-window hashes and native Foundation-only arithmetic/control primitives. **None is a complete or playable rewrite.** They have not been added to the playable module registry. The tests were run on the son's M5 Pro MacBook Pro with 24 GB RAM, native ARM64. **M1 performance, original-game comparisons and physical controller acceptance remain unverified.**
+Checkpoint: 2026-10-13. The three Asteroids editions now have separate source-bound native gameplay cores, bounded original-media decoders, source-window/content hashes and validated lifecycle snapshots. **None is a complete or registered playable rewrite.** Native session/presentation integration is still required. The tests were run on the son's M5 Pro MacBook Pro with24GB RAM, native ARM64. **M1 performance, original-game comparisons and physical controller acceptance remain unverified.**
+
+Current lifecycle details supersede the initial primitive-only scope below:
+[Atari2600](ASTEROIDS-2600.md), [Atari7800](ASTEROIDS-7800.md) and
+[Atari8-bit](ASTEROIDS-8BIT.md). The new cores pass25/16/17 edition Swift tests
+and7/5/4 decoder tests, respectively. All three prepared original packages have
+canonical content integrity. The7800 needs explicit prior RNG RAM/timer; the
+8-bit needs explicit RANDOM samples and35 prior coordinate fractions. Original
+hardware state is not silently replaced by a common-edition generator.
 
 ## Scope and acceptance for this checkpoint
 
@@ -34,7 +42,11 @@ The XEX contains one 8,705-byte segment `$5500–$7700` at file offset 6 and the
 
 Bank 0's reset vectors contain `$D591`, bank 1's `$F9DA`. The static imports use `$D000` and `$F000` respectively, preserving the cartridge's mirrored addressing. The bank switch trampolines are `$DFF0` (`STA $FFF9; JMP ($F7)`) and `$FFF0` (`STA $FFF8; JMP ($F7)`). Bank 0 `$D591` builds a pointer to `$F9DA`; bank 1 `$FF97` builds a pointer to bank 0 `$D43C`. The title-display entry `$DB00` and those entry addresses seed the two separate databases. This explains why treating the 8 KiB as one flat program loses control flow. The native primitive does not interpret these instructions or simulate the console.
 
-Still to reconstruct: the main state/input loop `$F000–$F9D9`; console-option selection and all game variations; packed object movement and collision; asteroid splitting/wave progression; ship thrust/fire/hyperspace and damage; BCD scoring/lives; graphics kernels and their authored shapes/colors; sound timing; two-player behavior; native session/save/input/presentation integration. The monolithic main routine has static listing and pseudocode locally, but it has not been turned into a complete state machine.
+The playing dispatcher,66 variations, packed motion/collisions/splitting/waves,
+ship controls/BCD/lives and alternating players now exist in the2600 core.
+Remaining: complete TIA/selection/attract/HUD composition, audio/cadence, native
+session/input/save/launch/return and all comparison/physical/M1 gates. See the
+edition ledger for retained selected-ROM anomalies and unqualified fields.
 
 ### Atari 7800
 
@@ -44,7 +56,11 @@ Still to reconstruct: the main state/input loop `$F000–$F9D9`; console-option 
 
 `Asteroids7800Random` reconstructs `$F8B2–$F8D2`. It adds two bytes from the RAM page at `$2100`, writes the sum back at the first index, decrements both indexes and resets a negative index to 54. Initialization at `$D01E–$D034` copies 55 bytes from the original code at `$D000`, sets the first index to a timer sample masked by 31, and the second to `first + 31`. The second index can initially be 55–62. **The program does not initialize those extra bytes in this routine.** The preceding clear routine clears `$1800–$1FFF`, not `$2100`. The native initializer therefore requires the caller's existing 256-byte RAM page and the local ROM seed table. It does not assume zeros. The supplied first-party source contains no copied code-byte seed array.
 
-Still to reconstruct: lifecycle/menu/mode state machine `$D000…`; full input routing and difficulty meanings; thrust, velocity limits and drag at `$D32C/$D54F/$D5B9`; entity motion/update `$F29C…`; projectile and ship collisions, asteroid splitting, scoring/lives; state branches including hyperspace/death at `$D6B3…`; authored sprite/display-list presentation, sound and timing; persistent scores and session/controller integration. `$F7F7`'s main update calls and `$F8D3/$F8F9`'s source spawn behavior are available locally for the next state reconstruction. Existing RAM values for RNG startup and any firmware dependencies remain unresolved.
+The four-mode ordered lifecycle/controls/thrust/drag/entities/shots/collisions/
+splits/score/lives/hyperspace/wave/UFO loop now exists in the7800 core. Remaining:
+real startup/optional firmware, pair-order/terminal reconciliation, complete
+sprites/display-list/colors/HUD/sound/cadence, native session and source/physical/
+M1 gates. See the edition ledger; raw graphic indexes are not calibrated pixels.
 
 ### Atari 8-bit
 
@@ -60,7 +76,11 @@ Spawn velocity at `$63C3–$63FF` consumes four independent reads from `$D20A`. 
 
 `Asteroids8BitScore` reconstructs `$6C9A–$6CB5` and `$7004–$702B`. Awards `[1, 2, 5, 10, 25, 50]` are the decimal values of the original BCD table at `$6CB6`. Each is repeated `floor(difficultyCode/2)+1` times. The three BCD score bytes roll over at one million internal units; the display appends a trailing zero. A change to the middle byte's high nibble requests a bonus life and sound `$95`; the life byte saturates at 255. This preserves individual repeated-award checks. Native score state validates its input range. It does not assign semantic difficulty names or initialize player lives.
 
-Still to reconstruct: the main timing/scheduler and complete player/mode options; ship/projectile lifecycle and thrust tables at `$6713/$6813/$6828/$6836`; hyperspace/down-input state at `$689A`; collision consequences and asteroid splitting (`$626F/$6441…`); generated wave setup and UFO behavior; original XOR bitmap/sprite display data and character/color output; audio/control timing; persistent scores, session and native presentation. The primary local entry for the scene/state loop is `$62BF`, with ship/control updates at `$6930`; movement/score primitives alone cannot drive the complete game.
+The selected-mode/multiplayer/VBI/foreground lifecycle, source controls/thrust/
+shots/shield/relocation, hit/split/wave/UFO/player consequences, authored masks,
+explosions, sound parameters and snapshots now exist in the8-bit core. Remaining:
+menu/attract/high scores/OS/font, qualified RANDOM/startup/region/DLI/raster/death
+carry/audio, native options/session/input and all source/physical/M1 gates.
 
 ## Reproduction and verification
 

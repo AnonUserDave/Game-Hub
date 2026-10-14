@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "source_sha256": "1cf45090b216c2363131bac2e4db9101a3c162e31686d7fe30474eaba5b7f97f",
+  "code_sha256": "e24b9792d19d4a8fdeb443bb7201b64b27ab283ec308dc067affea86e12dbf5f",
+  "table_sha256": "de5c7d6d9e0933f2f6b06a9d8854de47e4e57fbb5ccdaea46d712edab9c41c7a",
+  "method": "direct static byte/table reconstruction; no target execution",
+  "windows": [
+    {
+      "name": "waveCounts",
+      "address": "$668D",
+      "payload_file_offset": 4499,
+      "bytes": 7,
+      "sha256": "455d1de2c2ee66cc9ed3a58f67616b4e7202e8ae6f9cc490abaaef413cf8d654"
+    },
+    {
+      "name": "initialX",
+      "address": "$656C",
+      "payload_file_offset": 4210,
+      "bytes": 4,
+      "sha256": "8b3e6d89a3f57f92f9bdd234e638922acf556b5e23d9ef8aba6be119c24014bc"
+    },
+    {
+      "name": "initialY",
+      "address": "$6570",
+      "payload_file_offset": 4214,
+      "bytes": 4,
+      "sha256": "6a994b75114e9b265e88ebb5e1802e67d076c245642c6c5e129a8d961802bbbe"
+    },
+    {
+      "name": "projectileOffsetX",
+      "address": "$69CE",
+      "payload_file_offset": 5332,
+      "bytes": 18,
+      "sha256": "217ba1963e6455086b3de2fe39a67f13e9a78d9bd086e20985b99ed7ac870f31"
+    },
+    {
+      "name": "projectileOffsetY",
+      "address": "$69E0",
+      "payload_file_offset": 5350,
+      "bytes": 18,
+      "sha256": "a792905731a680742ce7874d099fef0bccf4fe2e7140858f7ed6c7702c231c10"
+    },
+    {
+      "name": "extents",
+      "address": "$709B",
+      "payload_file_offset": 7073,
+      "bytes": 4,
+      "sha256": "6578ae1ad63c8cdf7fe5d25e96fa4cdfcf7c0dadd3a21a23b30e242341029a1b"
+    },
+    {
+      "name": "explosionOffsets",
+      "address": "$709E",
+      "payload_file_offset": 7076,
+      "bytes": 4,
+      "sha256": "0ff4d9e9a682796bfe65fb1f0dd91bbb75a9e324ef2e9ccad96abb34bb5c7b00"
+    },
+    {
+      "name": "sine",
+      "address": "$719A",
+      "payload_file_offset": 7328,
+      "bytes": 65,
+      "sha256": "8a6a5f0cdcd7f03f655a269323bfbd63df6a8c8db2aab4501a2792945f8e7c18"
+    },
+    {
+      "name": "colors",
+      "address": "$64BB",
+      "payload_file_offset": 4033,
+      "bytes": 11,
+      "sha256": "7ead4f45b45fca28813303e794ec61383f51d4f35bc72ce6bbc68fe1f3a46989"
+    },
+    {
+      "name": "shipRows",
+      "address": "$70C5",
+      "payload_file_offset": 7115,
+      "bytes": 95,
+      "sha256": "ca3a5e9c5bad6e7d1fca4d032da7566bf51cd7321ca492100f7b1edeee275234"
+    },
+    {
+      "name": "smallRows",
+      "address": "$70A2",
+      "payload_file_offset": 7080,
+      "bytes": 4,
+      "sha256": "e4e255d23a8347c4d67f83d5c50b517369a6149b425edf6dcffef40db0b88c2b"
+    },
+    {
+      "name": "mediumRows",
+      "address": "$70A6",
+      "payload_file_offset": 7084,
+      "bytes": 7,
+      "sha256": "ab284c74b8269670f0407afd1b02ee2f71b06c8b97ccaac0371cdb88f4860ed4"
+    },
+    {
+      "name": "largeRows",
+      "address": "$70AD",
+      "payload_file_offset": 7091,
+      "bytes": 24,
+      "sha256": "8924a9925c54231da1e0b6d161bf5a075716a4d79a070918e1776bc7e85bb1f9"
+    },
+    {
+      "name": "explosionRows",
+      "address": "$7124",
+      "payload_file_offset": 7210,
+      "bytes": 42,
+      "sha256": "113bdeea3763926df77d7f92d1f48d86be1b7a5d9cfa6911ee5f219e93699e1c"
+    },
+    {
+      "name": "explosionBits",
+      "address": "$714E",
+      "payload_file_offset": 7252,
+      "bytes": 42,
+      "sha256": "2fcf9970c2bb75fd67463886fffa14381bb08014a77a8cc060c574d9d89b3dc5"
+    },
+    {
+      "name": "soundRequests",
+      "address": "$7208",
+      "payload_file_offset": 7438,
+      "bytes": 27,
+      "sha256": "c37718aba32b270024f1d19f98da7f3eaa813f0affa232fb2c0126ad21fa8803"
+    },
+    {
+      "name": "soundSequences",
+      "address": "$7223",
+      "payload_file_offset": 7465,
+      "bytes": 137,
+      "sha256": "f1197741ecd3bd7f7fa71d2eb1c5534dddb85e4c816355111ff97acf220e3143"
+    },
+    {
+      "name": "scheduler",
+      "address": "$62BF",
+      "payload_file_offset": 3525,
+      "bytes": 181,
+      "sha256": "d7b2573b105bd985c234c24eb40ff052acb3dd47a262197ddd799c7a7084ddfa"
+    },
+    {
+      "name": "wave",
+      "address": "$664C",
+      "payload_file_offset": 4434,
+      "bytes": 64,
+      "sha256": "3fee45d206d001e8df6ef55a87cb425631a317d4b9bc772501983da9225cac55"
+    },
+    {
+      "name": "ships",
+      "address": "$6713",
+      "payload_file_offset": 4633,
+      "bytes": 768,
+      "sha256": "9a1439341bc07e12a8f321103a63014771516f2aa353866e01554714819585cc"
+    },
+    {
+      "name": "collisions",
+      "address": "$6A71",
+      "payload_file_offset": 5495,
+      "bytes": 549,
+      "sha256": "edd7c97b852a3f4e765d736d1be0551530848574899e002518efd20c5bce236e"
+    },
+    {
+      "name": "ufo",
+      "address": "$6D05",
+      "payload_file_offset": 6155,
+      "bytes": 275,
+      "sha256": "5c8941cabb4a2923ca355e0b5825733449d98713809d4a34eecef508de84e27d"
+    },
+    {
+      "name": "vbi",
+      "address": "$6F2F",
+      "payload_file_offset": 6709,
+      "bytes": 45,
+      "sha256": "f143ed07b2be74a9441e8834cde4a11a36694379a2f15439f2bcbba81c7d5611"
+    },
+    {
+      "name": "foreground-vbi-service",
+      "address": "$6F5C",
+      "payload_file_offset": 6754,
+      "bytes": 77,
+      "sha256": "2b0113fc1a10d371f25f70b8f292397e0e6f3032497aacb5fd5541af41fa9d5a"
+    },
+    {
+      "name": "sound-callback",
+      "address": "$72D7",
+      "payload_file_offset": 7645,
+      "bytes": 99,
+      "sha256": "b21c63e89ba2f1b230d27b5915dbb5a6d4b21be239374f7f59ee90260d3bc765"
+    },
+    {
+      "name": "mode-selection",
+      "address": "$740B",
+      "payload_file_offset": 7953,
+      "bytes": 271,
+      "sha256": "bd10f667fca2e4ba6cfede3173c529b0c9ef266504af5dc6d781299aa804c560"
+    }
+  ],
+  "limits": [
+    "POKEY RANDOM samples and startup fractional coordinates remain external inputs.",
+    "Source OS callbacks, ROM font and GTIA/ANTIC color conversion are not reconstructed.",
+    "No original-game or M1 acceptance is asserted."
+  ]
+}

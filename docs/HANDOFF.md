@@ -36,6 +36,25 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+Asteroids8-bit now has its own source-VBI/foreground native lifecycle, selected
+mode/four-player rules, source thrust/shots/special controls, collisions/splits/
+waves/UFO/player transitions, explosions, sound parameters and source-bound
+snapshots. Its original masks/tables are bounded and canonical-hash checked.
+17 isolated Swift/four Python checks pass on M5. RANDOM bytes and35 startup
+fractional-coordinate pairs are explicit; no hardware PRNG is invented. The
+core retains alternating callback halves and five-VBI foreground passes,240/
+480-frame waits and transactional sample exhaustion. **No playable entry yet**:
+finish options/session/input, original menus/attract/high scores/OS/font,
+raster/death-carry/region/sound details, then source/physical/M1 gates. See
+[the8-bit ledger](research/ASTEROIDS-8BIT.md).
+
+After all three edition cores, the combined M5 suite passes262 Swift XCTest
+(five expected skips: four opt-in golf captures and no CoreAudio output),245
+Python tests and optimized ARM64 build. The new Asteroids checks total58 Swift
+and16 Python cases. Logs: `/tmp/gamehub-asteroids-native-{swift,python,build}.log`.
+No original-game or new native UI check was performed for this source-loop
+checkpoint; no M1 work occurred. The all16-title goal stays active.
+
 Asteroids7800 now has a separate native33-object/four-mode source loop,
 version/source-bound snapshots and44 tables/813 original graphics records in a
 bounded267,887-byte package with canonical content hashing.16 isolated Swift/
