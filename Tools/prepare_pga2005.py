@@ -12,6 +12,7 @@ from inspect_pga2005 import ISO9660, extract_media
 from import_pga2005 import atomic_write, run_import
 from import_pga2005_hud import convert as convert_hud
 import import_pga2005_audio
+import import_pga2005_effects
 import decode_pga2005_cameras
 import decode_pga2005_objects
 from installshield_cab import Cabinet
@@ -93,6 +94,9 @@ def main():
     # Original sounds and per-course ambience (needs the course materials above).
     if import_pga2005_audio.main(["--courses", *args.courses]) != 0:
         raise SystemExit("Audio import failed")
+    # Original shot-effect sprites, divot and tee meshes (anim.stn).
+    if import_pga2005_effects.main([]) != 0:
+        raise SystemExit("Effects import failed")
     # Original golfer (Tiger Woods 01char), his clubs and swing clips.
     golfer = decode_pga2005_golfer.run(install, root / "Library/Imported/pga2005/golfer", "01",
                                        list(decode_pga2005_golfer.DEFAULT_CLIPS), None, False)

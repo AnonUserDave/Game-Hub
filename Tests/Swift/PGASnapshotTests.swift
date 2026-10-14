@@ -48,6 +48,7 @@ final class PGASnapshotTests: XCTestCase {
                 XCTAssertNotNil(trees, "Decoded trees must be present in the original-course scene")
                 renderer.useOriginalBallShadow(art.image("ball-shadow"))
                 renderer.useOriginalAimArrow(art.image("aim-arrow"))
+                renderer.useOriginalEffects(root: root)
                 if let golferAssets { renderer.useOriginalGolfer(golferAssets) }
                 let snapshot = SCNRenderer(device: device, options: nil)
                 snapshot.scene = renderer.scene
@@ -82,6 +83,46 @@ final class PGASnapshotTests: XCTestCase {
                 }
                 print(String(format: "Hole %d: %d vertices, %d triangles, %d materials, mesh build %.3f s, lie %@",
                              number, mesh.vertexCount, mesh.batches.map(\.triangles).reduce(0, +), mesh.batches.count, built, game.lieLabel))
+            }
+        }
+    }
+
+    /// Bursts from anim.stn rules on Pebble hole 1, 0.12 s and 0.4 s after the strike.
+    func testRenderOriginalEffects() async throws {
+        guard let output = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_DIR"] else {
+            throw XCTSkip("Set GAMEHUB_SNAPSHOT_DIR to capture effect snapshots")
+        }
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let course = try PGAOriginalPlayableCourse.load(code: "PBL", root: root)
+        let directory = URL(fileURLWithPath: output, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try await MainActor.run {
+            _ = NSApplication.shared
+            let mesh = PGAOriginalHoleMesh.build(course: course, holeIndex: 0)
+            let single = PGACourse(name: course.course.name, provenance: course.course.provenance, holes: [course.course.holes[0]], identity: course.course.identity)
+            let renderer = PGARenderer()
+            renderer.useOriginalEffects(root: root)
+            let effects = try XCTUnwrap(renderer.effects)
+            renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: PGAOriginalTextureCache()), hole: single.holes[0])
+            let game = PGASimulation(course: single, terrains: [course.terrains[0]])
+            let ball = game.ball, ground = game.groundHeight(x: ball.x, z: ball.z, near: ball.y)
+            let forward = game.direction, side = PGAVector(x: -forward.z, y: 0, z: forward.x)
+            let parent = renderer.scene.rootNode
+            effects.strike(in: parent, at: ball, heading: game.heading, club: .sandWedge, lieFlags: 0x8, powerPercent: 60, fromTee: false, ground: ground)
+            effects.strike(in: parent, at: ball + side * 2, heading: game.heading, club: .iron7, lieFlags: 0x1, powerPercent: 90, fromTee: false, ground: ground)
+            effects.strike(in: parent, at: ball - side * 2, heading: game.heading, club: .iron7, lieFlags: 0x2, powerPercent: 90, fromTee: false, ground: ground)
+            effects.impact(in: parent, at: ball + forward * 4 - side * 3.5 + PGAVector(x: 0, y: 0.03, z: 0), flags: 0x40, impactPercent: 80, incoming: forward)
+            let camera = SCNNode(); camera.camera = SCNCamera(); camera.camera?.zNear = 0.05
+            let eye = ball - forward * 4 + side * 1.2 + PGAVector(x: 0, y: 1.4, z: 0)
+            camera.position = SCNVector3(eye.x, eye.y, eye.z)
+            PGARenderer.orientCamera(camera, toward: ball + forward * 1.2 + PGAVector(x: 0, y: 0.4, z: 0))
+            parent.addChildNode(camera)
+            let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
+            let snapshot = SCNRenderer(device: device, options: nil)
+            snapshot.scene = renderer.scene; snapshot.pointOfView = camera
+            for time in [0.12, 0.4] {
+                let image = snapshot.snapshot(atTime: time, with: CGSize(width: 1600, height: 1000), antialiasingMode: .multisampling4X)
+                try write(image, to: directory.appendingPathComponent(String(format: "effects-%.2f.png", time)))
             }
         }
     }
