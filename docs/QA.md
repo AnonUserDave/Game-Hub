@@ -6,7 +6,7 @@
 
 | Check | Evidence and limits |
 | --- | --- |
-| Build and unit checks | Initial combined suite: 110 Swift XCTest, 3 expected skips (two opt-in snapshots and no audio output). Final rule/input corrections: 12 focused XCTest pass. Final Python suite after the collision allocation fix: 166 tests pass. Native ARM64 build passes; final small layout edits still await rebuilt UI check. |
+| Build and unit checks | Final combined suite: 145 Swift XCTest, 3 expected skips (two opt-in snapshots and no audio output); 179 Python tests pass. Final Night Driver source-order regressions are included. Optimized native ARM64 build passes; final small Conflict layout edits compile but still await rebuilt UI check. |
 | Breakout native UI | Launch/setup, short Space tap serving, held right-paddle input, Escape pause, save and return to library. Reopen/resume restored team 1, score 0 and four balls, paused. These are native development checks, not cartridge comparisons. |
 | Conflict 2500 native UI | Scenario setup, 13×9 map and original prepared tactical symbol displayed. Keyboard F fired with power 100; E advanced to turn 1; energy 22531 became 17531. Escape disabled game commands. Save/return/reopen restored turn 1, energy 17531 and tactical view. |
 | Input transitions | Synthetic tests cover focus loss/held return, controller identity changes/disconnection and action suppression during pause/setup until release. Short keyboard taps remain queued until one simulation tick. No physical Fusion Pro or simultaneous multiplayer devices tested. |

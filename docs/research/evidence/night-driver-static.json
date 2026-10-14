@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "night-driver-c64",
+  "titleIdentity": "Commodore/HAL Night Driver V.01 (1982)",
+  "evidenceType": "static direct Ghidra analysis plus first-party byte-format decode; not REA Evidence or runtime observation",
+  "targetExecution": false,
+  "source": {
+    "archiveSHA256": "f4b34b067a6fd0c954e7de5803aeb88e5b466af4364a1a9a84ca116d4ca41384",
+    "selectedT64SHA256": "0a23798b7adbe3b2269b19820ac7a78c9077cf2c774a2a90be36dac6c03ea6c6",
+    "programSHA256": "c8be3efca0b9cb49418e3e1fd3659a40b651aa864c53743a4a4a232c33394ad8",
+    "programBytes": 4101,
+    "loadAddress": "0801",
+    "unpackedSHA256": "df49a43b3d8b926c30f92d9434f934fd1c442907fa8e3012e1e10426f1f4a9b1",
+    "unpackedBytes": 8449,
+    "unpackedRangeInclusive": ["1f00", "4000"],
+    "gameSHA256": "2238c3c9f844d4456edc49d4af00531b34f1caeba92d0a5f6fb83c2317c89b16",
+    "gameBytes": 8192,
+    "relocatedRangeInclusive": ["e000", "ffff"],
+    "reset": "e03e",
+    "irq": "ebb1",
+    "nmi": "ec24",
+    "trainerApplied": false
+  },
+  "analysis": {
+    "engine": "Ghidra 12.1.2",
+    "language": "6502:LE:16:default",
+    "profiles": [
+      {"name": "loader", "baseAddress": "00fb", "inputSHA256": "82c4b987238508174cf48704d8c1fea2468254868744094e1ebdae500848f1f8"},
+      {"name": "game", "baseAddress": "1f00", "inputSHA256": "df49a43b3d8b926c30f92d9434f934fd1c442907fa8e3012e1e10426f1f4a9b1"},
+      {"name": "relocated", "baseAddress": "e000", "inputSHA256": "2238c3c9f844d4456edc49d4af00531b34f1caeba92d0a5f6fb83c2317c89b16"}
+    ],
+    "localFullEvidence": "Library/Research/night-driver",
+    "originalMediaAndGraphicsCommitted": false
+  },
+  "findings": [
+    {"addresses": ["0108", "0195"], "finding": "Backward literal/match packed-data format with widths [4,2,2,3] and overflow terminator; ported without source CPU execution."},
+    {"addresses": ["1f27", "1f29", "1fc0", "1fe3"], "finding": "MANIK trainer optionally changes timer operand; 8 KiB copy relocates normal game $2000 to $E000. Native decode preserves normal timer."},
+    {"addresses": ["e074", "e080", "ebb1"], "finding": "CIA Timer A reload $4E20 is 20,000 source cycles. Actual source-clock frequency and wall-clock rate unverified."},
+    {"addresses": ["e48e", "e4da", "e4de", "e6fe"], "finding": "Four source speed bands, 16-bit speed, acceleration [255,25,35,15], coast decrement [255,30,40,45], high-byte clamp 0..250."},
+    {"addresses": ["e4cb", "e2cc"], "finding": "IRQ adds speed high byte to motion fraction; road update on overflow, steering shifts fixed-point road origin +/-200."},
+    {"addresses": ["e3fc", "e44e", "e4e2"], "finding": "19 fixed-point road centers; collision uses center15 <10 or >=30; random bend targets and step use four RNG draws."},
+    {"addresses": ["eaa0", "eab8"], "finding": "11 XNOR LFSR steps per draw, taps old bits15,1,0; $FFFF outputs [109,134,194,33,232,246,22,242]."},
+    {"addresses": ["e3c3", "e36b", "e3c2"], "finding": "Four authored 8-depth road-post schedules and original glyph-cell placement, including glyph15/16 half-height posts."},
+    {"addresses": ["e72a", "ec05", "ec17", "e1c8", "e220"], "finding": "Distance each8 road progresses; BCD timer99.99 expires at high bytezero; one50.xx extension at distance600."},
+    {"addresses": ["e9de", "ea83", "ec4c"], "finding": "Original A accelerate, L left, semicolon right; F1 key/joystick start and F3 paddle start. Physical native input unverified."},
+    {"addresses": ["f400", "f800", "f980", "e53e", "e984", "ec4c"], "finding": "Prepared local original digit sprites, charset, rolling score digits, crash streams, car and instructions. No art in Git."},
+    {"addresses": ["e692", "e6ea", "e6fe", "e14b", "e26d"], "finding": "Engine triangle/saw frequency formulas, steering noise gate, crash filter sweep and high-score melody are mapped; native SID-equivalent audio absent."}
+  ],
+  "verification": {
+    "hardware": "Son's ARM64 M5 Pro MacBook Pro, 24 GB; development only",
+    "swiftXCTestPassed": 10,
+    "pythonTestsPassed": 4,
+    "originalRuntimeComparison": false,
+    "physicalControllerAcceptance": false,
+    "m1Acceptance": false,
+    "nativeHubPlayableModule": false
+  },
+  "limitations": [
+    "Foreground acceleration-loop cadence and CPU-loop crash/melody delays unverified.",
+    "Native rendering, sound, attract loop, physical controls and launch/return integration pending.",
+    "No running original was executed or compared.",
+    "M5 checks do not establish sustained M1 Air / 8 GB performance acceptance."
+  ]
+}

@@ -19,7 +19,7 @@ No title below is a completed faithful rewrite. The current development host is 
 | Crossfire / AppleII | Source-derived native actor/projectile/control/score/ammunition/bonus/wave loop and snapshots; 14 source masks prepared; 12 Swift/four Python checks | Native presentation/audio/input/saves, source timing and startup, integration and original comparison |
 | DigDug / C64 | T64 program recovered with load/range/hash metadata | Static loader/game/asset reconstruction, complete original gameplay and native session |
 | NFLFootball / Intellivision | Selected cartridge recovered and hashed | CP1610/EXEC/GROM dependencies, original modes/rules/assets and disc/keypad/side-button controls; native session |
-| NightDriver / C64 | T64 program recovered; source reconstruction underway | Static unpacking/road/steering/collision/time/score/art/audio, native loop/session and comparison |
+| NightDriver / C64 | Static packed-game decode, native control/interrupt/road/steering/time/distance rules, source graphic/HUD loader and snapshots; ten Swift/four Python checks | Qualified original clocks and crash delays, audio/attract mode, native UI/input/saves/session and comparison |
 | Preppie! / Atari8-bit | Plain US XEX selected; all ordered segments recovered and hashed | Source level/lane/actor/control/timing/art/audio reconstruction and native session |
 | SpaceInvaders / intended 1978 Taito shooter | Supplied archive mismatch confirmed; contains Bally pinball firmware | Correct shooter reference/media; source reconstruction and complete native runtime. Pinball firmware cannot establish shooter fidelity |
 
@@ -35,7 +35,7 @@ No title below is a completed faithful rewrite. The current development host is 
 
 ## Current checkpoint verification
 
-Initial integration on the M5 passed **110 Swift XCTest** (3 skipped: two opt-in golf snapshots and no audio output). The final Conflict/input corrections passed **12 focused tests** and a native ARM64 build; **166 Python tests** passed after the collision allocation regression. Native UI checks confirmed Breakout launch, short-tap serve, held paddle input, pause/save/return and restored four-ball state. Conflict checks confirmed scenario/map/tactical display, fire/turn progression (energy 22531 to 17531), pause/save/return and restoration at turn 1/energy 17531/tactical view. A final empty-log layout correction and protected tactical crosshair rendering still need their rebuilt UI check. These are functional M5 development receipts, not original comparison or M1 acceptance.
+The final M5 checkpoint passed **145 Swift XCTest** (3 skipped: two opt-in golf snapshots and no audio output), **179 Python tests** and an optimized native ARM64 build. This includes the new Apple Panic/Crossfire/Night Driver cores and final Night Driver source-order regressions. Native UI checks confirmed Breakout launch, short-tap serve, held paddle input, pause/save/return and restored four-ball state. Conflict checks confirmed scenario/map/tactical display, fire/turn progression (energy 22531 to 17531), pause/save/return and restoration at turn 1/energy 17531/tactical view. A final empty-log layout correction and protected tactical crosshair rendering compiled but still need their rebuilt UI check. These are functional M5 development receipts, not original comparison or M1 acceptance. The three additional cores are unregistered pending native presentation/input integration.
 
 Reproduction:
 
