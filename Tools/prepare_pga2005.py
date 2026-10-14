@@ -12,6 +12,7 @@ from inspect_pga2005 import ISO9660, extract_media
 from import_pga2005 import atomic_write, run_import
 from import_pga2005_hud import convert as convert_hud
 import import_pga2005_audio
+import decode_pga2005_objects
 from installshield_cab import Cabinet
 
 # Install-cabinet groups the native module reads (HUD art, sky, ball and tee
@@ -80,6 +81,13 @@ def main():
         holes = decode_holes(tcr, (source / f"{code}.INI").read_bytes())
         save_json(output / "holes.json", holes)
         print(f"{code}: {report['point_count']:,} vertices, {report['triangle_count']:,} triangles, {len(materials['materials'])} original materials, {holes['hole_count']} holes")
+    # Original trees, tree meshes, panoramas and sky domes, validated against
+    # the terrain and materials above (about 12 s per course on the M5).
+    for code in args.courses:
+        objects = decode_pga2005_objects.prepare_course(root, code)["summary"]
+        print(f"{code}: {objects['instances']:,} original trees of {objects['object_types']} types")
+    sky = decode_pga2005_objects.prepare_sky(root, "PBL" if "PBL" in args.courses else args.courses[0])
+    print(f"Sky: {sky['domes']} original domes")
     # Original sounds and per-course ambience (needs the course materials above).
     if import_pga2005_audio.main(["--courses", *args.courses]) != 0:
         raise SystemExit("Audio import failed")

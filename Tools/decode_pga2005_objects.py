@@ -651,8 +651,13 @@ def decode_course_objects(course_data: bytes, library_data: list[bytes], output:
                "panorama_blocks": len(panoramas["blocks"]) if panoramas else 0,
                "holes": len(holes), "tree_mesh_files": len(mesh_files),
                "tree_mesh_bytes": sum(mesh_files.values()), "textures": len(store.entries)}
+    course_sections = read_ini(ini) if ini else {}
     objects_json = {
         "schema_version": 1, "course_title": course.title, "source_tcr_sha256": course.digest,
+        # Per-course sky placement (CourseInfoC::GetSkyDomeScaleX/ScaleZ/YOffset) and the INI's
+        # default sky condition; sky.json only keeps the values of the course decoded with it.
+        "sky_ini": {"SkyDome": course_sections.get("SkyDome", {}),
+                    "Conditions.Skydome": course_sections.get("Conditions", {}).get("Skydome")},
         "source_libraries": [{"index": i, "guid": l.guid, "sha256": l.digest, "title": l.title,
                               "version": l.version, "new_style_trees": (l.version & 0x7fff) > 4,
                               "object_count": l.u16(0x48)}
@@ -1002,6 +1007,52 @@ def validate_bounds(result: dict, output: Path) -> dict:
 
 # ----------------------------------------------------------------------- CLI
 
+def prepare_course(root: Path, course: str, validate: bool = True, tcr: Path | None = None,
+                   tcls: list[Path] | None = None, output: Path | None = None,
+                   terrain: Path | None = None) -> dict:
+    """Decode one prepared course's objects into Library/Imported/pga2005/<course>/objects.
+    Validation needs that course's terrain.ghpc (and materials.json for surface names)."""
+    source = root / "Library/SourceMedia/pga2005/disc3/COURSES" / course
+    output = output or root / "Library/Imported/pga2005" / course / "objects"
+    ini_path = source / f"{course}.INI"
+    result = decode_course_objects((tcr or source / f"{course}.TCR").read_bytes(),
+                                   [p.read_bytes() for p in (tcls or [source / f"{course}.TCL"])], output,
+                                   ini_path.read_bytes() if ini_path.exists() else None)
+    objects = result["objects"]
+    terrain_path = terrain or output.parent / "terrain.ghpc"
+    if validate and terrain_path.exists():
+        materials_path = output.parent / "materials.json"
+        materials = json.loads(materials_path.read_text()) if materials_path.exists() else None
+        terrain_bytes = terrain_path.read_bytes()
+        objects["validation"] = {"floor": validate_floor(result["instance_rows"], terrain_bytes, materials),
+                                 "bounds": validate_bounds(result, output),
+                                 "terrain_sha256": sha256(terrain_bytes)}
+    atomic_write(output / "instances.json", (json.dumps(result["instances"], separators=(",", ":")) + "\n").encode())
+    atomic_write(output / "objects.json", (json.dumps(objects, indent=1) + "\n").encode())
+    return {"summary": objects["summary"], "validation": objects.get("validation")}
+
+
+def prepare_sky(root: Path, course: str, skydome: Path | None = None, output: Path | None = None) -> dict:
+    """Decode the shared install sky domes into Library/Imported/pga2005/sky."""
+    media = root / "Library/SourceMedia/pga2005"
+    skydome = skydome or media / "install/CoursesRoot/skydome.TCL"
+    output = output or root / "Library/Imported/pga2005/sky"
+    extras = {}
+    for name in ("cloudturb.dds", "sun1.dds", "lflare1a.dds", "lflare1b.dds"):
+        path = skydome.parent / name
+        if path.exists():
+            extras[name] = path.read_bytes()
+    flare_dir = media / "install/DataImages/Game/Lensflare"
+    if flare_dir.is_dir():
+        for path in sorted(flare_dir.glob("*.dds")):
+            extras["Lensflare/" + path.name] = path.read_bytes()
+    presets = {p.name: p.read_bytes() for p in (media / "engine/Executable").glob("render*.ini")}
+    ini = media / "disc3/COURSES" / course / f"{course}.INI"
+    sky = decode_sky(skydome.read_bytes(), output, extras, presets, ini.read_bytes() if ini.exists() else None)
+    atomic_write(output / "sky.json", (json.dumps(sky, indent=1) + "\n").encode())
+    return {"domes": len(sky["domes"]), "textures": len(sky["textures"])}
+
+
 def main():
     root = Path(__file__).resolve().parent.parent
     media = root / "Library/SourceMedia/pga2005"
@@ -1020,43 +1071,12 @@ def main():
     course = args.course.upper()
     if not course.isalnum():
         parser.error("Invalid course id")
-    source = media / "disc3/COURSES" / course
     report = {}
     if not args.no_course:
-        tcr = (args.tcr or source / f"{course}.TCR").read_bytes()
-        tcls = [p.read_bytes() for p in (args.tcl or [source / f"{course}.TCL"])]
-        output = args.output or root / "Library/Imported/pga2005" / course / "objects"
-        ini_path = source / f"{course}.INI"
-        result = decode_course_objects(tcr, tcls, output, ini_path.read_bytes() if ini_path.exists() else None)
-        objects = result["objects"]
-        if not args.no_validate:
-            terrain_path = args.terrain or output.parent / "terrain.ghpc"
-            if terrain_path.exists():
-                materials_path = output.parent / "materials.json"
-                materials = json.loads(materials_path.read_text()) if materials_path.exists() else None
-                objects["validation"] = {"floor": validate_floor(result["instance_rows"], terrain_path.read_bytes(),
-                                                                 materials),
-                                         "bounds": validate_bounds(result, output),
-                                         "terrain_sha256": sha256(terrain_path.read_bytes())}
-        atomic_write(output / "instances.json", (json.dumps(result["instances"], separators=(",", ":")) + "\n").encode())
-        atomic_write(output / "objects.json", (json.dumps(objects, indent=1) + "\n").encode())
-        report["course"] = {"summary": objects["summary"], "validation": objects.get("validation")}
+        report["course"] = prepare_course(root, course, not args.no_validate, args.tcr, args.tcl, args.output,
+                                          args.terrain)
     if not args.no_sky:
-        extras = {}
-        for name in ("cloudturb.dds", "sun1.dds", "lflare1a.dds", "lflare1b.dds"):
-            path = args.skydome.parent / name
-            if path.exists():
-                extras[name] = path.read_bytes()
-        flare_dir = media / "install/DataImages/Game/Lensflare"
-        if flare_dir.is_dir():
-            for path in sorted(flare_dir.glob("*.dds")):
-                extras["Lensflare/" + path.name] = path.read_bytes()
-        presets = {p.name: p.read_bytes() for p in (media / "engine/Executable").glob("render*.ini")}
-        ini = source / f"{course}.INI"
-        sky = decode_sky(args.skydome.read_bytes(), args.sky_output, extras, presets,
-                         ini.read_bytes() if ini.exists() else None)
-        atomic_write(args.sky_output / "sky.json", (json.dumps(sky, indent=1) + "\n").encode())
-        report["sky"] = {"domes": len(sky["domes"]), "textures": len(sky["textures"])}
+        report["sky"] = prepare_sky(root, course, args.skydome, args.sky_output)
     print(json.dumps(report, indent=1))
 
 
