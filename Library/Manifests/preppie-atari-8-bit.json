@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "preppie-atari-8-bit",
+  "title": "Preppie!",
+  "edition": "Atari 8-bit",
+  "platform": "Atari 8-bit computers",
+  "year": 1982,
+  "genre": "Action",
+  "summary": "Your original Atari 8-bit computers edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Preppie!_Atari-8-bit_ROM_EN.zip",
+  "accent": "A9D9AD",
+  "artwork": "pixel",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "Contains four executable-image variants including alternate and k-file labels. No high-level game source is present.",
+    "The base nested archive contains a 23320-byte .xex file. Select a reference variant before reverse-engineering mechanics."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

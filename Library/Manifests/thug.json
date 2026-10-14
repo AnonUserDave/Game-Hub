@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "thug",
+  "title": "Tony Hawk’s Underground",
+  "edition": "Windows original",
+  "platform": "Windows",
+  "year": 2004,
+  "genre": "Skating",
+  "summary": "The Windows edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "THUG_Win_ROM_EN.zip",
+  "accent": "C6ABE3",
+  "artwork": "skate",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Compiled Windows media does not include high-level game source. A native rewrite needs substantial reverse engineering, asset decoding, implementation, and comparison with original behavior."
+  ],
+  "keyboard": [
+    "Planned: native keyboard and trackpad controls."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad controls; hardware compatibility must be tested."
+  ]
+}

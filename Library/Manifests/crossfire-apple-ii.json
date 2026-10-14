@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "crossfire-apple-ii",
+  "title": "Crossfire",
+  "edition": "Apple II",
+  "platform": "Apple II",
+  "year": 1981,
+  "genre": "Arcade",
+  "summary": "Your original Apple II edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Crossfire_Apple-II_ROM_EN.zip",
+  "accent": "E5A488",
+  "artwork": "pixel",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "The nested archive contains a 143360-byte .do disk image. No high-level game source is present.",
+    "Movement and shooting may require separate directional inputs; verify the actual keyboard layout and define equivalent Xbox controls against a chosen reference."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

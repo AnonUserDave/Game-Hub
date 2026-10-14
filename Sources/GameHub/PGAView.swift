@@ -1,0 +1,279 @@
+import AppKit
+import SceneKit
+import SwiftUI
+
+private let pgaGold = Color(hex: "EDD297")
+private let pgaInk = Color(hex: "102223")
+
+struct PGAGameView: View {
+    @StateObject private var session: PGAGameSession
+    @State private var showHelp = true
+    @State private var showOriginalCourse = false
+    init(onExit: @escaping () -> Void) { _session = StateObject(wrappedValue: PGAGameSession(onExit: onExit)) }
+    private var game: PGASimulation { session.simulation }
+
+    var body: some View {
+        if showOriginalCourse {
+            PGAOriginalCourseView(onExit: { showOriginalCourse = false; session.setPaused(false) }, onHub: { session.exit() })
+        } else { gameContent }
+    }
+    private var gameContent: some View {
+        GeometryReader { geometry in
+            ZStack {
+                PGASceneView(session: session).ignoresSafeArea()
+                VStack(spacing: 0) {
+                    topBar
+                    HStack(alignment: .top) { holeCard; Spacer(); performanceCard }.padding(22)
+                    Spacer(minLength: 12)
+                    HStack(alignment: .bottom, spacing: 20) {
+                        swingCard
+                        Spacer(minLength: 0)
+                        if geometry.size.width > 900 { mapCard }
+                    }.padding(.horizontal, 22).padding(.bottom, 16)
+                    bottomBar
+                }
+                if session.paused { pauseOverlay }
+                else if game.phase == .holed || game.phase == .roundComplete { scoreOverlay }
+            }
+        }.background(.black).onAppear {
+            session.onOriginalCourse = { session.setPaused(true); showOriginalCourse = true }
+            session.start()
+        }.onDisappear { session.stop() }
+    }
+
+    private var topBar: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "figure.golf").font(.system(size: 19, weight: .medium)).foregroundStyle(pgaGold)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("PGA 2005 · NATIVE DEVELOPMENT").font(.system(size: 11, weight: .bold, design: .monospaced)).tracking(1.3)
+                Text("Generated practice course · original game reconstruction in progress").font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
+            }
+            Spacer()
+            Button { session.onOriginalCourse?() } label: { Label("Original course lab", systemImage: "mountain.2") }
+            Button { session.fullscreen() } label: { Label("Full screen", systemImage: "arrow.up.left.and.arrow.down.right") }
+            Button { session.togglePause() } label: { Label("Pause", systemImage: "pause.fill") }
+            Button { session.exit() } label: { Label("Hub", systemImage: "square.grid.2x2") }
+        }.buttonStyle(.plain).font(.system(size: 11, weight: .medium)).foregroundStyle(.white)
+            .padding(.horizontal, 22).padding(.vertical, 12).background(pgaInk.opacity(0.95))
+    }
+
+    private var holeCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(game.course.name.uppercased()).font(.system(size: 9, weight: .semibold, design: .monospaced)).tracking(1.5).foregroundStyle(pgaGold)
+            HStack(alignment: .firstTextBaseline, spacing: 13) {
+                Text(String(format: "%02d", game.holeIndex + 1)).font(.system(size: 39, weight: .light, design: .rounded))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(game.hole.name).font(.system(size: 14, weight: .semibold))
+                    Text("PAR \(game.hole.par)    \(Int((game.hole.length * 1.09361).rounded())) YARDS")
+                        .font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.7))
+                }
+            }
+            Rectangle().fill(.white.opacity(0.16)).frame(height: 1)
+            HStack(spacing: 25) {
+                stat("STROKE", "\(game.strokes + (game.phase == .holed ? 0 : 1))")
+                stat("TO PIN", game.distanceToCup < 20 ? String(format: "%.1f ft", game.distanceToCup * 3.28084) : "\(Int((game.distanceToCup * 1.09361).rounded())) yd")
+                stat("LIE", game.lie.rawValue)
+            }
+        }.padding(17).background(panel).frame(maxWidth: 350, alignment: .leading).foregroundStyle(.white)
+    }
+
+    private func stat(_ title: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title).font(.system(size: 8, weight: .semibold, design: .monospaced)).tracking(0.8).foregroundStyle(.white.opacity(0.5))
+            Text(value).font(.system(size: 13, weight: .semibold)).monospacedDigit()
+        }
+    }
+
+    private var performanceCard: some View {
+        VStack(alignment: .trailing, spacing: 5) {
+            Text(session.drawableDescription).font(.system(size: 9, weight: .medium, design: .monospaced))
+            Text("\(session.frameRate > 0 ? "\(session.frameRate) FPS · " : "")\(["Player camera", "Approach camera", "Course overview"][session.cameraMode])")
+                .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
+            Text(session.controllerName ?? "Keyboard + trackpad").font(.system(size: 9)).foregroundStyle(pgaGold)
+        }.foregroundStyle(.white).padding(.horizontal, 12).padding(.vertical, 9).background(panel)
+    }
+
+    private var swingCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("SELECTED CLUB").font(.system(size: 8, weight: .semibold, design: .monospaced)).tracking(1.2).foregroundStyle(.white.opacity(0.5))
+                    Text(game.club.title).font(.system(size: 22, weight: .medium))
+                }
+                Spacer()
+                Text(game.club == .putter ? "\(Int((game.targetDistance * 3.28084).rounded())) ft max" : "~\(Int((game.targetDistance * 1.09361).rounded())) yd carry")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(pgaGold)
+            }
+            HStack(spacing: 6) {
+                ForEach(PGAClub.allCases, id: \.rawValue) { club in
+                    Button { session.changeClub(club.rawValue - game.club.rawValue) } label: {
+                        Text(club.shortTitle).font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .frame(maxWidth: .infinity).padding(.vertical, 7)
+                            .background(RoundedRectangle(cornerRadius: 5).fill(club == game.club ? pgaGold : .white.opacity(0.08)))
+                            .foregroundStyle(club == game.club ? pgaInk : .white.opacity(0.7))
+                    }.buttonStyle(.plain).disabled(game.phase != .aiming)
+                }
+            }
+            swingMeter
+            HStack(alignment: .top, spacing: 9) {
+                Image(systemName: game.phase.inMotion ? "location.fill" : "info.circle").foregroundStyle(pgaGold).padding(.top, 1)
+                Text(game.message).font(.system(size: 11)).foregroundStyle(.white.opacity(0.82)).frame(maxWidth: .infinity, alignment: .leading).lineLimit(2)
+            }.frame(minHeight: 29, alignment: .top)
+            if showHelp {
+                Text(session.controllerName == nil ? "← → / A D aim   ↑ ↓ / W S clubs   H aim at pin\nSpace or click: start → power → accuracy\nDrag to aim · scroll to zoom · C camera · Esc pause" : "Left stick / D-pad aim · LB RB clubs · Y aim at pin\nA: start → power → accuracy · X camera\nRight stick zoom · B / Menu pause")
+                    .font(.system(size: 9, design: .monospaced)).lineSpacing(4).foregroundStyle(.white.opacity(0.55))
+            }
+        }.padding(18).frame(width: 385).background(panel).foregroundStyle(.white)
+    }
+
+    private var swingMeter: some View {
+        VStack(spacing: 7) {
+            HStack {
+                Text(game.phase == .accuracy ? "ACCURACY" : "POWER").tracking(1.2)
+                Spacer()
+                Text(game.phase == .accuracy ? "CENTER = STRAIGHT" : game.phase == .power ? "\(Int((game.meter * 100).rounded()))%" : game.phase.inMotion ? "\(Int((game.shotPower * 100).rounded()))% · \(Int((game.lastShotDistance * 1.09361).rounded())) yd" : "THREE-CLICK SWING")
+            }.font(.system(size: 9, weight: .semibold, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4).fill(.white.opacity(0.10))
+                    if game.phase == .accuracy {
+                        LinearGradient(colors: [Color.red.opacity(0.6), pgaGold.opacity(0.5), Color.green.opacity(0.7), pgaGold.opacity(0.5), Color.red.opacity(0.6)], startPoint: .leading, endPoint: .trailing).clipShape(RoundedRectangle(cornerRadius: 4))
+                        Rectangle().fill(.white).frame(width: 2).offset(x: geometry.size.width / 2)
+                        RoundedRectangle(cornerRadius: 2).fill(.white).frame(width: 5, height: 22).offset(x: (game.meter + 1) * 0.5 * (geometry.size.width - 5))
+                    } else {
+                        RoundedRectangle(cornerRadius: 4).fill(LinearGradient(colors: [Color(hex: "78B494"), pgaGold], startPoint: .leading, endPoint: .trailing))
+                            .frame(width: geometry.size.width * (game.phase == .power ? game.meter : game.shotPower))
+                        ForEach(1..<4, id: \.self) { index in Rectangle().fill(.black.opacity(0.30)).frame(width: 1).offset(x: geometry.size.width * Double(index) / 4) }
+                    }
+                }
+            }.frame(height: 16)
+            Button { session.swing() } label: {
+                HStack {
+                    Text(game.phase == .power ? "LOCK POWER" : game.phase == .accuracy ? "STRIKE AT THE CENTER" : game.phase.inMotion ? "BALL IN PLAY" : "START SWING")
+                    Spacer(); Text(session.controllerName == nil ? "SPACE / CLICK" : "A").opacity(0.6)
+                }.font(.system(size: 10, weight: .bold, design: .monospaced)).foregroundStyle(pgaInk).padding(11).background(pgaGold, in: RoundedRectangle(cornerRadius: 5))
+            }.buttonStyle(.plain).disabled(game.phase.inMotion)
+        }
+    }
+
+    private var mapCard: some View {
+        VStack(spacing: 8) {
+            HStack { Text("HOLE OVERVIEW").tracking(1); Spacer(); Text("\(game.holeIndex + 1) / \(game.course.holes.count)").foregroundStyle(pgaGold) }
+                .font(.system(size: 8, weight: .semibold, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
+            PGAMinimap(simulation: game).frame(width: 175, height: 210).clipShape(RoundedRectangle(cornerRadius: 6))
+            HStack { Text("PRACTICE COURSE"); Spacer(); Text("● BALL").foregroundStyle(.white) }
+                .font(.system(size: 7, weight: .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.45))
+        }.padding(12).frame(width: 200).background(panel)
+    }
+
+    private var bottomBar: some View {
+        HStack {
+            Text("NATIVE MAC RUNTIME").tracking(1.1); Text("·").padding(.horizontal, 3)
+            Text(session.renderer.originalTexturesLoaded ? "Generated geometry · imported PGA grass textures · provisional physics" : "No emulation · generated geometry and provisional physics")
+            Spacer()
+            Button(showHelp ? "Hide controls" : "Show controls") { showHelp.toggle() }.buttonStyle(.plain)
+        }.font(.system(size: 8, weight: .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
+            .padding(.horizontal, 22).padding(.vertical, 10).background(pgaInk.opacity(0.92))
+    }
+
+    private var pauseOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+            VStack(spacing: 15) {
+                Image(systemName: "pause.circle").font(.system(size: 33, weight: .light)).foregroundStyle(pgaGold)
+                Text("Take your time").font(.system(size: 27, weight: .light))
+                Text("Hole \(game.holeIndex + 1) · \(game.hole.name)").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6))
+                ForEach(Array(["Resume", "Restart hole", "Restart round", "Original course lab", "Return to hub"].enumerated()), id: \.offset) { index, label in
+                    Button {
+                        session.selectPauseItem(index - session.pauseSelection)
+                        session.activatePauseSelection()
+                    } label: {
+                        HStack {
+                            Text(label); Spacer()
+                            if session.pauseSelection == index { Image(systemName: "arrow.right") }
+                        }.font(.system(size: 12, weight: .medium)).padding(12)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(session.pauseSelection == index ? pgaGold : .white.opacity(0.04)))
+                            .foregroundStyle(session.pauseSelection == index ? pgaInk : .white)
+                    }.buttonStyle(.plain)
+                }
+                Text("↑ ↓ / Left stick to choose · Enter / A to select")
+                    .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
+            }.padding(30).frame(width: 370).background(pgaInk, in: RoundedRectangle(cornerRadius: 15)).foregroundStyle(.white)
+        }.ignoresSafeArea()
+    }
+
+    private var scoreOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.35)
+            VStack(spacing: 17) {
+                Image(systemName: "flag.checkered").font(.system(size: 28)).foregroundStyle(pgaGold)
+                Text(game.phase == .roundComplete ? "Practice round complete" : game.message).font(.system(size: 25, weight: .light)).multilineTextAlignment(.center)
+                HStack(spacing: 0) {
+                    ForEach(Array(game.course.holes.enumerated()), id: \.offset) { index, hole in
+                        VStack(spacing: 9) {
+                            Text("HOLE \(index + 1)").foregroundStyle(.white.opacity(0.5))
+                            Text(index < game.scores.count ? "\(game.scores[index])" : index == game.holeIndex && game.phase == .holed ? "\(game.strokes)" : "–").font(.system(size: 25, weight: .light))
+                            Text("PAR \(hole.par)").foregroundStyle(pgaGold)
+                        }.font(.system(size: 9, weight: .semibold, design: .monospaced)).frame(maxWidth: .infinity)
+                    }
+                }.padding(18).background(.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
+                if game.phase == .roundComplete {
+                    Text("\(game.completedStrokes) strokes · \(game.scoreToPar == 0 ? "Even par" : game.scoreToPar > 0 ? "+\(game.scoreToPar)" : "\(game.scoreToPar)")")
+                        .font(.system(size: 13)).foregroundStyle(.white.opacity(0.65))
+                    Button("Play again · Space / A") { session.restartRound() }.buttonStyle(.borderedProminent).tint(pgaGold).foregroundStyle(pgaInk)
+                } else {
+                    Button(game.holeIndex + 1 < game.course.holes.count ? "Next hole · Space / A" : "Finish round · Space / A") { session.nextHole() }
+                        .buttonStyle(.borderedProminent).tint(pgaGold).foregroundStyle(pgaInk)
+                }
+                Button("Return to hub") { session.exit() }.buttonStyle(.plain).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
+            }.padding(28).frame(width: 400).background(pgaInk, in: RoundedRectangle(cornerRadius: 15)).foregroundStyle(.white)
+        }.ignoresSafeArea()
+    }
+
+    private var panel: some View { RoundedRectangle(cornerRadius: 9).fill(pgaInk.opacity(0.91)).overlay(RoundedRectangle(cornerRadius: 9).stroke(.white.opacity(0.12))) }
+}
+
+private struct PGASceneView: NSViewRepresentable {
+    let session: PGAGameSession
+    func makeNSView(context: Context) -> PGAInputView {
+        let view = PGAInputView(frame: .zero, device: MTLCreateSystemDefaultDevice())
+        view.sceneDelegate = session.renderer
+        session.attach(view)
+        return view
+    }
+    func updateNSView(_ view: PGAInputView, context: Context) {}
+    static func dismantleNSView(_ view: PGAInputView, coordinator: ()) { view.isPaused = true; view.sceneDelegate = nil; view.delegate = nil; view.session = nil }
+}
+
+private struct PGAMinimap: View {
+    var simulation: PGASimulation
+    var body: some View {
+        Canvas { context, size in
+            let hole = simulation.hole
+            let width = hole.maxX - hole.minX, depth = hole.maxZ - hole.minZ
+            let scale = min(size.width / width, size.height / depth) * 0.93
+            func point(_ v: PGAVector) -> CGPoint {
+                CGPoint(x: (v.x - (hole.minX + hole.maxX) / 2) * scale + size.width / 2,
+                        y: size.height / 2 - (v.z - (hole.minZ + hole.maxZ) / 2) * scale)
+            }
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(hex: "344B30")))
+            var fairway = Path(); fairway.addLines(hole.centerline.map(point))
+            context.stroke(fairway, with: .color(Color(hex: "78995B")), style: StrokeStyle(lineWidth: hole.fairwayWidth * scale * 2, lineCap: .round, lineJoin: .round))
+            for hazard in hole.hazards {
+                let center = point(hazard.center)
+                let rect = CGRect(x: center.x - hazard.radiusX * scale, y: center.y - hazard.radiusZ * scale, width: hazard.radiusX * scale * 2, height: hazard.radiusZ * scale * 2)
+                context.fill(Path(ellipseIn: rect), with: .color(hazard.surface == .water ? Color(hex: "669FAC") : Color(hex: "D1C096")))
+            }
+            let cup = point(hole.cup)
+            context.fill(Path(ellipseIn: CGRect(x: cup.x - hole.greenRadius * scale, y: cup.y - hole.greenRadius * scale, width: hole.greenRadius * scale * 2, height: hole.greenRadius * scale * 2)), with: .color(Color(hex: "A8BA7C")))
+            context.fill(Path(ellipseIn: CGRect(x: cup.x - 2, y: cup.y - 2, width: 4, height: 4)), with: .color(pgaGold))
+            let ball = point(simulation.ball)
+            if !simulation.phase.inMotion {
+                var aim = Path(); aim.move(to: ball); aim.addLine(to: point(simulation.ball + simulation.direction * min(simulation.targetDistance, simulation.distanceToCup + 30)))
+                context.stroke(aim, with: .color(pgaGold.opacity(0.75)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            }
+            let ballPath = Path(ellipseIn: CGRect(x: ball.x - 3.5, y: ball.y - 3.5, width: 7, height: 7))
+            context.fill(ballPath, with: .color(.white)); context.stroke(ballPath, with: .color(pgaInk), lineWidth: 1)
+        }
+    }
+}

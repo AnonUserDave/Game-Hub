@@ -1,0 +1,1077 @@
+{
+  "schemaVersion": 1,
+  "analysisDate": "2026-10-13",
+  "scope": "Read-only inventory for native-only rewrite planning. No emulator setup, game extraction, or execution performed.",
+  "retroArchiveCount": 12,
+  "fidelityCaveat": "A native rewrite changes the machine-code bytes. Byte-identical preservation applies to the supplied archives, not to a newly compiled native game. Behavioral fidelity must be specified and verified against an identified reference revision.",
+  "archives": [
+    {
+      "id": "apple-panic-apple-ii",
+      "title": "Apple Panic",
+      "platform": "Apple II",
+      "archive": "Apple_Panic_Apple-II_ROM_EN.zip",
+      "archiveBytes": 129934,
+      "archiveSHA256": "a1e0b03fcf967383acba82e5c66c9cdfe5e859c1b934a0f0363fc491c88a50ce",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Apple II floppy disk images",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Game Files/Apple Panic (1981)(Broderbund)[cr Sledge Hammer].DO.zip",
+          "size": 18356,
+          "compressedSize": 18019,
+          "crc32": "020ffa40",
+          "directory": false,
+          "sha256": "c81fc0901be8ed7316b03c6defdc753a72dfd26163756b0733451002bda4c6aa",
+          "entries": [
+            {
+              "path": "Apple Panic (1981)(Broderbund)[cr Sledge Hammer].do",
+              "size": 143360,
+              "compressedSize": 18104,
+              "crc32": "49a46238",
+              "directory": false,
+              "sha256": "2950feb283b190c83439885e29430520670910b4cda6ed11f5a004dba2cc5208"
+            }
+          ]
+        },
+        {
+          "path": "Game Files/Apple Panic (1981)(Broderbund)[cr Cracker-Jack].DO.zip",
+          "size": 55357,
+          "compressedSize": 55364,
+          "crc32": "f6dee1d5",
+          "directory": false,
+          "sha256": "7e11dffa5feddf924d355d7a5d0fb449d6bf9eb10fb4973e74a65f32a90c8a89",
+          "entries": [
+            {
+              "path": "Apple Panic (1981)(Broderbund)[cr Cracker-Jack].do",
+              "size": 143360,
+              "compressedSize": 55107,
+              "crc32": "f572fb44",
+              "directory": false,
+              "sha256": "6d50ebced14f8da87ca17ed8e47571c650cc9110f02d4c2911b09723e46c3140"
+            }
+          ]
+        },
+        {
+          "path": "Game Files/Apple Panic (1981)(Broderbund)[cr Cracker-Jack][a].DO.zip",
+          "size": 55362,
+          "compressedSize": 55358,
+          "crc32": "1851400e",
+          "directory": false,
+          "sha256": "6c4ff5b3ab5c3bb098bc4a31a02ddfc823836b21c5a7343ff41b2d4e02b6d6e7",
+          "entries": [
+            {
+              "path": "Apple Panic (1981)(Broderbund)[cr Cracker-Jack][a].do",
+              "size": 143360,
+              "compressedSize": 55106,
+              "crc32": "82aa4d34",
+              "directory": false,
+              "sha256": "d77618080186c3ec0b8d9aa3133971510e21c3925bc13cf00016335d02dcfae0"
+            }
+          ]
+        },
+        {
+          "path": "OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "ReadMe.txt",
+          "size": 305,
+          "compressedSize": 178,
+          "crc32": "8b1e2387",
+          "directory": false,
+          "sha256": "739082cff7971a04c5e4df669d27a3957229e0bc83aef5e912562bc9bf160197"
+        }
+      ],
+      "caveats": [
+        "Contains three disk-image variants labeled as cracks. Neither original high-level source nor an authoritative reference build is included.",
+        "Choose and hash one reference variant before claiming exact behavior; disk-loader and crack modifications can differ."
+      ]
+    },
+    {
+      "id": "asteroids-atari-2600",
+      "title": "Asteroids",
+      "platform": "Atari 2600",
+      "archive": "Asteroids_Atari-2600_ROM_EN.zip",
+      "archiveBytes": 7570,
+      "archiveSHA256": "abe1676c4ae35515d8a48335535d311ea71ae7b6002507d9e493fbdb5656bbe9",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Atari 2600 cartridge ROM",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Asteroids_Atari-2600_ROM_EN/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Asteroids_Atari-2600_ROM_EN/Game Files/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Asteroids_Atari-2600_ROM_EN/Game Files/Asteroids.A26",
+          "size": 8192,
+          "compressedSize": 5412,
+          "crc32": "c7d64c94",
+          "directory": false,
+          "sha256": "d1a6e808412b4535c7e54fc25414943a9418b1095b4d4969dc33290f7eaa72a4"
+        },
+        {
+          "path": "Asteroids_Atari-2600_ROM_EN/Game Files/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "Asteroids_Atari-2600_ROM_EN/Game Files/readme.txt",
+          "size": 795,
+          "compressedSize": 385,
+          "crc32": "60371513",
+          "directory": false,
+          "sha256": "a2f4d235969874c7c5e7d136b673c5a16da4ad1edd9520946effe8a2f414af0f"
+        },
+        {
+          "path": "Asteroids_Atari-2600_ROM_EN/How to install.url",
+          "size": 139,
+          "compressedSize": 121,
+          "crc32": "44f2b934",
+          "directory": false,
+          "sha256": "fb1f7498c72aa9612f41a00f485faf71e03f73c256367668ccd541b9e0992ac3"
+        },
+        {
+          "path": "Asteroids_Atari-2600_ROM_EN/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        }
+      ],
+      "caveats": [
+        "Contains an 8192-byte .A26 cartridge image, not source code.",
+        "A native rewrite must reproduce the selected cartridge revision, original game timing, collision rules, console switches, and control response."
+      ]
+    },
+    {
+      "id": "asteroids-atari-7800",
+      "title": "Asteroids",
+      "platform": "Atari 7800",
+      "archive": "Asteroids_Atari-7800_ROM_EN.zip",
+      "archiveBytes": 11961,
+      "archiveSHA256": "a16d828e56aad75fc099aaa1523a2e6fff3cf1335fca2bda6a9f24543a9883e6",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Atari 7800 cartridge ROM",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Asteroids_Atari-7800_ROM_EN/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Asteroids_Atari-7800_ROM_EN/Game Files/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Asteroids_Atari-7800_ROM_EN/Game Files/Asteroids.A78",
+          "size": 16512,
+          "compressedSize": 9803,
+          "crc32": "eac69cf0",
+          "directory": false,
+          "sha256": "ec6ef6179644041a9fb77fc6b7c917387219fc388dd5a0fbf8236677f279402e"
+        },
+        {
+          "path": "Asteroids_Atari-7800_ROM_EN/Game Files/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "Asteroids_Atari-7800_ROM_EN/Game Files/readme.txt",
+          "size": 795,
+          "compressedSize": 385,
+          "crc32": "60371513",
+          "directory": false,
+          "sha256": "a2f4d235969874c7c5e7d136b673c5a16da4ad1edd9520946effe8a2f414af0f"
+        },
+        {
+          "path": "Asteroids_Atari-7800_ROM_EN/How to install.url",
+          "size": 139,
+          "compressedSize": 121,
+          "crc32": "44f2b934",
+          "directory": false,
+          "sha256": "fb1f7498c72aa9612f41a00f485faf71e03f73c256367668ccd541b9e0992ac3"
+        },
+        {
+          "path": "Asteroids_Atari-7800_ROM_EN/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        }
+      ],
+      "caveats": [
+        "Contains a 16512-byte .A78 cartridge image, including its format header, not source code.",
+        "This is a distinct game version from the Atari 2600 and 8-bit editions; do not combine their fidelity baselines."
+      ]
+    },
+    {
+      "id": "asteroids-atari-8-bit",
+      "title": "Asteroids",
+      "platform": "Atari 8-bit computers",
+      "archive": "Asteroids_Atari-8-bit_ROM_EN.zip",
+      "archiveBytes": 65867,
+      "archiveSHA256": "d60e45e03deb6764f00fdaa99846be8c5b15ac7f6b73f25ad5b040a63b2defcd",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Atari executable images in nested ZIP archives",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US).zip",
+          "size": 7016,
+          "compressedSize": 6985,
+          "crc32": "347bf2b2",
+          "directory": false,
+          "sha256": "24aab67f9927e8c3f5f2208bcadbd54d3e07c2b38268614d7706156d4e2526fc",
+          "entries": [
+            {
+              "path": "Asteroids (1981)(Atari)(US).xex",
+              "size": 8717,
+              "compressedSize": 6804,
+              "crc32": "f6159eb7",
+              "directory": false,
+              "sha256": "1cf45090b216c2363131bac2e4db9101a3c162e31686d7fe30474eaba5b7f97f"
+            }
+          ]
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US)[a2].zip",
+          "size": 6944,
+          "compressedSize": 6909,
+          "crc32": "4df33f18",
+          "directory": false,
+          "sha256": "819d31fce16bda945aa92766aefab541ffc4329643bf76099e38f34da1103419",
+          "entries": [
+            {
+              "path": "Asteroids (1981)(Atari)(US)[a2].xex",
+              "size": 8206,
+              "compressedSize": 6724,
+              "crc32": "b328c117",
+              "directory": false,
+              "sha256": "ef47bca534cf7ab3bf9c1b30fa2059d1edde678e7c7a23256fca75cc8e09857f"
+            }
+          ]
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US)[a2][k-file].zip",
+          "size": 7271,
+          "compressedSize": 7227,
+          "crc32": "e466031d",
+          "directory": false,
+          "sha256": "9914ba5901e7197b61460a339580db3dcb3ade83d19d97f35eba065f28aa23af",
+          "entries": [
+            {
+              "path": "Asteroids (1981)(Atari)(US)[a2][k-file].atr",
+              "size": 8720,
+              "compressedSize": 7035,
+              "crc32": "92d926bc",
+              "directory": false,
+              "sha256": "0e34106bbc5229d2d70c996fe5f14d8907b1df0e486bd001c70d70e820322d3b"
+            }
+          ]
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US)[a].zip",
+          "size": 7032,
+          "compressedSize": 6998,
+          "crc32": "18b86ebe",
+          "directory": false,
+          "sha256": "a6adbcc4cc128213788b6506a7e786f28403368a2b2d18f4e95573830c1a353d",
+          "entries": [
+            {
+              "path": "Asteroids (1981)(Atari)(US)[a].xex",
+              "size": 8717,
+              "compressedSize": 6814,
+              "crc32": "006b7711",
+              "directory": false,
+              "sha256": "4a644262a30f11421b40d2d0fd66c7afac3c9d658dd011952f1e60f46a3b5ca7"
+            }
+          ]
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US)[a][k-file].zip",
+          "size": 7359,
+          "compressedSize": 7321,
+          "crc32": "fe9a5059",
+          "directory": false,
+          "sha256": "4797393059b88e3bf0e8c25e5e3fb61532e98a97d849c4e8685613737e66a0d2",
+          "entries": [
+            {
+              "path": "Asteroids (1981)(Atari)(US)[a][k-file].atr",
+              "size": 9232,
+              "compressedSize": 7125,
+              "crc32": "32c6c9be",
+              "directory": false,
+              "sha256": "98eef5e4972be260a5d346a9b1abaae70317a28ec674d4605a0effb37f2fc1d6"
+            }
+          ]
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US)[k-file].zip",
+          "size": 7343,
+          "compressedSize": 7305,
+          "crc32": "4551962c",
+          "directory": false,
+          "sha256": "8560fbc09132cda12646eadf6987f890e5da27f45ee0519d344797380d2eb7e2",
+          "entries": [
+            {
+              "path": "Asteroids (1981)(Atari)(US)[k-file].atr",
+              "size": 9232,
+              "compressedSize": 7115,
+              "crc32": "7fe2d8e3",
+              "directory": false,
+              "sha256": "c29d1a853cd277fc2b2f4ce8f9213af8f24dd1979a6689aae44ed72783d75483"
+            }
+          ]
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/Asteroids (1981)(Atari)(US)[t].zip",
+          "size": 19379,
+          "compressedSize": 19308,
+          "crc32": "a814a841",
+          "directory": false,
+          "sha256": "649da468e22cec8fd2aabde1a19c88994e5ed84d179ae84137a791dc29f533f8",
+          "entries": [
+            {
+              "path": "Asteroids (1981)(Atari)(US)[t].atr",
+              "size": 65552,
+              "compressedSize": 19161,
+              "crc32": "485bc39c",
+              "directory": false,
+              "sha256": "5a6f16ae7e79f2ff13f9f00b1b042f895830060dba2f1c973074f8b34d5e1bf0"
+            }
+          ]
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/Game Files/readme.txt",
+          "size": 795,
+          "compressedSize": 385,
+          "crc32": "60371513",
+          "directory": false,
+          "sha256": "a2f4d235969874c7c5e7d136b673c5a16da4ad1edd9520946effe8a2f414af0f"
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/How to install.url",
+          "size": 139,
+          "compressedSize": 121,
+          "crc32": "44f2b934",
+          "directory": false,
+          "sha256": "fb1f7498c72aa9612f41a00f485faf71e03f73c256367668ccd541b9e0992ac3"
+        },
+        {
+          "path": "Asteroids_Atari-8-bit_ROM_EN/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        }
+      ],
+      "caveats": [
+        "Contains seven executable-image variants, including alternate, k-file, and trainer labels; select a specific reference revision.",
+        "The base nested archive contains an 8717-byte .xex file. No high-level game source is present."
+      ]
+    },
+    {
+      "id": "breakout-atari-2600",
+      "title": "Breakout",
+      "platform": "Atari 2600",
+      "archive": "Breakout_Atari-2600_ROM_EN.zip",
+      "archiveBytes": 3867,
+      "archiveSHA256": "15e02de8fcb47c31e3aa4081e921796027726ffdb038c0bce7e02f537869e7b2",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Atari 2600 cartridge ROM",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Breakout_Atari-2600_ROM_EN/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Breakout_Atari-2600_ROM_EN/Game Files/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Breakout_Atari-2600_ROM_EN/Game Files/Breakout.bin",
+          "size": 2048,
+          "compressedSize": 1725,
+          "crc32": "3037638c",
+          "directory": false,
+          "sha256": "376323f051c3c373c887fd83abead39d87d844ff283d435f4addbfc1710c6fd5"
+        },
+        {
+          "path": "Breakout_Atari-2600_ROM_EN/Game Files/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "Breakout_Atari-2600_ROM_EN/Game Files/readme.txt",
+          "size": 795,
+          "compressedSize": 385,
+          "crc32": "60371513",
+          "directory": false,
+          "sha256": "a2f4d235969874c7c5e7d136b673c5a16da4ad1edd9520946effe8a2f414af0f"
+        },
+        {
+          "path": "Breakout_Atari-2600_ROM_EN/How to install.url",
+          "size": 138,
+          "compressedSize": 121,
+          "crc32": "04fd7468",
+          "directory": false,
+          "sha256": "855cc6012aebfb6ac65561663eeb5a3de55513f2cff35c03b6de11dbcbe53af0"
+        },
+        {
+          "path": "Breakout_Atari-2600_ROM_EN/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        }
+      ],
+      "caveats": [
+        "Contains a 2048-byte .bin cartridge image, not source code.",
+        "Original paddle control is continuous; trackpad, keyboard, and Xbox stick need explicitly defined sensitivity and acceleration for the native rewrite."
+      ]
+    },
+    {
+      "id": "conflict-2500-apple-ii",
+      "title": "Conflict 2500",
+      "platform": "Apple II",
+      "archive": "Conflict_2500_Apple-II_ROM_EN.zip",
+      "archiveBytes": 24119,
+      "archiveSHA256": "c8755a7bd2594438eadeacf39378b7c347ab324d3e438b79f0ced1d800597200",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Apple II floppy disk image",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Game Files/Conflict 2500 (1981)(Avalon Hill).DO.zip",
+          "size": 23704,
+          "compressedSize": 23374,
+          "crc32": "339e4018",
+          "directory": false,
+          "sha256": "e3a4672e9617d7c41520190dc204498b78a346a1c73224033550ff5e823845ea",
+          "entries": [
+            {
+              "path": "Conflict 2500 (1981)(Avalon Hill).do",
+              "size": 143360,
+              "compressedSize": 23482,
+              "crc32": "b25c6936",
+              "directory": false,
+              "sha256": "343ea10febc0f5fc4773424742a3843be23a6e17ede162beb35c09905494cfe3"
+            }
+          ]
+        },
+        {
+          "path": "OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "ReadMe.txt",
+          "size": 305,
+          "compressedSize": 178,
+          "crc32": "8b1e2387",
+          "directory": false,
+          "sha256": "739082cff7971a04c5e4df669d27a3957229e0bc83aef5e912562bc9bf160197"
+        }
+      ],
+      "caveats": [
+        "The nested archive contains a 143360-byte .do disk image. No high-level game source is present.",
+        "Keyboard commands and the game instruction flow need title-specific mapping; a generic joystick binding cannot establish full playability."
+      ]
+    },
+    {
+      "id": "crossfire-apple-ii",
+      "title": "Crossfire",
+      "platform": "Apple II",
+      "archive": "Crossfire_Apple-II_ROM_EN.zip",
+      "archiveBytes": 16687,
+      "archiveSHA256": "cb1078384d332d7edeff8516ab47d4b4d3ded9070ed8d482417497e8a8396a2e",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Apple II floppy disk image",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Game Files/Crossfire (1981)(On-Line Systems).DO.zip",
+          "size": 16340,
+          "compressedSize": 15942,
+          "crc32": "79880ec5",
+          "directory": false,
+          "sha256": "829b519ba6a17a592ab07764be8f5d5a6251fbe726042194d70401c4e3aeefab",
+          "entries": [
+            {
+              "path": "Crossfire (1981)(On-Line Systems).do",
+              "size": 143360,
+              "compressedSize": 16118,
+              "crc32": "cbce4919",
+              "directory": false,
+              "sha256": "4b83b124dd6d71407509b0cdd2829aad2d549d2e5313803b7434640579cb8d9e"
+            }
+          ]
+        },
+        {
+          "path": "OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "ReadMe.txt",
+          "size": 305,
+          "compressedSize": 178,
+          "crc32": "8b1e2387",
+          "directory": false,
+          "sha256": "739082cff7971a04c5e4df669d27a3957229e0bc83aef5e912562bc9bf160197"
+        }
+      ],
+      "caveats": [
+        "The nested archive contains a 143360-byte .do disk image. No high-level game source is present.",
+        "Movement and shooting may require separate directional inputs; verify the actual keyboard layout and define equivalent Xbox controls against a chosen reference."
+      ]
+    },
+    {
+      "id": "dig-dug-c64",
+      "title": "Dig Dug",
+      "platform": "Commodore 64",
+      "archive": "Dig_Dug_C64_ROM_EN.zip",
+      "archiveBytes": 17832,
+      "archiveSHA256": "030fbf85e7ed3f9f8bc237681700c1a246a43b5ba28dc1371948679d4d6f1059",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Commodore 64 T64 tape container",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Game Files/VERSION.NFO",
+          "size": 1604,
+          "compressedSize": 442,
+          "crc32": "0e060918",
+          "directory": false,
+          "sha256": "14c0e46e6ef46d3f2a09e14fac8b045bfe6fc9cac8096d69d287d8d677628d07"
+        },
+        {
+          "path": "Game Files/DIGDUG.T64",
+          "size": 16647,
+          "compressedSize": 16585,
+          "crc32": "384988ef",
+          "directory": false,
+          "sha256": "8bf2d60112bf40610fcdab6b9b55003fc60de577059457123c28f3ac6939e5da"
+        },
+        {
+          "path": "OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "ReadMe.txt",
+          "size": 305,
+          "compressedSize": 178,
+          "crc32": "8b1e2387",
+          "directory": false,
+          "sha256": "739082cff7971a04c5e4df669d27a3957229e0bc83aef5e912562bc9bf160197"
+        }
+      ],
+      "caveats": [
+        "Contains a 16647-byte DIGDUG.T64 plus an NFO; no high-level game source is present.",
+        "A tape container preserves program data but does not specify the original visual/audio/input behavior by itself."
+      ]
+    },
+    {
+      "id": "nfl-football-intellivision",
+      "title": "NFL Football",
+      "platform": "Mattel Intellivision",
+      "archive": "NFL_Football_Intellivision_ROM_EN.zip",
+      "archiveBytes": 5415,
+      "archiveSHA256": "1487b4bcf72c8e7f64b920005d5381596c8fc834118878bd3906a9b40e9829c3",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Intellivision cartridge ROM",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Game Files/NFL Football (1978)(Mattel).bin",
+          "size": 8192,
+          "compressedSize": 4688,
+          "crc32": "4b91cf16",
+          "directory": false,
+          "sha256": "0347e4a0b7fcf8e0771adff3fa322ed41b9b6c08be685a5d1555b1c4f3223df0"
+        },
+        {
+          "path": "OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "ReadMe.txt",
+          "size": 305,
+          "compressedSize": 178,
+          "crc32": "8b1e2387",
+          "directory": false,
+          "sha256": "739082cff7971a04c5e4df669d27a3957229e0bc83aef5e912562bc9bf160197"
+        }
+      ],
+      "caveats": [
+        "Contains an 8192-byte cartridge .bin, not source code.",
+        "The archive does not include exec.bin or grom.bin system firmware. For native reconstruction, account for game dependencies on original system routines using lawful research material.",
+        "The Intellivision disc, side buttons, and numeric keypad require explicit native Xbox/keyboard mapping. Determine whether the desired mode requires two players/controllers."
+      ]
+    },
+    {
+      "id": "night-driver-c64",
+      "title": "Night Driver",
+      "platform": "Commodore 64",
+      "archive": "Night_Driver_C64_ROM_EN.zip",
+      "archiveBytes": 6895,
+      "archiveSHA256": "f4b34b067a6fd0c954e7de5803aeb88e5b466af4364a1a9a84ca116d4ca41384",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Commodore 64 T64 tape container",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Night_Driver_C64_ROM_EN/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Night_Driver_C64_ROM_EN/Game Files/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Night_Driver_C64_ROM_EN/Game Files/NIGHTDRI.T64",
+          "size": 4197,
+          "compressedSize": 4164,
+          "crc32": "a3602491",
+          "directory": false,
+          "sha256": "0a23798b7adbe3b2269b19820ac7a78c9077cf2c774a2a90be36dac6c03ea6c6"
+        },
+        {
+          "path": "Night_Driver_C64_ROM_EN/Game Files/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "Night_Driver_C64_ROM_EN/Game Files/readme.txt",
+          "size": 795,
+          "compressedSize": 385,
+          "crc32": "60371513",
+          "directory": false,
+          "sha256": "a2f4d235969874c7c5e7d136b673c5a16da4ad1edd9520946effe8a2f414af0f"
+        },
+        {
+          "path": "Night_Driver_C64_ROM_EN/Game Files/VERSION.NFO",
+          "size": 1586,
+          "compressedSize": 423,
+          "crc32": "d9ac672b",
+          "directory": false,
+          "sha256": "cbf494a2d8a9cd50284ff18e139a1c03c99aa4c4564fcbccfac464e8448bcf54"
+        },
+        {
+          "path": "Night_Driver_C64_ROM_EN/How to install.url",
+          "size": 142,
+          "compressedSize": 125,
+          "crc32": "ee096027",
+          "directory": false,
+          "sha256": "0697e3c1df6068a83d7e75b1afe9768c962260547aa965ce94189d06ffc5c39c"
+        },
+        {
+          "path": "Night_Driver_C64_ROM_EN/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        }
+      ],
+      "caveats": [
+        "Contains a 4197-byte NIGHTDRI.T64 plus an NFO; no high-level game source is present.",
+        "Verify the exact C64 edition and steering input curve before specifying native trackpad/stick behavior."
+      ]
+    },
+    {
+      "id": "preppie-atari-8-bit",
+      "title": "Preppie!",
+      "platform": "Atari 8-bit computers",
+      "archive": "Preppie!_Atari-8-bit_ROM_EN.zip",
+      "archiveBytes": 43777,
+      "archiveSHA256": "c9a99331845fd13d6ea3aea30127f759369a29e6b6b204a545f66500d97395be",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Atari executable images in nested ZIP archives",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Game Files/Preppie! (1982)(Adventure International)(US)[a][k-file].zip",
+          "size": 8617,
+          "compressedSize": 8555,
+          "crc32": "6a323766",
+          "directory": false,
+          "sha256": "943250bd88362bed11f2c373a3846ee77d01b5c3f06c60d6f1c0719433a4285c",
+          "entries": [
+            {
+              "path": "Preppie! (1982)(Adventure International)(US)[a][k-file].atr",
+              "size": 15248,
+              "compressedSize": 8349,
+              "crc32": "507c0246",
+              "directory": false,
+              "sha256": "3c8d8714b906ace7a8b5a8210fa289d2bcbb58f6c6495b0ea42e2fb65917d26a"
+            }
+          ]
+        },
+        {
+          "path": "Game Files/Preppie! (1982)(Adventure International)(US)[a].zip",
+          "size": 8287,
+          "compressedSize": 8227,
+          "crc32": "bd0ee635",
+          "directory": false,
+          "sha256": "239df7d7f0a1f744b7c6217951f48db996e28d2e05589980ab7d38777d34824b",
+          "entries": [
+            {
+              "path": "Preppie! (1982)(Adventure International)(US)[a].xex",
+              "size": 14801,
+              "compressedSize": 8035,
+              "crc32": "b4ffd5a1",
+              "directory": false,
+              "sha256": "57e94b45ddc253afb59764e18f6aec23880af316253b940df51909bd4d3dac5e"
+            }
+          ]
+        },
+        {
+          "path": "Game Files/Preppie! (1982)(Adventure International)(US).zip",
+          "size": 12691,
+          "compressedSize": 12642,
+          "crc32": "0ab925f8",
+          "directory": false,
+          "sha256": "760bbcaa0cc297d324bcc0bac2ba5c99544663e71cb9088579979d6265fd359d",
+          "entries": [
+            {
+              "path": "Preppie! (1982)(Adventure International)(US).xex",
+              "size": 23320,
+              "compressedSize": 12445,
+              "crc32": "ca9357e3",
+              "directory": false,
+              "sha256": "802fd22e3b866f001ab1bffae7422c62e906461e6460540761bead260ed710f5"
+            }
+          ]
+        },
+        {
+          "path": "Game Files/Preppie! (1982)(Adventure International)(US)[k-file].zip",
+          "size": 13022,
+          "compressedSize": 12966,
+          "crc32": "0f761f2e",
+          "directory": false,
+          "sha256": "b189f827db9c9120234fdcb64a7982d8cc943c5be4bc022aedeaadeec8eb27b6",
+          "entries": [
+            {
+              "path": "Preppie! (1982)(Adventure International)(US)[k-file].atr",
+              "size": 23824,
+              "compressedSize": 12760,
+              "crc32": "a3366831",
+              "directory": false,
+              "sha256": "28c81eb6adab0ad7e27664583364b0f091658f66001da915f4fc3652ddc0797b"
+            }
+          ]
+        },
+        {
+          "path": "OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "ReadMe.txt",
+          "size": 305,
+          "compressedSize": 178,
+          "crc32": "8b1e2387",
+          "directory": false,
+          "sha256": "739082cff7971a04c5e4df669d27a3957229e0bc83aef5e912562bc9bf160197"
+        }
+      ],
+      "caveats": [
+        "Contains four executable-image variants including alternate and k-file labels. No high-level game source is present.",
+        "The base nested archive contains a 23320-byte .xex file. Select a reference variant before reverse-engineering mechanics."
+      ]
+    },
+    {
+      "id": "space-invaders-supplied-pinball-firmware",
+      "title": "Space Invaders (supplied Bally pinball firmware)",
+      "platform": "Bally AS-2518-35 pinball hardware",
+      "archive": "Space_Invaders_Arcade_ROM_EN.zip",
+      "archiveBytes": 9549,
+      "archiveSHA256": "9c889568097892355e46ba67728d705c4d6a7c3d88aa3064f31bfd8b9042b7a7",
+      "programSourceAvailable": false,
+      "sourceStatus": "Compiled program/media only; no high-level game source found.",
+      "payloadKind": "Pinball controller and sound firmware ROM chips",
+      "originalArchivePreserved": true,
+      "entries": [
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/Game Files/",
+          "size": 0,
+          "compressedSize": 0,
+          "crc32": "00000000",
+          "directory": true
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/Game Files/720-37_6.716",
+          "size": 2048,
+          "compressedSize": 1723,
+          "crc32": "ceff6993",
+          "directory": false,
+          "sha256": "f5d2064f67efe355f0a07ac3d57d9bb8ca323c2347e5e3661db54c5f1031c19b"
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/Game Files/792-07_4.716",
+          "size": 2048,
+          "compressedSize": 1579,
+          "crc32": "787ffd5e",
+          "directory": false,
+          "sha256": "fbdd8531c4e5e561ba8a35fbda2bdf6d56cbae5fb6a5ce126ea14321eab8edfc"
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/Game Files/792-10_1.716",
+          "size": 2048,
+          "compressedSize": 1692,
+          "crc32": "075eba5a",
+          "directory": false,
+          "sha256": "70e79a64b0f03c5f9e0d540dd9292b1e00b32a899ca788e94c2a3fa98b7f0a58"
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/Game Files/792-13_2.716",
+          "size": 2048,
+          "compressedSize": 1731,
+          "crc32": "b87b9e6b",
+          "directory": false,
+          "sha256": "402dfad970a0b78b53f721e930a728ac071d41dc0a8e427cb9f056a33b61d707"
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/Game Files/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/Game Files/readme.txt",
+          "size": 795,
+          "compressedSize": 385,
+          "crc32": "60371513",
+          "directory": false,
+          "sha256": "a2f4d235969874c7c5e7d136b673c5a16da4ad1edd9520946effe8a2f414af0f"
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/How to install.url",
+          "size": 144,
+          "compressedSize": 127,
+          "crc32": "d1ef7020",
+          "directory": false,
+          "sha256": "a4995a2948fe382a229d068a5a968c63b058df28526c584fe06afcb642e87e6d"
+        },
+        {
+          "path": "Space_Invaders_Arcade_ROM_EN/OldGamesDownload.url",
+          "size": 119,
+          "compressedSize": 102,
+          "crc32": "8d712831",
+          "directory": false,
+          "sha256": "34d94d2a60d94acd135fc3b7e6e551b69c152b21275bb2c826c9d78598e4ea0a"
+        }
+      ],
+      "caveats": [
+        "The supplied archive is not the 1978 Taito arcade shooter. All four chip names and CRC32 values match Bally 1980 Space Invaders pinball firmware, MAME set spaceinv.",
+        "The supplied firmware alone cannot create a native pinball playfield, physics, assets, or a shooter. A native pinball rewrite needs additional table reference material; a shooter rewrite needs a correct shooter reference.",
+        "The primary source labels this machine mechanical and not working. No runtime was downloaded or executed."
+      ],
+      "identificationEvidence": {
+        "method": "Exact match of archive entry CRC32 and names to primary MAME source.",
+        "identifiedTitle": "Space Invaders",
+        "manufacturer": "Bally",
+        "year": 1980,
+        "kind": "mechanical pinball",
+        "sourceSetName": "spaceinv",
+        "sourceURL": "https://github.com/mamedev/mame/blob/master/src/mame/pinball/by35.cpp#L1681",
+        "statusSourceURL": "https://github.com/mamedev/mame/blob/master/src/mame/pinball/by35.cpp#L2714",
+        "sourceStatusFlags": [
+          "MACHINE_MECHANICAL",
+          "MACHINE_NOT_WORKING"
+        ],
+        "expectedChips": [
+          {
+            "name": "792-10_1.716",
+            "bytes": 2048,
+            "crc32": "075eba5a"
+          },
+          {
+            "name": "792-13_2.716",
+            "bytes": 2048,
+            "crc32": "b87b9e6b"
+          },
+          {
+            "name": "720-37_6.716",
+            "bytes": 2048,
+            "crc32": "ceff6993"
+          },
+          {
+            "name": "792-07_4.716",
+            "bytes": 2048,
+            "crc32": "787ffd5e"
+          }
+        ]
+      }
+    }
+  ],
+  "platformRewriteResearch": {
+    "Apple II": {
+      "nativeRewriteWork": [
+        "Select the exact disk-image variant and document any crack/loader changes.",
+        "Recover game-specific state transitions, movement/collision rules, scoring, timing, keyboard scanning, and audio generation.",
+        "Reconstruct the intended color/display treatment from reference captures; scaling to Retina does not itself reproduce original display colors."
+      ],
+      "mediaFormatSource": "https://docs.libretro.com/library/applewin/"
+    },
+    "Atari 2600": {
+      "nativeRewriteWork": [
+        "Identify the cartridge revision and separate title-specific logic from hardware-specific display/audio routines.",
+        "Document per-frame updates, collision behavior, random seeds, console switches, and original control sampling.",
+        "Define continuous paddle behavior for Breakout and validate keyboard/trackpad/Xbox curves against reference play."
+      ],
+      "mediaFormatSource": "https://docs.libretro.com/library/stella/"
+    },
+    "Atari 7800": {
+      "nativeRewriteWork": [
+        "Select this cartridge edition as its own reference baseline.",
+        "Recover game rules, rendering priorities, audio behavior, update timing, and joystick/button semantics.",
+        "Compare deterministic scenarios and original reference recordings before asserting fidelity."
+      ],
+      "mediaFormatSource": "https://docs.libretro.com/library/prosystem/"
+    },
+    "Atari 8-bit computers": {
+      "nativeRewriteWork": [
+        "Select one untrained executable variant and identify expected machine configuration.",
+        "Recover game logic and any operating-system calls, interrupt timing, graphics/display changes, sound, and input scanning.",
+        "Document load/start/options commands and provide native keyboard/Xbox equivalents."
+      ],
+      "mediaFormatSource": "https://docs.libretro.com/library/atari800/"
+    },
+    "Commodore 64": {
+      "nativeRewriteWork": [
+        "Inspect the T64 program entries and establish the exact title/revision.",
+        "Recover game rules and dependencies on CPU timing, graphics/sprite/collision behavior, sound, and joystick port selection.",
+        "Verify the original region/timing and steering or movement response from reference material."
+      ],
+      "mediaFormatSource": "https://docs.libretro.com/library/vice/"
+    },
+    "Mattel Intellivision": {
+      "nativeRewriteWork": [
+        "Identify cartridge mapping and dependencies on system routines; firmware is absent from this archive.",
+        "Recover game rules, scoring, display/audio behavior, and original input semantics.",
+        "Design the 16-direction disc/keypad/side-button mapping explicitly and verify required player count."
+      ],
+      "mediaFormatSource": "https://docs.libretro.com/library/freeintv/"
+    },
+    "Bally AS-2518-35 pinball hardware": {
+      "nativeRewriteWork": [
+        "Resolve whether the desired game is Bally pinball or the Taito shooter before any native implementation.",
+        "For pinball, obtain lawful playfield/physics/artwork/audio references; the firmware chips do not supply these.",
+        "For the shooter, obtain a correct reference program and authoritative behavior baseline."
+      ],
+      "primarySource": "https://github.com/mamedev/mame/blob/master/src/mame/pinball/by35.cpp"
+    }
+  }
+}

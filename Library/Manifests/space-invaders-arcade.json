@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "space-invaders-arcade",
+  "title": "Space Invaders",
+  "edition": "Classic arcade shooter",
+  "platform": "Taito arcade",
+  "year": 1978,
+  "genre": "Arcade",
+  "summary": "The classic arcade shooter is the intended game. The supplied archive contains different firmware; the correct shooter reference is still needed.",
+  "sourceArchive": "Space_Invaders_Arcade_ROM_EN.zip",
+  "accent": "B6CBE0",
+  "artwork": "pixel",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Confirmed target: the classic 1978 Taito Space Invaders arcade shooter.",
+    "The supplied Space_Invaders_Arcade_ROM_EN.zip contains Bally 1980 pinball firmware, not the shooter. Its chip names and checksums were matched to primary MAME source; the original bytes remain preserved.",
+    "Obtain a correct, lawful shooter reference before reverse-engineering and validating the native rewrite. No playable implementation exists yet."
+  ],
+  "keyboard": [
+    "Planned: left/right movement and fire after original input timing is documented."
+  ],
+  "controller": [
+    "Planned: D-pad / left stick movement and A to fire; physical controller testing remains required."
+  ]
+}

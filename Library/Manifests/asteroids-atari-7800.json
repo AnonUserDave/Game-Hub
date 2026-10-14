@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "asteroids-atari-7800",
+  "title": "Asteroids",
+  "edition": "Atari 7800",
+  "platform": "Atari 7800",
+  "year": 1986,
+  "genre": "Arcade",
+  "summary": "Your original Atari 7800 edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Asteroids_Atari-7800_ROM_EN.zip",
+  "accent": "BBD4EA",
+  "artwork": "asteroids",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "Contains a 16512-byte .A78 cartridge image, including its format header, not source code.",
+    "This is a distinct game version from the Atari 2600 and 8-bit editions; do not combine their fidelity baselines."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

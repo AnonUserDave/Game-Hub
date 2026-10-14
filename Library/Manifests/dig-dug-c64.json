@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "dig-dug-c64",
+  "title": "Dig Dug",
+  "edition": "Commodore 64",
+  "platform": "Commodore 64",
+  "year": 1983,
+  "genre": "Arcade",
+  "summary": "Your original Commodore 64 edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Dig_Dug_C64_ROM_EN.zip",
+  "accent": "E0C971",
+  "artwork": "pixel",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "Contains a 16647-byte DIGDUG.T64 plus an NFO; no high-level game source is present.",
+    "A tape container preserves program data but does not specify the original visual/audio/input behavior by itself."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

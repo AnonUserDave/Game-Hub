@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "breakout-atari-2600",
+  "title": "Breakout",
+  "edition": "Atari 2600",
+  "platform": "Atari 2600",
+  "year": 1978,
+  "genre": "Arcade",
+  "summary": "Your original Atari 2600 edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Breakout_Atari-2600_ROM_EN.zip",
+  "accent": "E7BE79",
+  "artwork": "breakout",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "Contains a 2048-byte .bin cartridge image, not source code.",
+    "Original paddle control is continuous; trackpad, keyboard, and Xbox stick need explicitly defined sensitivity and acceleration for the native rewrite."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

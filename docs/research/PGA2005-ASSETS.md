@@ -20,14 +20,36 @@ The uncompressed courses-disc executable is PE32 x86, SHA-256 `2229ff0bc5ddbda3d
 
 All 11 extracted Pebble Beach source images were independently compared with Pillow RGBA decoding. After correcting 565-channel expansion to use bit replication, all compared TGA and DDS pixels matched exactly. This validates that sample's decoded pixels, not all formats or gameplay. Converted PNG file bytes are intentionally different from the source image files.
 
-Metadata preserves every raw section/key entry with its line number, repeated pivot keys, raw coordinates, and source hashes. Turnberry has a malformed handicap value (`16.16.16`) that is preserved with a warning; it is not silently corrected. Coordinate units and mapping into game space remain unverified.
+Metadata preserves every raw section/key entry with its line number, repeated pivot keys, raw coordinates, and source hashes. Turnberry has a malformed handicap value (`16.16.16`) that is preserved with a warning; it is not silently corrected. The raw INI importer deliberately leaves coordinates unchanged. Later source-bound analysis corroborated TCR units as inches and recovered authoritative TCR tee/pin arrays; those are the preferred gameplay coordinates.
+
+## Original geometry, libraries and holes
+
+The separate terrain, library and hole readers now recover the version-7 primary course content. `Tools/prepare_pga2005.py` prepares PBL and TUR in one command; its complete local smoke run passed. No installer or original code execution is involved.
+
+| Course | Original vertices | Original triangles |
+| --- | ---: | ---: |
+| Red Mountain Creek | 582,847 | 702,501 |
+| Edgewood | 969,517 | 997,212 |
+| Fancourt | 836,042 | 862,935 |
+| Harbor Town | 729,260 | 627,346 |
+| Emerald Dragon | 539,755 | 613,218 |
+| Troon Monument | 796,909 | 790,469 |
+| Pebble Beach | 925,930 | 843,279 |
+| Sawgrass | 817,136 | 896,375 |
+| Sherwood | 567,344 | 563,768 |
+| St Andrews | 1,026,230 | 1,014,761 |
+| Turnberry | 727,939 | 655,692 |
+
+Every listed course passed the recovered descriptor/group/payload/index bounds checks. PBL/TUR have 181/81 used material IDs mapped to their original TCL DDS textures, original surface records and provenance. Eight real TCL texture payloads independently matched Pillow's RGBA decode exactly across 10,754,048 channels. Authoritative PBL hole data contains 18 holes, 90 tee choices and 180 pins.
+
+The native lab displays the original indexed geometry, UVs and texture links. It remains a partial rendering reconstruction: original shader behavior, water/alpha effects, lighting/fog, LODs, vegetation and animation require further work. See the [REA ledger](PGA2005-REA.md) for original DLL hashes, addresses and exact field evidence.
 
 ## What this does not establish
 
-- TCR terrain and TCL compiled-library structures are not decoded by this importer.
+- The loose-image importer does not decode meshes; separate source-bound readers perform the primary terrain/library reconstruction described above.
 - Tee, pin, pivot, OB and coastline settings are useful metadata, not a terrain reconstruction.
 - Original textures do not by themselves reproduce original lighting, trees, geometry or rendering.
-- No current result demonstrates gameplay equivalence, original animation/audio, complete modes, or performance at 2560 × 1600.
+- No current result demonstrates gameplay equivalence, original animation/audio or complete modes. Native UI checks establish an actual 2560 × 1600 fullscreen target and short FPS snapshots, not sustained performance or whole-game parity.
 
 ## Reproduce
 

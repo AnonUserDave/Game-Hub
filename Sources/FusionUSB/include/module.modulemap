@@ -1,0 +1,4 @@
+module FusionUSB {
+    header "FusionUSB.h"
+    export *
+}

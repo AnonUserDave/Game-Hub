@@ -1,0 +1,121 @@
+{
+  "method": "Independent Pillow DDS decoder vs generated PNG RGBA for original TCL payloads",
+  "samples": [
+    {
+      "texture_index": 0,
+      "name": "strproshop05.tga",
+      "codec": "DXT1",
+      "width": 32,
+      "height": 32,
+      "dds_sha256": "2c56d3dc7d79db8ec82d7f320773ff77d6e971d06936818e5d5b5a16e388688a",
+      "png_rgba_sha256": "2dc025a8fa9df6d84ed0403ecc689e83205a2af298e7130e13f07ac9028e9bac",
+      "pillow_rgba_sha256": "2dc025a8fa9df6d84ed0403ecc689e83205a2af298e7130e13f07ac9028e9bac",
+      "channel_count": 4096,
+      "different_channels": 0,
+      "max_channel_difference": 0,
+      "mean_absolute_channel_difference": 0.0
+    },
+    {
+      "texture_index": 1,
+      "name": "pbl_heavy_rough.tga",
+      "codec": "DXT1",
+      "width": 1024,
+      "height": 1024,
+      "dds_sha256": "da680ca40470478b0026f35f3ea8d0f76b356ff323ce1b41123d57c3d6705bb0",
+      "png_rgba_sha256": "4a7719d214f48e9d48f18b91eab03ed7a2f8caa4205195dfdfbb0dd4acc637c6",
+      "pillow_rgba_sha256": "4a7719d214f48e9d48f18b91eab03ed7a2f8caa4205195dfdfbb0dd4acc637c6",
+      "channel_count": 4194304,
+      "different_channels": 0,
+      "max_channel_difference": 0,
+      "mean_absolute_channel_difference": 0.0
+    },
+    {
+      "texture_index": 2,
+      "name": "pbl_rough.tga",
+      "codec": "DXT1",
+      "width": 1024,
+      "height": 1024,
+      "dds_sha256": "719ae238f5bcd6785c31e3e1eff58d8e4fdf8029f8456ebb2b1dc07a6a82df90",
+      "png_rgba_sha256": "30edb3359baf342ba1adee3176d7e39adf95526ca07013616b2823660aafc5c4",
+      "pillow_rgba_sha256": "30edb3359baf342ba1adee3176d7e39adf95526ca07013616b2823660aafc5c4",
+      "channel_count": 4194304,
+      "different_channels": 0,
+      "max_channel_difference": 0,
+      "mean_absolute_channel_difference": 0.0
+    },
+    {
+      "texture_index": 20,
+      "name": "pbl_ocean.tga",
+      "codec": "DXT1",
+      "width": 512,
+      "height": 512,
+      "dds_sha256": "5224fafb4d752c46c9b62d450221b14da5b5cec525468d43a1f34306b5b649f0",
+      "png_rgba_sha256": "b55c8378fc6516d7eb85338d8c7460827048096cd9c7433d985b2e749242272a",
+      "pillow_rgba_sha256": "b55c8378fc6516d7eb85338d8c7460827048096cd9c7433d985b2e749242272a",
+      "channel_count": 1048576,
+      "different_channels": 0,
+      "max_channel_difference": 0,
+      "mean_absolute_channel_difference": 0.0
+    },
+    {
+      "texture_index": 28,
+      "name": "ea sports.tga",
+      "codec": "DXT1",
+      "width": 256,
+      "height": 256,
+      "dds_sha256": "c00108745da0e8d0f9ed3305dd19bc88858bc39738ce524c70ba8b46736a5651",
+      "png_rgba_sha256": "261420b13a077252ed879f4d4e3a67f95613020a73b4937c2cd04cc2ce75a113",
+      "pillow_rgba_sha256": "261420b13a077252ed879f4d4e3a67f95613020a73b4937c2cd04cc2ce75a113",
+      "channel_count": 262144,
+      "different_channels": 0,
+      "max_channel_difference": 0,
+      "mean_absolute_channel_difference": 0.0
+    },
+    {
+      "texture_index": 188,
+      "name": "hazard texture.tga",
+      "codec": "DXT1",
+      "width": 8,
+      "height": 64,
+      "dds_sha256": "dc6b4f3d397aaa713a120e582330bb0e2d50a4aa0f76c63515d605c4f929833f",
+      "png_rgba_sha256": "c83b2f275177d317f48d4f0970352fa95052fc9ce02b69292f2e206a860b3a33",
+      "pillow_rgba_sha256": "c83b2f275177d317f48d4f0970352fa95052fc9ce02b69292f2e206a860b3a33",
+      "channel_count": 2048,
+      "different_channels": 0,
+      "max_channel_difference": 0,
+      "mean_absolute_channel_difference": 0.0
+    },
+    {
+      "texture_index": 230,
+      "name": "pbl_green_fringe.tga",
+      "codec": "DXT3",
+      "width": 256,
+      "height": 512,
+      "dds_sha256": "78d28a08710f22c6de00d1ded37a4296b56f907083d58c30218442487a8985d6",
+      "png_rgba_sha256": "cbb8a57f7a0df0970d40440415388945d0d0b951e6f106220ffd3cf00babd5bd",
+      "pillow_rgba_sha256": "cbb8a57f7a0df0970d40440415388945d0d0b951e6f106220ffd3cf00babd5bd",
+      "channel_count": 524288,
+      "different_channels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "texture_index": 234,
+      "name": "pbl_teebox_rough1.tga",
+      "codec": "DXT3",
+      "width": 256,
+      "height": 512,
+      "dds_sha256": "222404efb92f46cb0eb6776b0d4ae70d6d3ce8ebecf65497303614a47d50e934",
+      "png_rgba_sha256": "1c41af42e8b576cdde2063af1591645440b7020616052144d24a45d00b9d4350",
+      "pillow_rgba_sha256": "1c41af42e8b576cdde2063af1591645440b7020616052144d24a45d00b9d4350",
+      "channel_count": 524288,
+      "different_channels": 0,
+      "max_channel_difference": 0
+    }
+  ],
+  "pillow_version": "12.3.0",
+  "summary": {
+    "samples": 8,
+    "different_channels": 0,
+    "max_channel_difference": 0
+  }
+}

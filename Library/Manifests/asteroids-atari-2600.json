@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "asteroids-atari-2600",
+  "title": "Asteroids",
+  "edition": "Atari 2600",
+  "platform": "Atari 2600",
+  "year": 1981,
+  "genre": "Arcade",
+  "summary": "Your original Atari 2600 edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Asteroids_Atari-2600_ROM_EN.zip",
+  "accent": "B8DCE8",
+  "artwork": "asteroids",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "Contains an 8192-byte .A26 cartridge image, not source code.",
+    "A native rewrite must reproduce the selected cartridge revision, original game timing, collision rules, console switches, and control response."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

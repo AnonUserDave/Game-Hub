@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "pga-2005",
+  "title": "Tiger Woods PGA Tour 2005",
+  "edition": "Windows original",
+  "platform": "Windows",
+  "year": 2004,
+  "genre": "Golf",
+  "summary": "First priority: preserve the original golf presentation while rebuilding for Apple Silicon and a 2560 × 1600 display.",
+  "sourceArchive": "Tiger_Woods_PGA_Tour_2005_Win_ISO_EN.zip",
+  "accent": "C2EF93",
+  "artwork": "golf",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original Windows disc media is present. It is reference material, not a native game.",
+    "A separate development prototype in this library demonstrates the native rendering and input foundation. It is not a finished PGA Tour 2005 port.",
+    "Original course geometry, player models, animations, game rules, audio, and modes still need reconstruction and validation.",
+    "Compiled Windows media does not include high-level game source. A native rewrite needs substantial reverse engineering, asset decoding, implementation, and comparison with original behavior."
+  ],
+  "keyboard": [
+    "Planned: native keyboard and trackpad controls."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad controls; hardware compatibility must be tested."
+  ]
+}

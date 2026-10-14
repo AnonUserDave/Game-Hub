@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "nfl-football-intellivision",
+  "title": "NFL Football",
+  "edition": "Intellivision",
+  "platform": "Mattel Intellivision",
+  "year": 1978,
+  "genre": "Sports",
+  "summary": "Your original Mattel Intellivision edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "NFL_Football_Intellivision_ROM_EN.zip",
+  "accent": "C8D39B",
+  "artwork": "pixel",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "Contains an 8192-byte cartridge .bin, not source code.",
+    "The archive does not include exec.bin or grom.bin system firmware. For native reconstruction, account for game dependencies on original system routines using lawful research material.",
+    "The Intellivision disc, side buttons, and numeric keypad require explicit native Xbox/keyboard mapping. Determine whether the desired mode requires two players/controllers."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

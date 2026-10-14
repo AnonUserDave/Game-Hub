@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "conflict-2500-apple-ii",
+  "title": "Conflict 2500",
+  "edition": "Apple II",
+  "platform": "Apple II",
+  "year": 1981,
+  "genre": "Strategy",
+  "summary": "Your original Apple II edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Conflict_2500_Apple-II_ROM_EN.zip",
+  "accent": "D6A5A3",
+  "artwork": "pixel",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "The nested archive contains a 143360-byte .do disk image. No high-level game source is present.",
+    "Keyboard commands and the game instruction flow need title-specific mapping; a generic joystick binding cannot establish full playability."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "apple-panic-apple-ii",
+  "title": "Apple Panic",
+  "edition": "Apple II",
+  "platform": "Apple II",
+  "year": 1981,
+  "genre": "Action",
+  "summary": "Your original Apple II edition, preserved for a future native Mac rewrite.",
+  "sourceArchive": "Apple_Panic_Apple-II_ROM_EN.zip",
+  "accent": "CFA6E8",
+  "artwork": "pixel",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Original archive preserved. No native implementation is available yet.",
+    "Contains three disk-image variants labeled as cracks. Neither original high-level source nor an authoritative reference build is included.",
+    "Choose and hash one reference variant before claiming exact behavior; disk-loader and crack modifications can differ."
+  ],
+  "keyboard": [
+    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+  ]
+}

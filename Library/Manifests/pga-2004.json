@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "pga-2004",
+  "title": "Tiger Woods PGA Tour 2004",
+  "edition": "Windows original",
+  "platform": "Windows",
+  "year": 2003,
+  "genre": "Golf",
+  "summary": "The previous golf season, in the native port queue.",
+  "sourceArchive": "Tiger_Woods_PGA_Tour_2004_Disc1_Win_ISO_EN.zip",
+  "accent": "BCD8A8",
+  "artwork": "golf",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "The supplied archive is labeled Disc 1. Required additional discs and assets must be checked before reconstruction.",
+    "Compiled Windows media does not include high-level game source. A native rewrite needs substantial reverse engineering, asset decoding, implementation, and comparison with original behavior."
+  ],
+  "keyboard": [
+    "Planned: native keyboard and trackpad controls."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad controls; hardware compatibility must be tested."
+  ]
+}

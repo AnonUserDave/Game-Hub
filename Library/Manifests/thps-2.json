@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "thps-2",
+  "title": "Tony Hawk’s Pro Skater 2",
+  "edition": "Windows original",
+  "platform": "Windows",
+  "year": 2000,
+  "genre": "Skating",
+  "summary": "Classic skateboarding, queued for a native Mac rewrite.",
+  "sourceArchive": "Tony_Hawks_Pro_Skater_2_Win_ISO_EN.zip",
+  "accent": "DFAB82",
+  "artwork": "skate",
+  "launch": null,
+  "fidelity": "source",
+  "notes": [
+    "Compiled Windows media does not include high-level game source. A native rewrite needs substantial reverse engineering, asset decoding, implementation, and comparison with original behavior."
+  ],
+  "keyboard": [
+    "Planned: native keyboard and trackpad controls."
+  ],
+  "controller": [
+    "Planned: Xbox / extended gamepad controls; hardware compatibility must be tested."
+  ]
+}

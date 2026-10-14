@@ -1,0 +1,126 @@
+[
+  {
+    "dll": "KERNEL32.dll",
+    "symbols": [
+      "GetModuleHandleA",
+      "GetProcAddress",
+      "GlobalAlloc",
+      "GlobalFree",
+      "ExitProcess"
+    ]
+  },
+  {
+    "dll": "ADVAPI32.DLL",
+    "symbols": [
+      "RegCreateKeyA"
+    ]
+  },
+  {
+    "dll": "GDI32.DLL",
+    "symbols": [
+      "CreateCompatibleDC"
+    ]
+  },
+  {
+    "dll": "USER32.DLL",
+    "symbols": [
+      "MessageBoxA"
+    ]
+  },
+  {
+    "dll": "VERSION.DLL",
+    "symbols": [
+      "GetFileVersionInfoA"
+    ]
+  },
+  {
+    "dll": "ENGINE.DLL",
+    "symbols": [
+      "?GetAnimator@CAnimationCommand@@QAEPAVAnimator@@XZ"
+    ]
+  },
+  {
+    "dll": "ANIMATOR.DLL",
+    "symbols": [
+      "?Erase@AnimFrame@@UAEXPAVAnimator@@ABVCRect@@AAV?$CTypedPtrList@VCPtrList@@PAVCRect@@@@@Z"
+    ]
+  },
+  {
+    "dll": "UTILS.DLL",
+    "symbols": [
+      "?D3DXMatrixfDeterminant@d3dx@@YAMPBVCMatrix4@@@Z"
+    ]
+  },
+  {
+    "dll": "DXWRAP.DLL",
+    "symbols": [
+      "?IsModeAvailable@CDisplay@@QAE_NW4ScreenModeE@@W4BitDepthE@@_N@Z"
+    ]
+  },
+  {
+    "dll": "LANGUAGE.DLL",
+    "symbols": [
+      "?GetLongUnits@@YAPBDAAVCString@@M_N@Z"
+    ]
+  },
+  {
+    "dll": "IMAGE.DLL",
+    "symbols": [
+      "?GetBmpInstance@@YAPAUHINSTANCE__@@XZ"
+    ]
+  },
+  {
+    "dll": "COURSEDATA.DLL",
+    "symbols": [
+      "?SetStaticStreams@CTreeSkinMesh@@UAEJPAVRender3D@@H@Z"
+    ]
+  },
+  {
+    "dll": "MSS32.DLL",
+    "symbols": [
+      "_AIL_shutdown@0"
+    ]
+  },
+  {
+    "dll": "SHW32.DLL",
+    "symbols": [
+      "#265"
+    ]
+  },
+  {
+    "dll": "MFC42.DLL",
+    "symbols": [
+      "#6874"
+    ]
+  },
+  {
+    "dll": "MSVCRT.DLL",
+    "symbols": [
+      "_mkdir"
+    ]
+  },
+  {
+    "dll": "OLE32.DLL",
+    "symbols": [
+      "CoInitialize"
+    ]
+  },
+  {
+    "dll": "OLEAUT32.DLL",
+    "symbols": [
+      "#162"
+    ]
+  },
+  {
+    "dll": "MSVCP60.DLL",
+    "symbols": [
+      "?_Grow@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAE_NI_N@Z"
+    ]
+  },
+  {
+    "dll": "IMAGEHLP.DLL",
+    "symbols": [
+      "SymSetOptions"
+    ]
+  }
+]
