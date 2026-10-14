@@ -36,6 +36,17 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+Asteroids2600 now has its own native playing dispatcher and bounded, canonical
+hash-checked21-table/29-mask package. It covers all66 selected variation values,
+packed source movement, ship/two player missiles/saucer, deferred collisions and
+splitting, wave density, thrust/special actions, BCD scores/bonus lives/death and
+alternating players; version/source-bound snapshots validate indexed state.
+25 isolated Swift/seven Python tests and660,000 native frame steps pass on M5.
+The selected movement-table anomaly is retained. There is **no playable hub
+entry yet**; finish original presentation/audio/clocks and session/input/save/
+launch/return integration, then every original/physical/M1 gate. See
+[the2600 ledger](research/ASTEROIDS-2600.md). Original data stays ignored.
+
 Dig Dug's supplied C64 `DIG DUG+` program now has a bounded first-party two-layer
 decoder, `Tools/decode_dig_dug.py`. It recovers a23,044-byte crack intro,19,333
 known relocated packed bytes and the24,576-byte body containing the trainer
