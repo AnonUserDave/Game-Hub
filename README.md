@@ -4,6 +4,8 @@ A native Apple Silicon macOS library for a family game-porting project. The firs
 
 **Status: development, with no completed faithful ports.** The hub catalogs all supplied titles and launches native modules. PGA 2005 has generated practice holes and development gameplay across all 18 holes of each of 11 prepared original courses. The original-course module uses locally decoded terrain, textures, trees, sky, HUD, Tiger golfer assets, audio, camera scripts, a tri-click meter and a Swift reconstruction of ball flight. The Original Course Lab views original hole geometry. Gameplay rules, physics and visuals still need comparison with a running original game; several modes, collisions, weather and presentation features remain incomplete. An ARM64 rewrite cannot have the same executable bytes as an x86 Windows game, so fidelity is tracked through asset, behavior, visual, control and performance comparisons.
 
+Breakout and Conflict2500 now also have playable native **development reconstructions** with per-title setup, controls and save/resume. Breakout uses rules/tables recovered from the supplied cartridge; Conflict uses the recovered BASIC game program. Collision/presentation/timing and several source behaviors remain approximate or unverified. The active goal for every remaining title/edition and its completion gates is recorded in [OTHER_REWRITES.md](docs/OTHER_REWRITES.md). No prototype or decoded original content is a completed faithful rewrite.
+
 ## Run on this Mac
 
 Double-click `Game Hub.app` after building, or run:

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "breakout-native-development",
+  "title": "Breakout · Native Development",
+  "edition": "Atari 2600 rules reconstruction",
+  "platform": "Native Mac development",
+  "year": 1978,
+  "genre": "Arcade",
+  "summary": "Native development gameplay with the supplied cartridge's recovered variations, score tables, velocity tiers, five-ball games and team rules. Collision and presentation remain approximations awaiting original comparison.",
+  "sourceArchive": "Breakout_Atari-2600_ROM_EN.zip",
+  "accent": "E5B97A",
+  "artwork": "breakout",
+  "launch": { "kind": "builtin", "builtin": "breakout-native-development", "arguments": [] },
+  "fidelity": "prototype",
+  "notes": [
+    "Source identity: selected 2048-byte cartridge, SHA-256 376323f051c3c373c887fd83abead39d87d844ff283d435f4addbfc1710c6fd5.",
+    "12 original variations, 1–4 players, two difficulty switches and native save/resume. One gamepad controls the first active paddle; other paddles use separate keyboard pairs.",
+    "Native geometric collisions, colors and paddle sampling need original-game comparison; original sound is not implemented. This is not a completed faithful rewrite.",
+    "Development checks ran on the M5 Pro with 24 GB. Mandatory M1 Air / 8 GB performance and physical Fusion Pro input acceptance remain unverified."
+  ],
+  "keyboard": ["Drag or Left/Right: first active paddle", "Other paddles: A/D, J/L, F/H", "Space: serve; hold to catch, release to launch", "Escape: pause"],
+  "controller": ["Left stick / D-pad: first active paddle", "A: serve; hold to catch, release to launch", "B / Menu: pause", "Additional controllers and physical Fusion Pro transitions await validation"]
+}

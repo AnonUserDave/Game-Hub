@@ -1,5 +1,21 @@
 # Native checkpoint validation
 
+## Remaining-rewrite checkpoint on the son's M5
+
+2026-10-13, M5 Pro MacBook Pro / 24 GB / macOS 26.3, native ARM64. No original game was executed or emulated. No M1 performance or physical controller acceptance was performed.
+
+| Check | Evidence and limits |
+| --- | --- |
+| Build and unit checks | Initial combined suite: 110 Swift XCTest, 3 expected skips (two opt-in snapshots and no audio output). Final rule/input corrections: 12 focused XCTest pass. Final Python suite after the collision allocation fix: 166 tests pass. Native ARM64 build passes; final small layout edits still await rebuilt UI check. |
+| Breakout native UI | Launch/setup, short Space tap serving, held right-paddle input, Escape pause, save and return to library. Reopen/resume restored team 1, score 0 and four balls, paused. These are native development checks, not cartridge comparisons. |
+| Conflict 2500 native UI | Scenario setup, 13×9 map and original prepared tactical symbol displayed. Keyboard F fired with power 100; E advanced to turn 1; energy 22531 became 17531. Escape disabled game commands. Save/return/reopen restored turn 1, energy 17531 and tactical view. |
+| Input transitions | Synthetic tests cover focus loss/held return, controller identity changes/disconnection and action suppression during pause/setup until release. Short keyboard taps remain queued until one simulation tick. No physical Fusion Pro or simultaneous multiplayer devices tested. |
+| Static source recovery | Selected DOS3.3/T64/XEX/ROM containers verify archive/member identities and ranges before decoding. Original game data/listings/art stay in ignored Library paths. Conflict's BASIC program is recoverable source, correcting the initial inventory claim. |
+| Windows source data | Offline PGA2004/THPS2/THUG/THUG2 preparation and structural collision tests passed. These are asset-loader checks; no skating gameplay/rendering or PGA2004 runtime is established. |
+| Runtime limits | Breakout clock uses fixed 60 Hz steps, bounded stall catch-up and no progression while unfocused/paused. Saves are size/version/source fenced. Native collision package and offline asset bounds have malformed-input tests. No sustained FPS, physical-footprint/thermal/swap or original-timing claim follows from these functional checks. |
+
+All completion gates remain in [OTHER_REWRITES.md](OTHER_REWRITES.md). The owner's M1 remains paused; M5 observations cannot establish release acceptance.
+
 ## Owner's M1 checkpoint
 
 2026-10-13, original development M1 MacBook Air / macOS 15.6. This is a development checkpoint, not certification of an original-game rewrite.

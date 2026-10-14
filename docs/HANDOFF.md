@@ -16,6 +16,10 @@ The decoded Tiger 01 mesh, textures, clubs and swing clips now load on a worker 
 
 The 2026-10-13 follow-up routes the round's selected difficulty into original-course launch and condition calculations, rechecks external ARM64 builds immediately before launch, and gates PGA keyboard/controller actions on the game window's focus. Static research mapped all 40 weather/time render presets, including per-hole blending and fifth-slot clamping ([research note](research/PGA2005-WEATHER-TIME.md)); the native scene has not applied those presets. The Swift/Python suites passed on the M5 development machine, but no live Fusion Pro transition, original-game comparison, or M1 acceptance was performed for this follow-up.
 
+The owner then requested an **active goal to complete all 16 other supplied titles/editions**. Continue that goal using [OTHER_REWRITES.md](OTHER_REWRITES.md); PGA2005's unfinished work remains separately recorded below. Breakout and Conflict 2500 now have source-derived native development gameplay with bounded saves and focused input history. Breakout live M5 checks verified short-tap serve, paddle input, pause/save/return and restored four-ball state. Conflict checks verified scenario/map/tactical display, fire/turn commands, pause/save/return and restored turn 1/energy 17531/tactical view. Both remain prototypes; source comparison and M1 acceptance are open.
+
+`prepare_retro_media.py` decodes selected DOS3.3/T64/XEX/container data without execution. It recovered the actual309-line Conflict BASIC program, correcting the previous no-source claim; original listings/symbols stay ignored. Source-backed Asteroids arithmetic/control primitives and Windows PKR/PRE/CAB/collision-data tools are separate research foundations and do not register playable titles. Apple Panic, Crossfire and Night Driver reconstruction is underway. Keep prepared original JSON as well as binaries/textures ignored (`Library/Prepared/`, `Library/Imported/`, `Library/SourceMedia/`).
+
 ## Development environments
 
 **Son's M5 (current).** macOS 26.3, Xcode at `/Applications/Xcode.app` (Swift 6.3.1), Homebrew Python 3 with Pillow, Homebrew `unshield` 1.6.2 and OpenJDK 21/26. REA 6.4.0 is the global MCP server (`/opt/homebrew/bin/rea`), with a working Ghidra provider at `~/Desktop/Tools/ghidra_12.1.2`. REA's Ghidra session timed out during Engine.dll auto-analysis; direct `Tools/analyze_pga2005_ghidra.py` headless runs worked (88 s auto-analysis). Extracted DLLs are in the ignored `Library/SourceMedia/pga2005/engine/Executable`; the Ghidra database is in `Library/Research/ghidra-projects/pga2005-physics`. Git identity: the son's own.
@@ -28,7 +32,8 @@ The 2026-10-13 follow-up routes the round's selected difficulty into original-co
 | --- | --- |
 | Hub UI, library and native launch | `Sources/GameHub/HubView.swift`, `GameModel.swift`, `DetailSheets.swift` |
 | Controller discovery/navigation | `Sources/GameHub/ControllerManager.swift`, `FusionController.swift`, `Sources/FusionUSB/` |
-| Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-original-courses`) |
+| Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-original-courses`, `breakout-native-development`, `conflict2500-native-development`) |
+| Retro native development | `BreakoutCore.swift`, `ConflictCore.swift`, `RetroGameViews.swift`; per-title source limits in `docs/research/BREAKOUT.md` and `CONFLICT2500.md` |
 | Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, multiplayer turns, game types, snapshots, event queue), `PGABallFlight.swift` (reconstructed original flight and terrain/frame adapter), `PGATerrain.swift` (terrain protocol, original surface properties and sound ids), `PGASwingMeter.swift` (original tri-click meter) |
 | Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round setup and store, course catalog), `PGAOriginalCollision.swift` (CSR floor index) |
 | Golf rendering, HUD and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAOriginalHUD.swift` (original HUD art, meter dial, scorecard, loading screen, round setup), `PGAView.swift`, `PGAMetalView.swift` |
@@ -60,7 +65,7 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
 6. **Presentation.** Replays (`Replay.stn` chances are decoded; filming is not), effects from `anim.stn` (sand, splash, divots), commentary and music.
 7. **Memory and performance.** Keep the 3 GB budget. Original scenery submits 14–75 draws per Pebble tee view on the M5; these are draw counts, not frame-time evidence. Consider memoryless MSAA/depth attachments and compressed (BC1/BC2) textures instead of RGBA8 PNGs.
 8. **Controller.** Validate every action, held buttons across pause and hole transitions, focus loss and unplug/replug on the Fusion Pro.
-9. **Remaining titles**, individually. PGA 2004 has only disc 1. The intended Space Invaders is the Taito shooter, but the archive holds Bally pinball firmware.
+9. **Remaining titles**, individually, are now the owner's active goal: see [OTHER_REWRITES.md](OTHER_REWRITES.md). Finish source-derived runtime loops before marking titles playable, then close per-title source/content/input/comparison and M1 gates. PGA2004 has only disc1 (missing cabinet volume3); the intended Space Invaders is the Taito shooter, but the archive holds Bally pinball firmware. A text request for the locations of the missing media/reference has been sent while independent implementation continues.
 
 ## Verification commands
 

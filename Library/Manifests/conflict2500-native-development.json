@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "conflict2500-native-development",
+  "title": "Conflict 2500 · Native Development",
+  "edition": "Apple II BASIC rules reconstruction",
+  "platform": "Native Mac development",
+  "year": 1981,
+  "genre": "Strategy",
+  "summary": "Native translation of the supplied disk's recovered BASIC fleet rules: scenario setup, galactic and tactical views, firing, course changes, docking, mines, enemy turns and victory. Native RNG and presentation await original comparison.",
+  "sourceArchive": "Conflict_2500_Apple-II_ROM_EN.zip",
+  "accent": "A6DB91",
+  "artwork": "native",
+  "launch": { "kind": "builtin", "builtin": "conflict2500-native-development", "arguments": [] },
+  "fidelity": "prototype",
+  "notes": [
+    "Rules recovered from the 11919-byte CONFLICT Applesoft program, SHA-256 083826876c216b210d2ad779160711c03d7d29be0fa178a3a243066993fcb16a.",
+    "Run python3 Tools/prepare_retro_media.py for the five original tactical symbols; a clean clone uses simple point symbols. Original media remain local.",
+    "Native save/resume preserves this reconstruction's RNG and scenario. Applesoft RNG/40-bit arithmetic, original display/timing, firing animation and multi-ship docking prompts remain unverified or approximated.",
+    "Development checks ran on the M5 Pro with 24 GB. Mandatory M1 Air / 8 GB performance and physical Fusion Pro input acceptance remain unverified."
+  ],
+  "keyboard": ["F: fire using angle/power fields", "N: next ship; E: end turn; V: change view", "S: set mine; A: arm mine", "Use on-screen course and docking fields; Escape: pause"],
+  "controller": ["X: fire; A: next ship; Y: end turn", "RB: change view; B / Menu: pause", "Course/docking fields use keyboard/trackpad; physical Fusion Pro transitions await validation"]
+}
