@@ -409,6 +409,9 @@ struct PGARoundSetup: Codable, Equatable {
     /// Optional so saves from before game types decode; nil is stroke play.
     var gameType: PGAGameType? = nil
     var type: PGAGameType { gameType ?? .stroke }
+    /// Tri-click meter difficulty; optional so older saves decode.
+    var difficulty: PGATriClickMeter.Level? = nil
+    var level: PGATriClickMeter.Level { difficulty ?? .intermediate }
 
     static let teeNames = ["Forward", "Middle", "Back", "Championship", "Tips"]
 

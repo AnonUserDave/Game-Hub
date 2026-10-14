@@ -149,6 +149,7 @@ final class PGAGameSession: ObservableObject {
         var game = PGASimulation(course: course, terrains: original.terrains,
                                  playerNames: chosen.players.map { $0.trimmingCharacters(in: .whitespaces) })
         if resume, let snapshot = savedRound?.snapshot { try? game.restore(snapshot) }
+        game.meterLevel = chosen.level
         setup = chosen
         simulation = game
         awaitingSetup = false
@@ -456,6 +457,10 @@ final class PGAGameSession: ObservableObject {
             else if pressed("LB") { audio?.play("interface.click"); setup.teeIndex = max(0, setup.teeIndex - 1) }
             else if pressed("RB") { audio?.play("interface.click"); setup.teeIndex = min(4, setup.teeIndex + 1) }
             else if pressed("X") { audio?.play("interface.click"); setup.pins = setup.pins == .standard ? .varied : .standard }
+            else if pressed("Left") || pressed("Right") {
+                audio?.play("interface.click")
+                setup.difficulty = PGATriClickMeter.Level(rawValue: max(0, min(3, setup.level.rawValue + (pressed("Left") ? -1 : 1))))
+            }
             else if pressed("Menu") || pressed("B") { exit() }
             return
         }

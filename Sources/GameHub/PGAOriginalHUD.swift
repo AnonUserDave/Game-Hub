@@ -38,26 +38,18 @@ final class PGAHUDImages {
     }
 }
 
-/// The original circular three-click meter: the lit ring (swingon) fills
-/// clockwise from 6 o'clock to 12 o'clock for 0-100% power over the dimmed
-/// ring (swingoff); during the accuracy phase a marker returns through 6
-/// o'clock, where a straight strike lands. The marker timing comes from the
-/// native simulation; the original meter speed is not decoded.
+/// The original tri-click dial (SwingMeterFrame::Draw 0x10085201): the lit
+/// art (swingon) covers the arc from 4:30 clockwise to the marker over the
+/// unlit art (swingoff), pivoting at the texture centre; ticks stay where the
+/// clicks landed (green exact, white under, red overswing). Marker motion is
+/// the original TriClickMeter (PGATriClickMeter).
 struct PGAOriginalSwingMeter: View {
     let simulation: PGASimulation
     let images: PGAHUDImages
 
-    private var power: Double {
+    private var meter: PGATriClickMeter? {
         switch simulation.phase {
-        case .power: return simulation.meter
-        case .aiming: return 0
-        default: return simulation.shotPower
-        }
-    }
-    private var accuracy: Double? {
-        switch simulation.phase {
-        case .accuracy: return simulation.meter
-        case .airborne, .rolling: return simulation.shotAccuracy
+        case .power, .accuracy, .airborne, .rolling: return simulation.swingMeter
         default: return nil
         }
     }
@@ -65,48 +57,51 @@ struct PGAOriginalSwingMeter: View {
     var body: some View {
         GeometryReader { geometry in
             let size = min(geometry.size.width, geometry.size.height)
+            let marker = meter?.angle ?? PGATriClickMeter.rest
             ZStack {
                 if let off = images.image("swing-off") { Image(nsImage: off).resizable().interpolation(.high) }
-                if let on = images.image("swing-on"), power > 0 {
+                if let on = images.image("swing-on"), marker < PGATriClickMeter.litStart {
                     Image(nsImage: on).resizable().interpolation(.high)
-                        .mask(PGAMeterWedge(fraction: power).fill(.white))
+                        .mask(PGAMeterSector(from: marker, to: PGATriClickMeter.litStart).fill(.white))
                 }
                 Canvas { context, canvas in
-                    let center = CGPoint(x: canvas.width / 2, y: canvas.height / 2), radius = canvas.width / 2
-                    func ray(_ degrees: Double, _ inner: Double, _ outer: Double) -> Path {
-                        let a = degrees * .pi / 180
+                    guard let meter else { return }
+                    let unit = canvas.width / 256
+                    let pivot = CGPoint(x: 128 * unit, y: 128 * unit), ring = CGPoint(x: 126 * unit, y: 135 * unit)
+                    // Radial tick from radius 76 out to the painted ring (radius 96 about a centre 2 left, 7 down).
+                    func tick(_ degrees: Double, _ kind: PGATriClickMeter.Tick) {
+                        let a = degrees * .pi / 180, d = CGPoint(x: cos(a), y: -sin(a))
+                        let o = CGPoint(x: pivot.x - ring.x, y: pivot.y - ring.y), r = 96 * unit
+                        let b = o.x * d.x + o.y * d.y, outer = -b + sqrt(max(0, b * b - (o.x * o.x + o.y * o.y - r * r)))
                         var path = Path()
-                        path.move(to: CGPoint(x: center.x + cos(a) * radius * inner, y: center.y + sin(a) * radius * inner))
-                        path.addLine(to: CGPoint(x: center.x + cos(a) * radius * outer, y: center.y + sin(a) * radius * outer))
-                        return path
+                        path.move(to: CGPoint(x: pivot.x + d.x * 76 * unit, y: pivot.y + d.y * 76 * unit))
+                        path.addLine(to: CGPoint(x: pivot.x + d.x * outer, y: pivot.y + d.y * outer))
+                        let color: Color = kind == .exact ? Color(red: 0.2, green: 0.95, blue: 0.3) : kind == .over ? Color(red: 1, green: 0.2, blue: 0.15) : .white
+                        context.stroke(path, with: .color(color), style: StrokeStyle(lineWidth: 4 * unit))
                     }
-                    if simulation.phase == .power {
-                        context.stroke(ray(90 + 180 * power, 0.56, 0.86), with: .color(.white), style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    }
-                    if let accuracy {
-                        // -1 (early, left of 6 o'clock) through 0 (straight) to +1 (late).
-                        context.stroke(ray(90 - 45 * accuracy, 0.54, 0.9), with: .color(.white), style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                    }
+                    if let kind = meter.powerTick, let angle = meter.powerClickAngle ?? (meter.missedPower ? meter.powerAngle : nil) { tick(angle, kind) }
+                    if let kind = meter.accuracyTick { tick(meter.accuracyAngle, kind) }
                 }
             }.frame(width: size, height: size).position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         }
     }
 }
 
-/// Wedge from 6 o'clock clockwise by `fraction` of a half turn (y points down).
-struct PGAMeterWedge: Shape {
-    var fraction: Double
+/// Sector between two original meter angles (degrees, 0 = 3 o'clock,
+/// counter-clockwise), pivoting at the rect centre; y points down on screen.
+struct PGAMeterSector: Shape {
+    var from: Double
+    var to: Double
     func path(in rect: CGRect) -> Path {
-        let center = CGPoint(x: rect.midX, y: rect.midY), radius = rect.width / 2 * 1.02
+        let center = CGPoint(x: rect.midX, y: rect.midY), radius = rect.width / 2 * 1.42
+        func point(_ degrees: Double) -> CGPoint {
+            let a = degrees * .pi / 180
+            return CGPoint(x: center.x + cos(a) * radius, y: center.y - sin(a) * radius)
+        }
         var path = Path()
         path.move(to: center)
-        let end = 90 + 180 * max(0, min(1, fraction))
-        for degrees in stride(from: 90.0, through: end, by: 1.5) {
-            let a = degrees * .pi / 180
-            path.addLine(to: CGPoint(x: center.x + cos(a) * radius, y: center.y + sin(a) * radius))
-        }
-        let a = end * .pi / 180
-        path.addLine(to: CGPoint(x: center.x + cos(a) * radius, y: center.y + sin(a) * radius))
+        for degrees in stride(from: from, to: to, by: 2) { path.addLine(to: point(degrees)) }
+        path.addLine(to: point(to))
         path.closeSubpath()
         return path
     }
@@ -304,6 +299,20 @@ struct PGARoundSetupView: View {
                         }
                     }
                 }
+                section("SWING METER (TRI-CLICK)") {
+                    HStack(spacing: 6) {
+                        ForEach(PGATriClickMeter.Level.allCases, id: \.self) { level in
+                            Button { session.setup.difficulty = level } label: {
+                                VStack(spacing: 3) {
+                                    Text(level.title).font(.system(size: 11, weight: .semibold))
+                                    Text("\(level.rate)°/s").font(.system(size: 9, design: .monospaced)).opacity(0.75)
+                                }.frame(maxWidth: .infinity).padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.level == level ? gold : .white.opacity(0.08)))
+                                    .foregroundStyle(session.setup.level == level ? ink : .white)
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }
                 HStack(spacing: 12) {
                     Button("Start round") { session.startRound() }
                         .buttonStyle(.borderedProminent).tint(gold).foregroundStyle(ink).keyboardShortcut(.defaultAction)
@@ -315,7 +324,7 @@ struct PGARoundSetupView: View {
                     Spacer()
                     Button("Return to hub") { session.exit() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.7))
                 }
-                Text("Return: start · Controller: A start · Y resume · LB/RB tees · X pins · B hub")
+                Text("Return: start · Controller: A start · Y resume · LB/RB tees · X pins · D-pad meter level · B hub")
                     .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
             }
             .padding(26).frame(width: 700)
