@@ -90,6 +90,8 @@ struct PGACameraDirector {
     private var estimatedLanding: PGAVector?
     private var shotDistance = 0.0
     private var flightIndex = 2
+    private var shortApproach = false
+    private var shortApproachHold = 0.0
 
     init?(root: URL) {
         let url = root.appendingPathComponent("Library/Imported/pga2005/cameras.json")
@@ -116,6 +118,7 @@ struct PGACameraDirector {
         resetView()
         previousMode = -1; previousHole = -1; previousPlayer = -1
         previousPhase = .aiming; shotOrigin = nil; estimatedLanding = nil; flightIndex = 2
+        shortApproach = false; shortApproachHold = 0
     }
 
     private mutating func resetView() {
@@ -150,6 +153,7 @@ struct PGACameraDirector {
             fire(event: 19, script: script, simulation: simulation)
         } else if newMode {
             resetView()
+            shortApproach = false; shortApproachHold = 0
             previousMode = mode
             if simulation.phase.inMotion { fire(event: 3, script: script, simulation: simulation) }
             else if simulation.phase == .holed { fire(event: 29, script: script, simulation: simulation) }
@@ -158,7 +162,13 @@ struct PGACameraDirector {
 
         if !previousPhase.inMotion && simulation.phase.inMotion {
             shotOrigin = simulation.ball
-            shotDistance = max(1, simulation.targetDistance)
+            shortApproach = mode == 0 && (simulation.club == .wedge || simulation.club == .sandWedge) &&
+                (simulation.shotPower <= 0.65 || simulation.distanceToCup <= 50)
+            shortApproachHold = 0
+            // A partial wedge's full-club range puts source landing cameras far
+            // beyond the actual chip and can produce a reverse view of empty turf.
+            let power = shortApproach ? simulation.shotPower * simulation.shotPower : 1
+            shotDistance = max(1, simulation.targetDistance * power)
             estimatedLanding = simulation.ball + simulation.direction * shotDistance
             flightIndex = 2
             fire(event: 3, script: script, simulation: simulation)
@@ -176,6 +186,7 @@ struct PGACameraDirector {
             }
         }
         if previousPhase.inMotion && !simulation.phase.inMotion {
+            if shortApproach { shortApproachHold = 1.25 }
             fire(event: 22, script: script, simulation: simulation)
             if simulation.phase == .aiming && !turnChanged {
                 shotOrigin = nil; estimatedLanding = nil
@@ -194,6 +205,18 @@ struct PGACameraDirector {
 
         if currentPose == nil { currentPose = fallback(simulation) }
         advance(simulation, delta: max(0, min(0.1, delta)))
+        if shortApproach && (simulation.phase.inMotion || shortApproachHold > 0) {
+            if !simulation.phase.inMotion { shortApproachHold -= max(0, min(0.1, delta)) }
+            let pose = shortApproachPose(simulation)
+            currentPose = pose
+            return pose
+        }
+        if shortApproach {
+            shortApproach = false
+            resetView()
+            fire(event: 19, script: script, simulation: simulation)
+            advance(simulation, delta: 0)
+        }
         return currentPose
     }
 
@@ -295,6 +318,18 @@ struct PGACameraDirector {
                     target: ball + PGAVector(x: 0, y: 1, z: 0), fieldOfView: 45)
     }
 
+    /// Keep a chip and its nearby landing area ahead of the camera. This
+    /// follows the actual ball rather than a speculative full-wedge landing.
+    private func shortApproachPose(_ simulation: PGASimulation) -> Pose {
+        let ball = simulation.ball, direction = simulation.direction
+        let ground = simulation.groundHeight(x: ball.x, z: ball.z, near: ball.y)
+        let position = PGAVector(x: ball.x - direction.x * 7, y: ground + 3.5,
+                                 z: ball.z - direction.z * 7)
+        let target = PGAVector(x: ball.x + direction.x * 4, y: max(ball.y, ground + 0.5),
+                               z: ball.z + direction.z * 4)
+        return Pose(position: position, target: target, fieldOfView: 60)
+    }
+
     private func resolve(_ anchor: Anchor, simulation: PGASimulation) -> PGAVector {
         let ball = simulation.ball, golfer = shotOrigin ?? ball, hole = simulation.hole
         let base: PGAVector
@@ -319,7 +354,8 @@ struct PGACameraDirector {
     private func facts(for simulation: PGASimulation) -> [UInt32] {
         var result = [UInt32](repeating: 0, count: 32)
         result[0] = UInt32(PGAAudioRules.clubMask(simulation.club))
-        result[1] = simulation.club == .putter ? 2 : (simulation.strokes <= 1 ? 0x401 : 0x400)
+        result[1] = simulation.club == .putter ? 2 : shortApproach ? (simulation.club == .sandWedge ? 0x800 : 0x4)
+            : (simulation.strokes <= 1 ? 0x401 : 0x400)
         let origin = shotOrigin ?? simulation.ball
         let originSample = simulation.ground(x: origin.x, z: origin.z, ceiling: origin.y + 0.3)
         let originFlags = originSample?.properties?.flags ?? PGAAudioRules.flags(for: originSample?.surface ?? simulation.lie)

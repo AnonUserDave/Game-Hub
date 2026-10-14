@@ -199,7 +199,7 @@ enum PGAOriginalSceneBuilder {
 /// A top-down minimap rendered from the hole's own triangles, rotated so the
 /// tee is at the bottom, the pin at the top and the player's right on the right.
 struct PGAHoleMap {
-    static let size = CGSize(width: 175, height: 210)
+    static let size = CGSize(width: 210, height: 252)
     var image: CGImage?
     var center: PGAVector
     var angle: Double
@@ -214,6 +214,13 @@ struct PGAHoleMap {
         let along = d.x * forward.x + d.z * forward.z, across = d.x * right.x + d.z * right.z
         let factor = size.width / Self.size.width
         return CGPoint(x: size.width / 2 + across * scale * factor, y: size.height / 2 - along * scale * factor)
+    }
+
+    /// Keep navigation markers inside the clipped map when a shot leaves the
+    /// authored centerline framing. The map geometry itself stays fixed.
+    static func visiblePoint(_ point: CGPoint, in size: CGSize, inset: CGFloat = 11) -> CGPoint {
+        CGPoint(x: min(size.width - inset, max(inset, point.x)),
+                y: min(size.height - inset, max(inset, point.y)))
     }
 
     static func color(_ surface: PGASurface) -> (CGFloat, CGFloat, CGFloat) {

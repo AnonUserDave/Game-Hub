@@ -341,6 +341,9 @@ struct PGASimulation {
         }
         return club.estimatedCarry * factor * factor
     }
+    /// The displayed aim point shared by the 3D marker and hole overview.
+    /// It shows direction and club range, not the shot's predicted landing.
+    var aimPoint: PGAVector { ball + direction * min(targetDistance, distanceToCup + 45) }
 
     /// `terrains` supplies one sampler per hole. Omitted, the generated holes'
     /// analytic height fields are used.

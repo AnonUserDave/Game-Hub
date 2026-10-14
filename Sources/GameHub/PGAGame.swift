@@ -747,8 +747,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         ballShadow.position = SCNVector3(position.x, ground + (originalBall ? 0.003 : 0.025), position.z)
         ballShadow.scale = originalBall ? SCNVector3(0.25, 1, 0.25) : SCNVector3(1, 1, 1)
         ballShadow.isHidden = ball.isHidden
-        let targetDistance = min(simulation.targetDistance, simulation.distanceToCup + 45)
-        let target = position + direction * targetDistance
+        let target = simulation.aimPoint
         aimMarker.position = SCNVector3(target.x, simulation.groundHeight(x: target.x, z: target.z, near: position.y + 30) + 0.12, target.z)
         aimMarker.isHidden = simulation.phase.inMotion || simulation.phase == .holed || simulation.phase == .roundComplete
         aimMarker.scale = simulation.club == .putter ? SCNVector3(0.4, 1, 0.4) : SCNVector3(1, 1, 1)

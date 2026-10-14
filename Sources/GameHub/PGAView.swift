@@ -238,10 +238,14 @@ struct PGAGameView: View {
         VStack(spacing: 8) {
             HStack { Text("HOLE OVERVIEW").tracking(1); Spacer(); Text("\(game.holeIndex + 1) / \(game.course.holes.count)").foregroundStyle(pgaGold) }
                 .font(.system(size: 8, weight: .semibold, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
-            PGAMinimap(simulation: game, map: session.holeMap).frame(width: 175, height: 210).clipShape(RoundedRectangle(cornerRadius: 6))
-            HStack { Text(session.isOriginal ? "ORIGINAL GEOMETRY" : "PRACTICE COURSE"); Spacer(); Text("● BALL").foregroundStyle(.white) }
-                .font(.system(size: 7, weight: .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.45))
-        }.padding(12).frame(width: 200).background(panel)
+            PGAMinimap(simulation: game, map: session.holeMap).frame(width: 210, height: 252).clipShape(RoundedRectangle(cornerRadius: 6))
+            HStack(spacing: 8) {
+                Text("● BALL").foregroundStyle(.white)
+                Text("◎ AIM").foregroundStyle(pgaGold)
+                Text("◆ PIN").foregroundStyle(pgaGold)
+                Spacer(minLength: 0)
+            }.font(.system(size: 8, weight: .semibold, design: .monospaced))
+        }.padding(13).frame(width: 238).background(panel)
     }
 
     private var bottomBar: some View {
@@ -401,16 +405,7 @@ private struct PGAMinimap: View {
             if let image = map.image { context.draw(Image(decorative: image, scale: 2), in: CGRect(origin: .zero, size: size)) }
             var path = Path(); path.addLines(simulation.hole.centerline.map { map.point($0, in: size) })
             context.stroke(path, with: .color(.white.opacity(0.25)), style: StrokeStyle(lineWidth: 1, dash: [2, 3]))
-            let cup = map.point(simulation.hole.cup, in: size)
-            context.fill(Path(ellipseIn: CGRect(x: cup.x - 2.5, y: cup.y - 2.5, width: 5, height: 5)), with: .color(pgaGold))
-            let ball = map.point(simulation.ball, in: size)
-            if !simulation.phase.inMotion {
-                var aim = Path(); aim.move(to: ball)
-                aim.addLine(to: map.point(simulation.ball + simulation.direction * min(simulation.targetDistance, simulation.distanceToCup + 30), in: size))
-                context.stroke(aim, with: .color(pgaGold.opacity(0.85)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-            }
-            let ballPath = Path(ellipseIn: CGRect(x: ball.x - 3.5, y: ball.y - 3.5, width: 7, height: 7))
-            context.fill(ballPath, with: .color(.white)); context.stroke(ballPath, with: .color(pgaInk), lineWidth: 1)
+            drawMarkers(context, size: size) { map.point($0, in: size) }
         }
     }
 
@@ -433,14 +428,42 @@ private struct PGAMinimap: View {
             }
             let cup = point(hole.cup)
             context.fill(Path(ellipseIn: CGRect(x: cup.x - hole.greenRadius * scale, y: cup.y - hole.greenRadius * scale, width: hole.greenRadius * scale * 2, height: hole.greenRadius * scale * 2)), with: .color(Color(hex: "A8BA7C")))
-            context.fill(Path(ellipseIn: CGRect(x: cup.x - 2, y: cup.y - 2, width: 4, height: 4)), with: .color(pgaGold))
-            let ball = point(simulation.ball)
-            if !simulation.phase.inMotion {
-                var aim = Path(); aim.move(to: ball); aim.addLine(to: point(simulation.ball + simulation.direction * min(simulation.targetDistance, simulation.distanceToCup + 30)))
-                context.stroke(aim, with: .color(pgaGold.opacity(0.75)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-            }
-            let ballPath = Path(ellipseIn: CGRect(x: ball.x - 3.5, y: ball.y - 3.5, width: 7, height: 7))
-            context.fill(ballPath, with: .color(.white)); context.stroke(ballPath, with: .color(pgaInk), lineWidth: 1)
+            drawMarkers(context, size: size, point: point)
         }
+    }
+
+    private func drawMarkers(_ context: GraphicsContext, size: CGSize, point: (PGAVector) -> CGPoint) {
+        func visible(_ position: PGAVector) -> CGPoint { PGAHoleMap.visiblePoint(point(position), in: size) }
+        func circle(_ center: CGPoint, radius: CGFloat) -> Path {
+            Path(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius,
+                                   width: radius * 2, height: radius * 2))
+        }
+        let cup = visible(simulation.hole.cup)
+        context.stroke(circle(cup, radius: 5), with: .color(pgaInk), lineWidth: 3)
+        context.fill(circle(cup, radius: 4), with: .color(pgaGold))
+
+        let rawBall = point(simulation.ball)
+        var ball = PGAHoleMap.visiblePoint(rawBall, in: size)
+        if !simulation.phase.inMotion {
+            let rawAim = point(simulation.aimPoint)
+            let aim = PGAHoleMap.visiblePoint(rawAim, in: size)
+            // When both positions are beyond the same edge, preserve their
+            // order so the player's bearing remains legible.
+            let dx = rawAim.x - rawBall.x, dy = rawAim.y - rawBall.y
+            let separation = hypot(dx, dy)
+            if hypot(aim.x - ball.x, aim.y - ball.y) < 18 && separation > 18 {
+                ball = PGAHoleMap.visiblePoint(CGPoint(x: aim.x - dx / separation * 20,
+                                                       y: aim.y - dy / separation * 20), in: size)
+            }
+            var line = Path(); line.move(to: ball); line.addLine(to: aim)
+            context.stroke(line, with: .color(pgaInk), style: StrokeStyle(lineWidth: 4, dash: [6, 4]))
+            context.stroke(line, with: .color(pgaGold), style: StrokeStyle(lineWidth: 2.5, dash: [6, 4]))
+            context.stroke(circle(aim, radius: 8), with: .color(pgaInk), lineWidth: 5)
+            context.stroke(circle(aim, radius: 8), with: .color(pgaGold), lineWidth: 2.5)
+            context.fill(circle(aim, radius: 2), with: .color(pgaGold))
+        }
+        context.stroke(circle(ball, radius: 7), with: .color(pgaInk), lineWidth: 4)
+        context.fill(circle(ball, radius: 6), with: .color(.white))
+        context.stroke(circle(ball, radius: 6), with: .color(pgaInk), lineWidth: 1.5)
     }
 }

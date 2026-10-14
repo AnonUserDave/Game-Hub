@@ -3,6 +3,12 @@ import XCTest
 @testable import GameHub
 
 final class PGAOriginalCourseTests: XCTestCase {
+    func testMapKeepsBallAndAimMarkersVisibleAtEdges() {
+        let size = PGAHoleMap.size
+        XCTAssertEqual(size, CGSize(width: 210, height: 252))
+        XCTAssertEqual(PGAHoleMap.visiblePoint(CGPoint(x: 270, y: -4), in: size), CGPoint(x: 199, y: 11))
+        XCTAssertEqual(PGAHoleMap.visiblePoint(CGPoint(x: -8, y: 300), in: size), CGPoint(x: 11, y: 241))
+    }
     private func append<T>(_ value: T, to data: inout Data) { withUnsafeBytes(of: value) { data.append(contentsOf: $0) } }
     private func fixture(version: UInt32 = 2, invalidIndex: Bool = false, invalidPosition: Bool = false) -> Data {
         var data = Data("GHPC".utf8)

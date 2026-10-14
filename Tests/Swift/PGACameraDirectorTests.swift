@@ -45,6 +45,14 @@ final class PGACameraDirectorTests: XCTestCase {
                            pose.target.y, pose.target.z, pose.fieldOfView].allSatisfy(\.isFinite))
             XCTAssertGreaterThan((pose.target - pose.position).length, 0.1)
         }
+        var chip = PGASimulation()
+        chip.selectClub(.sandWedge)
+        director.reset()
+        _ = director.update(chip, mode: 0, delta: 1 / 60)
+        chip.strike(power: 0.25, accuracy: 0)
+        let chipPose = try XCTUnwrap(director.update(chip, mode: 0, delta: 1 / 60))
+        XCTAssertEqual(chipPose.fieldOfView, 60, accuracy: 0.00001)
+        XCTAssertGreaterThan((chip.ball - chipPose.position).horizontalLength, 4)
     }
 
     func testTeeImpactRuleMatchesAndNewAttachmentResetsZoom() throws {
@@ -93,5 +101,51 @@ final class PGACameraDirectorTests: XCTestCase {
         let pose = try XCTUnwrap(director.update(game, mode: 3, delta: 1 / 60))
         XCTAssertEqual(pose.position.x, origin.x, accuracy: 0.00001)
         XCTAssertEqual(pose.position.z, origin.z, accuracy: 0.00001)
+    }
+
+    func testSoftSandWedgeStaysBehindBallThroughLanding() throws {
+        let json = """
+        {"scripts":[{"file":"d_camera.stn",
+          "situations":[
+            {"situation_type":11,"event":3,"conditions":[{"bit":1,"operator_code":5,"value":2048}],"actions":[0],"single_random_action":false,"priority":1},
+            {"situation_type":11,"event":3,"conditions":[{"bit":1,"operator_code":5,"value":1024}],"actions":[1],"single_random_action":false,"priority":1}],
+          "actions":[{"probability_percent":100,"responses":[0]},{"probability_percent":100,"responses":[1]}],
+          "responses":[
+            {"response_type":13,"command":0,"object_type":5,"offset_ft":[0,4,-8],"start_mode":1,"flags":6,"duration_s":0,"amount":0},
+            {"response_type":13,"command":0,"object_type":2,"offset_ft":[0,0,0],"start_mode":1,"flags":6,"duration_s":0,"amount":0}
+          ]}]}
+        """
+        let data = Data(json.utf8)
+        var short = PGASimulation()
+        short.selectClub(.sandWedge)
+        var director = try XCTUnwrap(PGACameraDirector(data: data))
+        _ = director.update(short, mode: 0, delta: 1 / 60)
+        short.strike(power: 0.25, accuracy: 0)
+        XCTAssertTrue(short.phase.inMotion)
+        var landingChecked = false
+        for _ in 0..<1200 {
+            let pose = try XCTUnwrap(director.update(short, mode: 0, delta: 1 / 60))
+            let towardBall = (short.ball - pose.position).horizontalUnit
+            let forward = (pose.target - pose.position).horizontalUnit
+            XCTAssertGreaterThan(towardBall.x * forward.x + towardBall.z * forward.z, 0.95)
+            XCTAssertGreaterThan((short.ball - pose.position).horizontalLength, 4)
+            if !short.phase.inMotion { landingChecked = true; break }
+            short.update(deltaTime: 1 / 60)
+        }
+        XCTAssertTrue(landingChecked, "The chip should settle and retain its landing view")
+        for _ in 0..<30 {
+            let pose = try XCTUnwrap(director.update(short, mode: 0, delta: 1 / 60))
+            XCTAssertEqual(pose.fieldOfView, 60, accuracy: 0.00001,
+                           "The ball should remain framed briefly after touchdown")
+        }
+
+        var full = PGASimulation()
+        full.selectClub(.sandWedge)
+        var fullDirector = try XCTUnwrap(PGACameraDirector(data: data))
+        _ = fullDirector.update(full, mode: 0, delta: 1 / 60)
+        full.strike(power: 1, accuracy: 0)
+        let fullPose = try XCTUnwrap(fullDirector.update(full, mode: 0, delta: 1 / 60))
+        XCTAssertEqual(fullPose.position.x, full.hole.cup.x, accuracy: 0.00001)
+        XCTAssertEqual(fullPose.position.z, full.hole.cup.z, accuracy: 0.00001)
     }
 }
