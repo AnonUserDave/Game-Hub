@@ -542,7 +542,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         aimMarker.position = SCNVector3(target.x, simulation.groundHeight(x: target.x, z: target.z, near: position.y + 30) + 0.12, target.z)
         aimMarker.isHidden = simulation.phase.inMotion || simulation.phase == .holed || simulation.phase == .roundComplete
         aimMarker.scale = simulation.club == .putter ? SCNVector3(0.4, 1, 0.4) : SCNVector3(1, 1, 1)
-        golfer.isHidden = simulation.phase.inMotion || simulation.phase == .holed || cameraMode == 2
+        golfer.isHidden = simulation.phase.inMotion || simulation.phase == .holed || cameraMode == 2 || content.childNodes.isEmpty
         let side = PGAVector(x: -direction.z, y: 0, z: direction.x)
         let golferPosition = position + side * 1.1 + direction * -0.15
         golfer.position = SCNVector3(golferPosition.x, simulation.groundHeight(x: golferPosition.x, z: golferPosition.z, near: position.y), golferPosition.z)

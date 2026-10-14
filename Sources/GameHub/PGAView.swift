@@ -25,13 +25,17 @@ struct PGAGameView: View {
                 PGASceneView(session: session).ignoresSafeArea()
                 VStack(spacing: 0) {
                     topBar
-                    HStack(alignment: .top) { holeCard; Spacer(); performanceCard }.padding(22)
-                    Spacer(minLength: 12)
-                    HStack(alignment: .bottom, spacing: 20) {
-                        swingCard
-                        Spacer(minLength: 0)
-                        if geometry.size.width > 900 { mapCard }
-                    }.padding(.horizontal, 22).padding(.bottom, 16)
+                    // An original course shows no hole panels until its data
+                    // is installed, so the placeholder state is never visible.
+                    if session.loadState == .ready {
+                        HStack(alignment: .top) { holeCard; Spacer(); performanceCard }.padding(22)
+                        Spacer(minLength: 12)
+                        HStack(alignment: .bottom, spacing: 20) {
+                            swingCard
+                            Spacer(minLength: 0)
+                            if geometry.size.width > 900 { mapCard }
+                        }.padding(.horizontal, 22).padding(.bottom, 16)
+                    } else { Spacer() }
                     bottomBar
                 }
                 if case let .loading(message) = session.loadState { loadingOverlay(message) }

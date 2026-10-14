@@ -28,7 +28,10 @@ class PGAMetalView: MTKView, MTKViewDelegate {
         sceneRenderer = SCNRenderer(device: selected, options: nil)
         commandQueue = selected?.makeCommandQueue()
         super.init(frame: frameRect, device: selected)
-        colorPixelFormat = .bgra8Unorm
+        // SceneKit shades in linear space; an sRGB attachment applies the
+        // display encoding. A plain bgra8Unorm target showed linear values
+        // directly, which made the whole image far too dark.
+        colorPixelFormat = .bgra8Unorm_srgb
         depthStencilPixelFormat = .depth32Float_stencil8
         sampleCount = selected?.supportsTextureSampleCount(4) == true ? 4 : 1
         preferredFramesPerSecond = 60
