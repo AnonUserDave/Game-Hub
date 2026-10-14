@@ -135,6 +135,7 @@ final class PGAGameSession: ObservableObject {
         original = course
         renderer.loadOriginalGolfer(root: GameStore.workspaceRoot())
         renderer.useOriginalBallShadow(hud.image("ball-shadow"))
+        renderer.useOriginalEffects(root: GameStore.workspaceRoot())
         renderer.useOriginalAimArrow(hud.image("aim-arrow"))
         let checks = course.validation
         let tees = checks.filter { $0.teeSurface == .tee }.count, pins = checks.filter { $0.pinSurface == .green }.count
@@ -391,7 +392,11 @@ final class PGAGameSession: ObservableObject {
             let right = heldKeys.contains(124) || heldKeys.contains(2)
             if ownsInputFocus && left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
             simulation.update(deltaTime: delta)
-            if !simulation.events.isEmpty { playSounds(simulation.takeEvents()) }
+            if !simulation.events.isEmpty {
+                let events = simulation.takeEvents()
+                renderer.playEffects(events, simulation: simulation)
+                playSounds(events)
+            }
         }
         if previousPhase != simulation.phase {
             if !isOriginal && (simulation.phase == .airborne || simulation.phase == .rolling) { renderer.animateSwing() }
@@ -676,6 +681,8 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     func build(original terrain: SCNNode, hole: PGAHole, flagImage: NSImage? = nil, holeImage: NSImage? = nil, render: PGARenderState? = nil) {
         content.removeFromParentNode(); content = SCNNode(); scene.rootNode.addChildNode(content)
         content.addChildNode(terrain)
+        effects?.clearHole()
+        if let tee = effects?.tee { content.addChildNode(tee) }
         if let flagImage { makeOriginalPin(pin: hole.cup, flagImage: flagImage, holeImage: holeImage) }
         else { makeFlag(pin: hole.cup) }
         if let render {
@@ -733,6 +740,33 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     }
 
     /// Original ball shadow image (DataImages/Game/Ball/Ballshad) when imported.
+    /// Original anim.stn effects; nil until the prepared art is found.
+    private(set) var effects: PGAOriginalEffects?
+    static let teeHeight = 0.015
+
+    func useOriginalEffects(root: URL) {
+        if effects == nil { effects = PGAOriginalEffects(root: root) }
+    }
+
+    /// Strike and landing effects for this frame's simulation events.
+    func playEffects(_ events: [PGASimulationEvent], simulation: PGASimulation) {
+        guard let effects, simulation.course.isOriginal else { return }
+        for event in events {
+            switch event {
+            case let .strike(club, lie, lieFlags, power, _, fromTee, position) where club != .putter:
+                let ground = simulation.groundHeight(x: position.x, z: position.z, near: position.y)
+                effects.strike(in: content, at: position, heading: simulation.heading, club: club,
+                               lieFlags: lieFlags != 0 ? lieFlags : PGAAudioRules.flags(for: lie) | (fromTee ? 0x8000 : 0),
+                               powerPercent: power * 15.556 / 14 * 100, fromTee: fromTee, ground: ground)
+            case let .impact(position, surface, _, flags, normalSpeed):
+                let percent = normalSpeed / PGACourseTransform.metersPerInch / 60 / 0.5 * 100
+                effects.impact(in: content, at: position, flags: flags != 0 ? flags : PGAAudioRules.flags(for: surface),
+                               impactPercent: percent, incoming: simulation.velocity)
+            default: break
+            }
+        }
+    }
+
     func useOriginalBallShadow(_ image: NSImage?) {
         guard let image, let shadow = ballShadow.geometry as? SCNCylinder else { return }
         let plane = SCNPlane(width: shadow.radius * 2.4, height: shadow.radius * 2.4)
@@ -769,7 +803,15 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         let ground = simulation.groundHeight(x: position.x, z: position.z, near: position.y)
         SCNTransaction.begin(); SCNTransaction.animationDuration = 0; SCNTransaction.disableActions = true
         let originalBall = simulation.course.isOriginal
-        ball.position = Self.vector(position + PGAVector(x: 0, y: originalBall ? 0 : 0.10, z: 0))
+        // Original tee shots sit on the original tee peg: the ball is drawn
+        // 1.5 cm up on it (the simulation keeps its floor contact).
+        let teed = originalBall && effects?.tee != nil && simulation.strokes == 0 && simulation.club != .putter
+            && (simulation.phase == .aiming || simulation.phase.swinging)
+        if let tee = effects?.tee {
+            tee.isHidden = !teed
+            if teed { tee.position = SCNVector3(position.x, ground + Self.teeHeight - 0.053, position.z) }
+        }
+        ball.position = Self.vector(position + PGAVector(x: 0, y: originalBall ? (teed ? Self.teeHeight : 0) : 0.10, z: 0))
         ball.isHidden = simulation.phase == .holed || simulation.phase == .roundComplete
         let baseScale = originalBall ? PGASimulation.ballRadius / 0.13 : 1
         let visualScale = baseScale * (simulation.phase.inMotion ? max(1, min(2.5, (position.y - ground) / 14)) : 1)
