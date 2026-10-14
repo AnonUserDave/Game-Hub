@@ -61,6 +61,10 @@ struct ApplePanicHole: Codable, Equatable {
     var row: Int
     var depth: Int
     var occupied = false
+    /// Source uses fourteen first-free entries per floor. Retain their order
+    /// when holes are removed/redug; nil supports existing native snapshots.
+    var slot: Int? = nil
+    var sourceDepth: Int { depth | (occupied ? 0x80 : 0) }
 }
 struct ApplePanicEnemy: Codable, Equatable {
     var kind: Int
@@ -110,7 +114,7 @@ struct ApplePanicSimulation {
     }
     init(resources: ApplePanicResources, snapshot: ApplePanicSnapshot) throws {
         try resources.validate()
-        let s = snapshot.state
+        var s = snapshot.state
         guard snapshot.schema == 1, snapshot.sourceSHA256 == resources.sourceSHA256,
               (1...48).contains(s.level), (0...4).contains(s.lives), (0...999999).contains(s.score),
               (0...999999).contains(s.highScore), (0...130).contains(s.hourglass),
@@ -128,10 +132,18 @@ struct ApplePanicSimulation {
                   enemy.holeRow == nil || [15, 47, 79, 111, 143].contains(enemy.holeRow!) else { throw ApplePanicError.invalidSnapshot }
         }
         var coordinates = Set<String>()
+        var slots = Set<String>()
         for hole in s.holes {
             guard (1...130).contains(hole.x), [15, 47, 79, 111, 143].contains(hole.row), (1...5).contains(hole.depth),
                   coordinates.insert("\(hole.x):\(hole.row)").inserted,
-                  s.holes.filter({ $0.row == hole.row }).count <= 14 else { throw ApplePanicError.invalidSnapshot }
+                  s.holes.filter({ $0.row == hole.row }).count <= 14,
+                  hole.slot == nil || ((0..<14).contains(hole.slot!) && slots.insert("\(hole.row):\(hole.slot!)").inserted) else { throw ApplePanicError.invalidSnapshot }
+        }
+        for i in s.holes.indices where s.holes[i].slot == nil {
+            let row = s.holes[i].row
+            let slot = (0..<14).first { !slots.contains("\(row):\($0)") }!
+            s.holes[i].slot = slot
+            slots.insert("\(row):\(slot)")
         }
         self.resources = resources
         state = s
@@ -204,14 +216,54 @@ struct ApplePanicSimulation {
     private func holeIndex(x: Int, row: Int) -> Int? {
         state.holes.firstIndex { $0.x == x && $0.row == row }
     }
+    private func holeDepth(x: Int, row: Int) -> Int {
+        holeIndex(x: x, row: row).map { state.holes[$0].sourceDepth } ?? 0
+    }
+    private func nearbyHole(x: Int, row: Int) -> ApplePanicHole? {
+        for slot in 0..<14 {
+            if let hole = state.holes.first(where: { $0.row == row && $0.slot == slot }) {
+                if abs(hole.x - x) < 6 { return hole }
+            } else if x < 6 {
+                // Empty source entries have X=0 and depth=0. Both push-out
+                // routines stop at that entry rather than scanning past it.
+                return nil
+            }
+        }
+        return nil
+    }
+    /// $81A9..$826B. Odd X checks seven units ahead; even X checks directly
+    /// under the player. Only raw depth $05 passes: occupied $85 blocks.
+    private func horizontalHoleAction(_ input: ApplePanicInput) -> Int {
+        let edge = state.player.x & 1 == 1
+        let column = state.player.x + (edge ? (input == .right ? 7 : -7) : 0)
+        var row = state.player.y + 15
+        let depth = holeDepth(x: column, row: row)
+        guard depth == 5 else { return depth == 0 ? 0 : 1 }
+        repeat {
+            row += 32
+            if row >= 175 { return edge ? 0 : 5 }
+            let lower = holeDepth(x: column, row: row)
+            if lower == 0 { return edge ? 0 : 5 }
+            if lower != 5 { return 1 }
+        } while true
+    }
+    /// $8044..$80BF: input is ignored during this call, including the call
+    /// that lands. A nearby partial or occupied hole pushes the player by 7.
+    private mutating func fallPlayer() {
+        if state.player.y & 31 != 0 || holeDepth(x: state.player.x, row: state.player.y + 15) == 5 {
+            state.player.y = min(160, state.player.y + 2)
+            state.player.onGround = false
+            return
+        }
+        state.player.onGround = true
+        if let hole = nearbyHole(x: state.player.x, row: state.player.y + 15), hole.sourceDepth != 5 {
+            state.player.x = hole.x + (hole.x < state.player.x ? 7 : -7)
+        }
+    }
     private mutating func movePlayer(_ input: ApplePanicInput) {
         if !state.player.onGround {
-            if state.player.y & 31 != 0 { state.player.y = min(160, state.player.y + 2); return }
-            if let i = holeIndex(x: state.player.x, row: state.player.y + 15), state.holes[i].depth == 5, !state.holes[i].occupied {
-                state.player.y = min(160, state.player.y + 2)
-                return
-            }
-            state.player.onGround = true
+            fallPlayer()
+            return
         }
         switch input {
         case .none: break
@@ -222,13 +274,11 @@ struct ApplePanicSimulation {
                 return
             }
             let delta = input == .right ? 1 : -1
+            let holeAction = horizontalHoleAction(input)
+            if holeAction == 5 { fallPlayer(); return }
+            if holeAction != 0 { return }
             let target = state.player.x + delta
             guard (1...130).contains(target) else { return }
-            if let i = holeIndex(x: target, row: state.player.y + 15) {
-                if state.holes[i].depth < 5 || state.holes[i].occupied { return }
-                state.player.onGround = false
-                state.player.y = min(160, state.player.y + 2)
-            }
             state.player.x = target
             state.player.facingRight = input == .right
             state.player.action = input
@@ -244,7 +294,11 @@ struct ApplePanicSimulation {
                 if let i = index {
                     guard state.holes[i].depth < 5 else { return }
                 } else {
-                    guard !ladders.contains(where: { abs($0.x - target) < 9 && row >= $0.top && row <= $0.bottom }),
+                    // Empty source entries at X=0 also participate in dig
+                    // clearance, so a new hole less than nine units from 0
+                    // cannot be created even if no visible neighbor exists.
+                    guard target >= 9,
+                          !ladders.contains(where: { abs($0.x - target) < 9 && row >= $0.top && row <= $0.bottom }),
                           !state.holes.contains(where: { $0.row == row && abs($0.x - target) < 9 }),
                           state.holes.filter({ $0.row == row }).count < 14 else { return }
                 }
@@ -255,7 +309,9 @@ struct ApplePanicSimulation {
                 if input == .dig {
                     if let i = index { state.holes[i].depth += 1 }
                     else {
-                        state.holes.append(ApplePanicHole(x: target, row: row, depth: 1))
+                        let used = Set(state.holes.filter { $0.row == row }.compactMap(\.slot))
+                        let slot = (0..<14).first { !used.contains($0) }!
+                        state.holes.append(ApplePanicHole(x: target, row: row, depth: 1, slot: slot))
                         index = state.holes.count - 1
                     }
                 } else if let i = index {
@@ -272,6 +328,8 @@ struct ApplePanicSimulation {
         guard input == .up ? p & 2 != 0 : p & 1 != 0 else { return }
         state.player.y = max(0, min(160, state.player.y + (input == .up ? -2 : 2)))
         state.player.action = input
+        // Source action3/4 parity becomes the next dig/stomp direction.
+        state.player.facingRight = input == .up
     }
     private mutating func tickHourglass() {
         state.hourglassCounter += 1
@@ -325,15 +383,14 @@ struct ApplePanicSimulation {
         var enemy = state.enemies[slot]
         if !enemy.trapped, ((enemy.y - 6) & 31) == 0,
            let index = holeIndex(x: enemy.x, row: enemy.y + 9) {
-            let depth = state.holes[index].depth
+            let depth = state.holes[index].sourceDepth
             state.holes[index].occupied = true
             enemy.trapped = true
             enemy.holeRow = enemy.y + 9
-            enemy.y += depth == 5 ? 9 : depth + 1
+            enemy.y += depth == 5 ? 9 : (1...4).contains(depth) ? depth + 1 : 2
             enemy.trappedTicks = depth == 5 ? 128 : 0
-            state.enemies[slot] = enemy
-            chooseDirections()
-            return
+            // $87C6 calls hole entry then the trapped handler in this same
+            // dispatch; capture is not an extra uncounted enemy update.
         }
         if enemy.trapped {
             if enemy.trappedTicks > 0 {
@@ -370,20 +427,28 @@ struct ApplePanicSimulation {
         default: break
         }
         if state.enemies.enumerated().contains(where: { $0.offset != slot && $0.element.active && overlapsEnemy(next, $0.element) }) { next = enemy; next.direction = .none }
-        if let i = holeIndex(x: next.x + (enemy.direction == .left ? -6 : 6), row: next.y + 9), state.holes[i].occupied { next = enemy; next.direction = .none }
+        // Source checks eight units from the current position before moving.
+        if [.left, .right].contains(enemy.direction), ((enemy.y - 6) & 31) == 0,
+           let i = holeIndex(x: enemy.x + (enemy.direction == .left ? -8 : 8), row: enemy.y + 9), state.holes[i].occupied { next = enemy; next.direction = .none }
         if overlapsPlayer(next) { loseLife(); return }
         next.alternateSprite.toggle()
         state.enemies[slot] = next
         chooseDirections()
     }
     private mutating func chooseDirections() {
-        for slot in state.enemies.indices where state.enemies[slot].active && !state.enemies[slot].trapped {
+        for slot in state.enemies.indices where state.enemies[slot].active {
             let enemy = state.enemies[slot]
             let floor = ((enemy.y - 6) & 31) == 0
             let p = platform(x: enemy.x, row: enemy.y + 9)
             if enemy.direction != .none {
                 if (enemy.direction == .up || enemy.direction == .down) && !floor { continue }
                 if (enemy.direction == .left || enemy.direction == .right) && p == 0 { continue }
+            }
+            if !floor && p != 3 {
+                // These source branches select a direction without calling the
+                // absent ROM random stream (including idle trapped enemies).
+                state.enemies[slot].direction = p == 2 ? .up : p == 1 ? .down : .none
+                continue
             }
             let random = randomByte()
             let direction: ApplePanicInput
@@ -396,51 +461,89 @@ struct ApplePanicSimulation {
         }
     }
     private mutating func dropEnemy(_ slot: Int) {
-        // The original performs this descent synchronously. Native state resolves
-        // the same aligned-floor chain without its speaker/delay rendering loop.
+        // $8E61..$9108 performs a synchronous descent one row at a time. These
+        // six byte accumulators are source rules, not a cumulative victim sum.
         var enemy = state.enemies[slot]
-        var multiplier = 1
-        var nextFloor = ((enemy.y - 6) / 32 + 1) * 32 + 6
-        while nextFloor <= 166 {
-            for other in state.enemies.indices where other != slot && state.enemies[other].active {
-                let victim = state.enemies[other]
-                if abs(victim.x - enemy.x) <= 6 && victim.y >= enemy.y && victim.y < nextFloor {
-                    state.enemies[other].active = false
-                    addScore((victim.kind + 1) * 100)
+        var base = Array(repeating: 0, count: 6)
+        var accumulated = base
+        base[0] = enemy.kind + 1
+        accumulated[0] = base[0]
+        var crossedHoles = 0
+        var chainKill = false
+        while enemy.y <= 166 {
+            if ((enemy.y - 6) & 31) == 0 {
+                let depth = holeDepth(x: enemy.x, row: enemy.y + 9)
+                if depth == 5 || depth == 0x85 {
+                    for index in 0..<6 where accumulated[index] != 0 {
+                        accumulated[index] = (accumulated[index] + base[index]) & 255
+                    }
+                    if let index = holeIndex(x: enemy.x, row: enemy.y + 9) { state.holes.remove(at: index) }
+                    crossedHoles += 1
+                    if depth == 0x85 {
+                        chainKill = true
+                        guard let other = state.enemies.indices.first(where: {
+                            $0 != slot && state.enemies[$0].active && state.enemies[$0].x == enemy.x && state.enemies[$0].y == enemy.y + 9
+                        }) else {
+                            // $8EFC returns immediately when an occupied table
+                            // entry has no matching victim; do not invent one.
+                            state.enemies[slot] = enemy
+                            return
+                        }
+                        let value = state.enemies[other].kind + 1
+                        state.enemies[other].active = false
+                        state.enemies[other].trapped = false
+                        state.enemies[other].trappedTicks = 0
+                        state.enemies[other].holeRow = nil
+                        // $8F44 increments AGAIN after finding the first zero.
+                        // Slot 1 stays zero; subsequent occupied victims replace
+                        // slot 2. The supplied revision really has this quirk.
+                        let index = base.firstIndex(of: 0)! + 1
+                        base[index] = value
+                        accumulated[index] = value
+                    }
+                } else {
+                    if chainKill || crossedHoles >= enemy.kind {
+                        enemy.active = false
+                        addScore((accumulated.reduce(0, +) & 255) * 100)
+                        checkExtraLife()
+                    } else if let hole = nearbyHole(x: enemy.x, row: enemy.y + 9), hole.sourceDepth != 5 {
+                        enemy.x = hole.x + (hole.x < enemy.x ? 8 : -8)
+                    }
+                    enemy.trapped = false
+                    enemy.trappedTicks = 0
+                    enemy.holeRow = nil
+                    state.enemies[slot] = enemy
+                    return
+                }
+            } else {
+                // $8F92 uses CHECK_COLLISION, which predicts the current
+                // direction even during the drop; the victim's entire nine-row
+                // box is compared, including victims above the falling sprite.
+                var collision = enemy
+                switch enemy.direction {
+                case .right: collision.x += 2
+                case .left: collision.x -= 2
+                case .up: collision.y -= 4
+                case .down: collision.y += 4
+                default: break
+                }
+                for other in state.enemies.indices where other != slot && state.enemies[other].active {
+                    if overlapsEnemy(collision, state.enemies[other]) {
+                        addScore((state.enemies[other].kind + 1) * 100)
+                        checkExtraLife()
+                        state.enemies[other].active = false
+                    }
                 }
             }
-            enemy.y = nextFloor
-            if let index = holeIndex(x: enemy.x, row: nextFloor + 9), state.holes[index].depth == 5 {
-                let occupied = state.holes[index].occupied
-                state.holes.remove(at: index)
-                multiplier += 1
-                if occupied, let other = state.enemies.indices.first(where: { $0 != slot && state.enemies[$0].active && state.enemies[$0].x == enemy.x && state.enemies[$0].y == nextFloor + 9 }) {
-                    state.enemies[other].active = false
-                    // Full source chain scoring uses six per-enemy accumulators;
-                    // this contribution is an explicitly approximate native sum.
-                    addScore((state.enemies[other].kind + 1) * multiplier * 100)
-                }
-                nextFloor += 32
-                continue
-            }
-            if multiplier >= enemy.kind + 1 {
-                enemy.active = false
-                addScore((enemy.kind + 1) * multiplier * 100)
-                checkExtraLife()
-            } else if let i = state.holes.firstIndex(where: { $0.row == nextFloor + 9 && abs($0.x - enemy.x) < 6 && $0.depth < 5 }) {
-                enemy.x = max(0, min(132, state.holes[i].x + (state.holes[i].x < enemy.x ? 8 : -8)))
-            }
-            break
+            enemy.y += 1
         }
-        enemy.trapped = false
-        enemy.trappedTicks = 0
-        enemy.holeRow = nil
-        enemy.direction = .none
         state.enemies[slot] = enemy
     }
 
     var playerSpriteName: String {
         let p = state.player
+        // Airborne source action5 uses SPRITE_STAND's odd-parity pose.
+        if !p.onGround { return "climb1" }
         let left = !p.facingRight
         switch p.action {
         case .dig, .fill: return "dig\(left ? "Left" : "Right")\(p.alternateSprite ? 1 : 0)"

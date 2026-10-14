@@ -37,6 +37,9 @@ class ApplePanicDecoderTests(unittest.TestCase):
         self.assertEqual(result['enemyTypes'][0], [0] * 8)
         self.assertEqual(result['enemyTypes'][-1], [2] * 8)
         self.assertEqual(len(result['sprites']), 16)
+        source = path.read_bytes()
+        self.assertEqual(result['sprites']['digRight0']['address'], hex(int.from_bytes(source[0x7A22 - decoder.BASE:0x7A24 - decoder.BASE], 'little')))
+        self.assertEqual(result['sprites']['digLeft0']['address'], hex(int.from_bytes(source[0x7A24 - decoder.BASE:0x7A26 - decoder.BASE], 'little')))
         for sprite in result['sprites'].values():
             self.assertEqual(sprite['width'], 21)
             self.assertEqual(len(sprite['rows']), sprite['height'])
@@ -49,5 +52,33 @@ class ApplePanicDecoderTests(unittest.TestCase):
             self.assertGreaterEqual(start, decoder.BASE)
             self.assertLessEqual(end, decoder.BASE + decoder.LENGTH)
             self.assertLess(start, end)
+
+    def test_hole_and_scoring_operands_come_from_selected_actual_instructions(self):
+        path = ROOT / 'Library/SourceMedia/retro/apple-panic-apple-ii/program-01.bin'
+        if not path.exists(): self.skipTest('Source-owned media are intentionally untracked')
+        source = path.read_bytes()
+        rules = decoder.rule_evidence(source)
+        for name, value in [('player_odd_x_lookahead', 7), ('player_partial_hole_push', 7),
+                            ('nearby_hole_distance_exclusive', 6), ('new_hole_clearance_exclusive', 9),
+                            ('hole_row_slots', 14), ('stack_floor_spacing', 32), ('stack_terminal_row', 175),
+                            ('unoccupied_full_hole_code', 5), ('occupied_full_hole_code', 133),
+                            ('score_accumulator_count', 6), ('enemy_survivor_hole_push', 8)]:
+            self.assertEqual(rules[name]['value'], value, name)
+        self.assertTrue(rules['chain_insertion_after_first_zero']['extra_increment'])
+        self.assertTrue(rules['enemy_occupied_hole_lookahead']['source_step_sequences_verified'])
+        corrupt = bytearray(source); corrupt[0x8F44 - decoder.BASE] ^= 1
+        with self.assertRaises(ValueError): decoder.rule_evidence(bytes(corrupt))
+
+    def test_selected_hole_and_score_windows_match_reference_instructions(self):
+        path = ROOT / 'Library/SourceMedia/retro/apple-panic-apple-ii/program-01.bin'
+        reference = ROOT / 'Library/Research/apple-panic/reference-disassembly.asm'
+        if not path.exists() or not reference.exists(): self.skipTest('Local original and annotated listing are intentionally untracked')
+        comparison = decoder.reference_comparison(reference.read_text(), path.read_bytes())
+        for name in ['player_hole_lookup', 'player_horizontal_holes', 'enemy_capture_dispatch_order',
+                     'enemy_occupied_hole_lookahead', 'chain_accumulator_insertion', 'chain_crushing',
+                     'chain_score_total', 'chain_strength_threshold', 'chain_accumulator_multiply', 'chain_survivor_push']:
+            start, end = decoder.WINDOWS[name]
+            self.assertFalse(any(start < int(row['address'], 16) + row['size'] and int(row['address'], 16) < end
+                                 for row in comparison['mismatches']), name)
 
 if __name__ == '__main__': unittest.main()

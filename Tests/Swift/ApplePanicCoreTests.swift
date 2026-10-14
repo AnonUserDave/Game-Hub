@@ -54,12 +54,23 @@ final class ApplePanicCoreTests: XCTestCase {
         right.tick(input: .right)
         XCTAssertEqual(right.state.player.x, 130)
     }
+    func testClimbParitySetsNextDigDirectionAndFallingUsesSourceStandPose() throws {
+        var game = try scenario { $0.player.x = 68; $0.player.facingRight = false }
+        game.tick(input: .up)
+        XCTAssertTrue(game.state.player.facingRight)
+        game.tick(input: .down)
+        XCTAssertFalse(game.state.player.facingRight)
+        var falling = try scenario { $0.player.x = 42; $0.player.y = 130; $0.player.onGround = false }
+        XCTAssertEqual(falling.playerSpriteName, "climb1")
+        falling.tick()
+        XCTAssertEqual(falling.playerSpriteName, "climb1")
+    }
     func testDigDepthMutationOnSecondActionFrameAndSourceTenFrameCycle() throws {
         var game = try scenario { $0.player.x = 35; $0.player.y = 128 }
         game.tick(input: .dig)
         XCTAssertTrue(game.state.holes.isEmpty)
         game.tick(input: .dig)
-        XCTAssertEqual(game.state.holes, [ApplePanicHole(x: 42, row: 143, depth: 1)])
+        XCTAssertEqual(game.state.holes, [ApplePanicHole(x: 42, row: 143, depth: 1, slot: 0)])
         for _ in 0..<40 { game.tick(input: .dig) }
         XCTAssertEqual(game.state.holes.first?.depth, 5)
         XCTAssertEqual(game.state.player.actionFrame, 2)
@@ -86,19 +97,24 @@ final class ApplePanicCoreTests: XCTestCase {
             $0.holes = [ApplePanicHole(x: 42, row: 143, depth: 5)]
         }
         open.tick(input: .right)
+        XCTAssertEqual(open.state.player.x, 42)
+        XCTAssertEqual(open.state.player.y, 128)
+        XCTAssertTrue(open.state.player.onGround)
+        open.tick(input: .right)
         XCTAssertEqual(open.state.player.y, 130)
         XCTAssertFalse(open.state.player.onGround)
         for _ in 0..<16 { open.tick() }
         XCTAssertEqual(open.state.player.y, 160)
         XCTAssertTrue(open.state.player.onGround)
         var occupied = try scenario {
-            $0.player.x = 41; $0.player.y = 128
+            $0.player.x = 42; $0.player.y = 128
             $0.holes = [ApplePanicHole(x: 42, row: 143, depth: 5, occupied: true)]
         }
         occupied.tick(input: .right)
-        XCTAssertEqual(occupied.state.player.x, 41)
+        XCTAssertEqual(occupied.state.player.x, 42)
+        XCTAssertEqual(occupied.state.player.y, 128)
     }
-    func testFullHoleTrapsEnemyFor128OfItsOwnUpdates() throws {
+    func testFullHoleCaptureIncludesFirstOf128TrappedUpdates() throws {
         var game = try scenario {
             $0.player.x = 35; $0.player.y = 128
             $0.enemies[0] = ApplePanicEnemy(kind: 0, x: 42, y: 134)
@@ -108,12 +124,180 @@ final class ApplePanicCoreTests: XCTestCase {
         game.tick()
         XCTAssertTrue(game.state.enemies[0].trapped)
         XCTAssertEqual(game.state.enemies[0].y, 143)
-        XCTAssertEqual(game.state.enemies[0].trappedTicks, 128)
+        XCTAssertEqual(game.state.enemies[0].trappedTicks, 127)
         XCTAssertTrue(game.state.holes[0].occupied)
         game.tick()
-        XCTAssertEqual(game.state.enemies[0].trappedTicks, 128)
-        game.tick()
         XCTAssertEqual(game.state.enemies[0].trappedTicks, 127)
+        game.tick()
+        XCTAssertEqual(game.state.enemies[0].trappedTicks, 126)
+    }
+    func testOddXStopsSevenUnitsBeforePartialAndOccupiedHoles() throws {
+        for hole in [ApplePanicHole(x: 42, row: 143, depth: 1), ApplePanicHole(x: 42, row: 143, depth: 5, occupied: true)] {
+            var game = try scenario { $0.player.x = 35; $0.player.y = 128; $0.holes = [hole] }
+            game.tick(input: .right)
+            XCTAssertEqual(game.state.player.x, 35)
+            var mirrored = try scenario { $0.player.x = 49; $0.player.y = 128; $0.holes = [hole] }
+            mirrored.tick(input: .left)
+            XCTAssertEqual(mirrored.state.player.x, 49)
+        }
+        var betweenChecks = try scenario {
+            $0.player.x = 36; $0.player.y = 128
+            $0.holes = [ApplePanicHole(x: 42, row: 143, depth: 1)]
+        }
+        betweenChecks.tick(input: .right)
+        XCTAssertEqual(betweenChecks.state.player.x, 37)
+    }
+    func testStackedPartialHoleBlocksBothEdgeEntryAndCenteredFall() throws {
+        for x in [35, 42] {
+            var game = try scenario {
+                $0.player.x = x; $0.player.y = 64
+                $0.holes = [ApplePanicHole(x: 42, row: 79, depth: 5), ApplePanicHole(x: 42, row: 111, depth: 3)]
+            }
+            game.tick(input: .right)
+            XCTAssertEqual(game.state.player.x, x)
+            XCTAssertEqual(game.state.player.y, 64)
+            XCTAssertTrue(game.state.player.onGround)
+        }
+        var open = try scenario {
+            $0.player.x = 42; $0.player.y = 64
+            $0.holes = [79, 111, 143].map { ApplePanicHole(x: 42, row: $0, depth: 5) }
+        }
+        open.tick(input: .right)
+        XCTAssertEqual(open.state.player.y, 66)
+        for _ in 0..<47 { open.tick(input: .left) }
+        XCTAssertEqual(open.state.player.y, 160)
+        XCTAssertFalse(open.state.player.onGround)
+        open.tick(input: .left)
+        XCTAssertTrue(open.state.player.onGround)
+        XCTAssertEqual(open.state.player.x, 42, "The landing call ignores the held direction")
+        open.tick(input: .left)
+        XCTAssertEqual(open.state.player.x, 41)
+    }
+    func testPlayerLandingPushesBySevenAndUsesOriginalHoleSlotOrder() throws {
+        var left = try scenario {
+            $0.player.x = 42; $0.player.y = 96; $0.player.onGround = false
+            $0.holes = [ApplePanicHole(x: 38, row: 111, depth: 2, slot: 1), ApplePanicHole(x: 47, row: 111, depth: 3, slot: 0)]
+        }
+        left.tick(input: .right)
+        XCTAssertEqual(left.state.player.x, 40)
+        XCTAssertTrue(left.state.player.onGround)
+        var fullFirst = try scenario {
+            $0.player.x = 42; $0.player.y = 96; $0.player.onGround = false
+            $0.holes = [ApplePanicHole(x: 38, row: 111, depth: 2, slot: 1), ApplePanicHole(x: 47, row: 111, depth: 5, slot: 0)]
+        }
+        fullFirst.tick()
+        XCTAssertEqual(fullFirst.state.player.x, 42)
+        var occupied = try scenario {
+            $0.player.x = 42; $0.player.y = 96; $0.player.onGround = false
+            $0.holes = [ApplePanicHole(x: 42, row: 111, depth: 5, occupied: true)]
+        }
+        occupied.tick()
+        XCTAssertEqual(occupied.state.player.x, 35)
+        XCTAssertEqual(occupied.state.player.y, 96)
+    }
+    func testNewHolesRespectZeroSlotClearanceAndReuseFirstFreedSlot() throws {
+        var boundary = try scenario { $0.player.x = 1; $0.player.y = 128 }
+        for _ in 0..<4 { boundary.tick(input: .dig) }
+        XCTAssertTrue(boundary.state.holes.isEmpty)
+        var game = try scenario {
+            $0.player.x = 35; $0.player.y = 128; $0.player.actionFrame = 1
+            $0.holes = [ApplePanicHole(x: 42, row: 143, depth: 1, slot: 0), ApplePanicHole(x: 60, row: 143, depth: 1, slot: 1)]
+        }
+        game.tick(input: .fill)
+        XCTAssertEqual(game.state.holes.map(\.x), [60])
+        for _ in 0..<10 { game.tick(input: .dig) }
+        XCTAssertEqual(game.state.holes.first(where: { $0.x == 42 })?.slot, 0)
+        XCTAssertEqual(game.state.holes.first(where: { $0.x == 60 })?.slot, 1)
+    }
+    func testShallowCaptureClimbsDuringTheEntryDispatch() throws {
+        var game = try scenario {
+            $0.player.x = 35; $0.player.y = 0
+            $0.enemies[0] = ApplePanicEnemy(kind: 0, x: 42, y: 134)
+            $0.holes = [ApplePanicHole(x: 42, row: 143, depth: 1)]
+        }
+        game.tick()
+        XCTAssertEqual(game.state.enemies[0].y, 135)
+        XCTAssertTrue(game.state.enemies[0].trapped)
+        game.tick(); game.tick()
+        XCTAssertEqual(game.state.enemies[0].y, 134)
+        XCTAssertFalse(game.state.enemies[0].trapped)
+        XCTAssertTrue(game.state.holes.isEmpty)
+    }
+    func testEnemyStopsEightUnitsBeforeAnOccupiedHole() throws {
+        var game = try scenario {
+            $0.player.x = 90; $0.player.y = 0
+            $0.enemies[0] = ApplePanicEnemy(kind: 0, x: 34, y: 134, direction: .right)
+            $0.holes = [ApplePanicHole(x: 42, row: 143, depth: 5, occupied: true)]
+        }
+        game.tick()
+        XCTAssertEqual(game.state.enemies[0].x, 34)
+    }
+    func testCrushingChecksWholeVictimBoxIncludingAboveAndPredictedDirection() throws {
+        var game = try scenario {
+            $0.player.x = 35; $0.player.y = 0
+            $0.enemies[0] = ApplePanicEnemy(kind: 0, x: 42, y: 79, trapped: true, trappedTicks: 128, holeRow: 79)
+            $0.enemies[1] = ApplePanicEnemy(kind: 1, x: 48, y: 84)
+            $0.enemies[2] = ApplePanicEnemy(kind: 2, x: 36, y: 70)
+            $0.enemies[3] = ApplePanicEnemy(kind: 1, x: 49, y: 84)
+        }
+        game.tick()
+        XCTAssertEqual(game.state.score, 600)
+        XCTAssertFalse(game.state.enemies[1].active)
+        XCTAssertFalse(game.state.enemies[2].active)
+        XCTAssertTrue(game.state.enemies[3].active)
+        var predicted = try scenario {
+            $0.player.x = 35; $0.player.y = 0
+            $0.enemies[0] = ApplePanicEnemy(kind: 0, x: 42, y: 79, direction: .left, trapped: true, trappedTicks: 128, holeRow: 79)
+            $0.enemies[1] = ApplePanicEnemy(kind: 0, x: 34, y: 88)
+        }
+        predicted.tick()
+        XCTAssertEqual(predicted.state.score, 200)
+        XCTAssertFalse(predicted.state.enemies[1].active)
+    }
+    func testOccupiedChainBypassesStrongEnemyThresholdAndAddsSixTableTotal() throws {
+        var game = try scenario {
+            $0.player.x = 35; $0.player.y = 0
+            $0.enemies[0] = ApplePanicEnemy(kind: 2, x: 42, y: 47, trapped: true, trappedTicks: 128, holeRow: 47)
+            $0.enemies[1] = ApplePanicEnemy(kind: 0, x: 42, y: 79, trapped: true, trappedTicks: 128, holeRow: 79)
+            $0.holes = [ApplePanicHole(x: 42, row: 79, depth: 5, occupied: true)]
+        }
+        game.tick()
+        XCTAssertFalse(game.state.enemies[0].active)
+        XCTAssertFalse(game.state.enemies[1].active)
+        XCTAssertEqual(game.state.enemies[0].y, 102)
+        XCTAssertEqual(game.state.score, 700)
+    }
+    func testRepeatedOccupiedChainsPreserveSuppliedAccumulatorReplacementQuirk() throws {
+        func chain(extraOpenFloor: Bool) throws -> ApplePanicSimulation {
+            var game = try scenario {
+                $0.player.x = 35; $0.player.y = 0
+                $0.enemies[0] = ApplePanicEnemy(kind: 0, x: 42, y: 47, trapped: true, trappedTicks: 128, holeRow: 47)
+                $0.enemies[1] = ApplePanicEnemy(kind: 2, x: 42, y: 79, trapped: true, trappedTicks: 128, holeRow: 79)
+                $0.enemies[2] = ApplePanicEnemy(kind: 1, x: 42, y: 111, trapped: true, trappedTicks: 128, holeRow: 111)
+                $0.holes = [79, 111].map { ApplePanicHole(x: 42, row: $0, depth: 5, occupied: true) }
+                if extraOpenFloor { $0.holes.append(ApplePanicHole(x: 42, row: 143, depth: 5)) }
+            }
+            game.tick()
+            return game
+        }
+        let repeated = try chain(extraOpenFloor: false)
+        XCTAssertEqual(repeated.state.score, 500, "[3,0,2,0,0,0] is tallied, not both victim histories")
+        XCTAssertTrue(repeated.state.enemies.prefix(3).allSatisfy { !$0.active })
+        XCTAssertTrue(repeated.state.holes.isEmpty)
+        XCTAssertEqual(try chain(extraOpenFloor: true).state.score, 800)
+    }
+    func testOccupiedChainWithoutMatchingVictimReturnsAtThatFloor() throws {
+        var game = try scenario {
+            $0.player.x = 35; $0.player.y = 0
+            $0.enemies[0] = ApplePanicEnemy(kind: 2, x: 42, y: 47, trapped: true, trappedTicks: 128, holeRow: 47)
+            $0.holes = [ApplePanicHole(x: 42, row: 79, depth: 5, occupied: true)]
+        }
+        game.tick()
+        XCTAssertEqual(game.state.enemies[0].y, 70)
+        XCTAssertTrue(game.state.enemies[0].active)
+        XCTAssertTrue(game.state.enemies[0].trapped)
+        XCTAssertEqual(game.state.score, 0)
+        XCTAssertTrue(game.state.holes.isEmpty)
     }
     func testFillingOccupiedHoleDropsNormalEnemyAndAwards100() throws {
         var game = try scenario {
@@ -227,6 +411,24 @@ final class ApplePanicCoreTests: XCTestCase {
         XCTAssertThrowsError(try ApplePanicSimulation(resources: res, snapshot: wrong))
         wrong = snapshot; wrong.state.enemies.removeLast()
         XCTAssertThrowsError(try ApplePanicSimulation(resources: res, snapshot: wrong))
+        wrong = snapshot
+        wrong.state.holes = [ApplePanicHole(x: 42, row: 79, depth: 1, slot: 0), ApplePanicHole(x: 60, row: 79, depth: 1, slot: 0)]
+        XCTAssertThrowsError(try ApplePanicSimulation(resources: res, snapshot: wrong))
+    }
+    func testOlderSnapshotWithNoHoleSlotNormalizesAndReplaysDeterministically() throws {
+        let res = resources()
+        var original = try ApplePanicSimulation(resources: res).snapshot
+        original.state.holes = [ApplePanicHole(x: 42, row: 79, depth: 5), ApplePanicHole(x: 60, row: 79, depth: 1)]
+        let bytes = try JSONEncoder().encode(original)
+        XCTAssertFalse(String(decoding: bytes, as: UTF8.self).contains("\"slot\""))
+        let oldSave = try JSONDecoder().decode(ApplePanicSnapshot.self, from: bytes)
+        var upgraded = try ApplePanicSimulation(resources: res, snapshot: oldSave)
+        XCTAssertEqual(upgraded.state.holes.map(\.slot), [0, 1])
+        var restored = try ApplePanicSimulation(resources: res, snapshot: upgraded.snapshot)
+        for input in ApplePanicInput.allCases {
+            upgraded.tick(input: input); restored.tick(input: input)
+        }
+        XCTAssertEqual(upgraded.state, restored.state)
     }
     func testPreparedOriginalMediaWhenPresent() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
