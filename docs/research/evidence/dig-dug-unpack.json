@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "title": "Dig Dug / supplied C64 DIG DUG+",
+  "evidenceKind": "static direct-Ghidra reconstruction and native byte-format decode; not REA Evidence",
+  "targetExecuted": false,
+  "hardware": "son's M5 Pro / 24 GB / macOS 26.3; not M1 acceptance",
+  "sourceSHA256": "cdac1a545475cc547f6b608cb14bc8b6fabd22c444b66fbc8a45ee4eb11f4333",
+  "layers": [
+    {"role": "supplied program", "bytes": 16551, "load": 2049, "endExclusive": 18600},
+    {"role": "decoded crack intro", "bytes": 23044, "load": 2049, "endExclusive": 25093, "entry": 3136,
+     "sha256": "6dacb993fa16ae61102a7d64aaf34e5b362a7a40b1aa4e963c83f81c4efb4891"},
+    {"role": "known relocated second packed layer", "bytes": 19333, "load": 2049, "endExclusive": 21382,
+     "sha256": "b96ff9ffcce59737777f9dc1c6228bf8150a8f2adcfeb4cb5281e6ab20e7430d"},
+    {"role": "decoded body including trainer and game", "bytes": 24490, "load": 24576, "endExclusive": 49066,
+     "trainerEntry": 28816, "gameEntry": 32768,
+     "sha256": "e70f260d0f918da9dee2cdaa0c2a92900938a3877106f6d263307d73e40b73eb"}
+  ],
+  "formatChecks": {"firstLayerLiteralBytes": 6660, "firstLayerMatchBytes": 16384, "secondStreamBytes": 19204,
+                   "unknownRAMGuessed": false, "optionalTrainerPatchesApplied": false},
+  "verification": {"pythonTests": 6, "selectedPreparation": "passed", "nativeGameplay": "absent",
+                   "originalComparison": "unverified", "physicalController": "unverified", "M1Acceptance": "unverified"},
+  "localIgnoredAnalysis": ["Library/Research/dig-dug/loader", "Library/Research/dig-dug/stage2-loader",
+                           "Library/Research/dig-dug/native-body", "Library/Research/dig-dug/original-entry"]
+}

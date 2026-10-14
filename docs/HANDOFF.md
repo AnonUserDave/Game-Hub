@@ -36,6 +36,18 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+Dig Dug's supplied C64 `DIG DUG+` program now has a bounded first-party two-layer
+decoder, `Tools/decode_dig_dug.py`. It recovers a23,044-byte crack intro,19,333
+known relocated packed bytes and the24,490-byte body containing the trainer
+at `$7090` and game entry `$8000`. Every stage is size/hash fenced. Unknown
+intro RAM is excluded and the four optional trainer patches remain unapplied.
+Six Python tests and selected-media preparation pass on the M5. This is static
+content recovery with **no native Dig Dug gameplay entry**. Direct Ghidra has
+mapped the foreground/interrupt dependencies; next reconstruct source game,
+terrain/entity/pump/rock/bonus rules, modes/controls/assets/audio/saves/session
+and close all comparison/physical/M1 gates. See [the Dig Dug ledger](research/DIG-DUG.md)
+and [the hash/count receipt](research/evidence/dig-dug-unpack.json).
+
 **Son's M5 (current).** macOS 26.3, Xcode at `/Applications/Xcode.app` (Swift 6.3.1), Homebrew Python 3 with Pillow, Homebrew `unshield` 1.6.2 and OpenJDK 21/26. REA 6.4.0 is the global MCP server (`/opt/homebrew/bin/rea`), with a working Ghidra provider at `~/Desktop/Tools/ghidra_12.1.2`. REA's Ghidra session timed out during Engine.dll auto-analysis; direct `Tools/analyze_pga2005_ghidra.py` headless runs worked (88 s auto-analysis). Extracted DLLs are in the ignored `Library/SourceMedia/pga2005/engine/Executable`; the Ghidra database is in `Library/Research/ghidra-projects/pga2005-physics`. Git identity: the son's own.
 
 **Owner's M1 (paused).** Apple M1 MacBook Air, 8 GB RAM, macOS 15.6. Xcode is installed, but `/usr/bin/swift`, `git`, `python3` and `xcrun` are blocked by an unaccepted Xcode license; do not accept agreements for the user. The build scripts call `/Applications/Xcode.app/.../XcodeDefault.xctoolchain/usr/bin/swiftc` and the SDK directly, and `DEVELOPER_DIR` overrides them. Older notes mention Codex-bundled tools under `/Users/alexrogers/.cache/codex-runtimes/`; they exist only on that laptop.
