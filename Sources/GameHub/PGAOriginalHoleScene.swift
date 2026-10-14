@@ -40,7 +40,9 @@ struct PGAOriginalHoleMesh {
             for triangle in selection {
                 let offset = data.triangleOffset + Int(triangle) * 16
                 let a = local(u32(offset)), b = local(u32(offset + 4)), c = local(u32(offset + 8))
-                grouped[u32(offset + 12), default: []].append(contentsOf: [a, b, c])
+                // The Z mirror reverses handedness, so emit (a, c, b) to keep
+                // the original front faces counter-clockwise for SceneKit.
+                grouped[u32(offset + 12), default: []].append(contentsOf: [a, c, b])
                 faces.append((a, b, c))
             }
         }
@@ -111,8 +113,15 @@ enum PGAOriginalSceneBuilder {
             let material = SCNMaterial()
             let source = course.data.materials[batch.material]
             material.name = "Original material \(batch.material) · \(source?.name ?? "unmapped")"
+            // Original baked grayscale vertex lighting modulates the texture;
+            // a native sun/ambient term on top is a deliberate, cheap
+            // modernization (the original fixed-function blend is unverified).
             material.lightingModel = .lambert
-            material.isDoubleSided = true
+            let surface = source?.properties.surface ?? .unplayable
+            // Ground is closed and consistently wound, so back faces are culled
+            // (the original default cull mode is CCW); thin objects such as
+            // fences and signs stay double-sided.
+            material.isDoubleSided = surface == .unplayable
             if let source, let image = textures.image(for: source) {
                 material.diffuse.contents = image
                 material.diffuse.wrapS = .repeat; material.diffuse.wrapT = .repeat
@@ -121,8 +130,19 @@ enum PGAOriginalSceneBuilder {
             } else {
                 material.diffuse.contents = NSColor(calibratedWhite: 0.6, alpha: 1)
             }
-            let surface = source?.properties.surface ?? .unplayable
             if surface != .unplayable { material.blendMode = .replace }
+            if surface == .water {
+                // Gentle moving sheen on open water: a slow texture drift plus
+                // a little specular. Costs one texture transform per frame.
+                material.lightingModel = .blinn
+                material.specular.contents = NSColor(white: 0.55, alpha: 1)
+                material.shininess = 0.35
+                let drift = CABasicAnimation(keyPath: "contentsTransform")
+                drift.fromValue = NSValue(scnMatrix4: SCNMatrix4Identity)
+                drift.toValue = NSValue(scnMatrix4: SCNMatrix4MakeTranslation(1, 0.5, 0))
+                drift.duration = 240; drift.repeatCount = .infinity
+                material.diffuse.addAnimation(SCNAnimation(caAnimation: drift), forKey: "drift")
+            }
             return material
         }
         let node = SCNNode(geometry: geometry)

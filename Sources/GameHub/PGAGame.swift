@@ -30,6 +30,7 @@ final class PGAGameSession: ObservableObject {
     @Published private(set) var drawableDescription = "Retina drawable"
     @Published private(set) var frameRate = 0
     let renderer: PGARenderer
+    let hud = PGAHUDImages()
     var onExit: () -> Void
     private weak var view: PGAInputView?
     private var timer: Timer?
@@ -99,6 +100,7 @@ final class PGAGameSession: ObservableObject {
 
     private func install(_ course: PGAOriginalPlayableCourse, mesh: PGAOriginalHoleMesh, indexSeconds: Double, total: Double) {
         original = course
+        renderer.useOriginalBallShadow(hud.image("ball-shadow"))
         var game = PGASimulation(course: course.course, terrains: course.terrains)
         var restored = false
         if let saved = PGARoundStore.load(identity: course.course.identity) { restored = (try? game.restore(saved)) != nil }
@@ -509,7 +511,23 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         content.removeFromParentNode(); content = SCNNode(); scene.rootNode.addChildNode(content)
         content.addChildNode(terrain)
         makeFlag(pin: hole.cup)
+        // render.ini [Fog] Start=800 End=64000 (inches): 20 m to 1,625 m.
+        scene.fogStartDistance = 800 * 0.0254
+        scene.fogEndDistance = 64_000 * 0.0254
+        camera.camera?.zFar = 2_400
         freshCamera = true
+    }
+
+    /// Original ball shadow image (DataImages/Game/Ball/Ballshad) when imported.
+    func useOriginalBallShadow(_ image: NSImage?) {
+        guard let image, let shadow = ballShadow.geometry as? SCNCylinder else { return }
+        let plane = SCNPlane(width: shadow.radius * 2.4, height: shadow.radius * 2.4)
+        let material = SCNMaterial()
+        material.diffuse.contents = image; material.lightingModel = .constant
+        material.writesToDepthBuffer = false; material.isDoubleSided = true
+        plane.firstMaterial = material
+        ballShadow.geometry = plane
+        ballShadow.eulerAngles.x = -.pi / 2
     }
 
     func build(hole: PGAHole) {

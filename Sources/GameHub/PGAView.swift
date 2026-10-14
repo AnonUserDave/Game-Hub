@@ -30,7 +30,7 @@ struct PGAGameView: View {
                         HStack(alignment: .top) { holeCard; Spacer(); performanceCard }.padding(22)
                         Spacer(minLength: 12)
                         HStack(alignment: .bottom, spacing: 20) {
-                            swingCard
+                            if session.isOriginal && session.hud.available { originalSwingCard } else { swingCard }
                             Spacer(minLength: 0)
                             if geometry.size.width > 900 { mapCard }
                         }.padding(.horizontal, 22).padding(.bottom, 16)
@@ -130,6 +130,55 @@ struct PGAGameView: View {
                     .font(.system(size: 9, design: .monospaced)).lineSpacing(4).foregroundStyle(.white.opacity(0.55))
             }
         }.padding(18).frame(width: 385).background(panel).foregroundStyle(.white)
+    }
+
+    /// Pebble Beach module: original circular meter, bag graphics and panel art.
+    private var originalSwingCard: some View {
+        HStack(alignment: .bottom, spacing: 16) {
+            PGAOriginalSwingMeter(simulation: game, images: session.hud)
+                .frame(width: 196, height: 196)
+                .contentShape(Circle())
+                .onTapGesture { session.swing() }
+                .help("Click: start swing, set power, strike at 6 o'clock")
+            VStack(alignment: .leading, spacing: 9) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(game.club.title).font(.system(size: 21, weight: .semibold))
+                    Spacer()
+                    Text(game.club == .putter ? "\(Int((game.targetDistance * 3.28084).rounded())) FT MAX" : "~\(Int((game.targetDistance * 1.09361).rounded())) YD")
+                        .font(.system(size: 11, weight: .bold, design: .monospaced)).foregroundStyle(pgaGold)
+                }
+                HStack(alignment: .bottom, spacing: 3) {
+                    ForEach(PGAClub.allCases, id: \.rawValue) { club in
+                        Button { session.changeClub(club.rawValue - game.club.rawValue) } label: {
+                            VStack(spacing: 3) {
+                                if let image = session.hud.club(club, selected: club == game.club) {
+                                    Image(nsImage: image).resizable().interpolation(.high).aspectRatio(contentMode: .fit).frame(height: 74)
+                                }
+                                Text(club.shortTitle).font(.system(size: 8, weight: .bold, design: .monospaced))
+                                    .foregroundStyle(club == game.club ? pgaGold : .white.opacity(0.55))
+                            }.frame(width: 26)
+                        }.buttonStyle(.plain).disabled(game.phase != .aiming)
+                    }
+                }
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: game.phase.inMotion ? "location.fill" : "info.circle").foregroundStyle(pgaGold)
+                    Text(game.message).font(.system(size: 11)).foregroundStyle(.white.opacity(0.85)).lineLimit(2)
+                }.frame(minHeight: 28, alignment: .top)
+                Text(game.phase == .power ? "POWER \(Int((game.meter * 100).rounded()))% · CLICK TO SET" : game.phase == .accuracy ? "STRIKE AS THE MARKER CROSSES 6 O'CLOCK" : game.phase.inMotion ? "\(Int((game.shotPower * 100).rounded()))% · \(Int((game.lastShotDistance * 1.09361).rounded())) YD" : "SPACE / CLICK THE METER / A TO SWING")
+                    .font(.system(size: 9, weight: .bold, design: .monospaced)).tracking(0.8).foregroundStyle(.white.opacity(0.7))
+                if showHelp {
+                    Text("← → aim · ↑ ↓ clubs · H aim at pin · C camera · Esc pause\nController: stick aim · LB/RB clubs · A swing · X camera · B pause")
+                        .font(.system(size: 8.5, design: .monospaced)).lineSpacing(3).foregroundStyle(.white.opacity(0.5))
+                }
+            }.frame(width: 300)
+        }
+        .padding(16)
+        .background {
+            if let panel = session.hud.image("shot-panel") {
+                Image(nsImage: panel).resizable().opacity(0.92).clipShape(RoundedRectangle(cornerRadius: 10))
+            } else { panel }
+        }
+        .foregroundStyle(.white)
     }
 
     private var swingMeter: some View {
