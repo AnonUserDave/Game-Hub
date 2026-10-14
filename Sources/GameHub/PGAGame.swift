@@ -173,6 +173,7 @@ final class PGAGameSession: ObservableObject {
         savedRound = PGARoundStore.load(code: course.data.code)
         if let savedRound { setup = savedRound.setup }
         awaitingSetup = true
+        audio?.playMusic("music.menu")
         loadState = .ready
     }
 
@@ -199,6 +200,7 @@ final class PGAGameSession: ObservableObject {
                                                                           skyType: renderPresets?.state(weather: chosen.weatherRow, time: chosen.timeSlot, hole: 1).skyType ?? 2))
         audio?.perform([.cancel])
         awaitingSetup = false
+        audio?.playMusic(nil)
         lastHoleIndex = -1
         showHole(PGAOriginalHoleMesh.build(course: original, holeIndex: game.holeIndex, hole: game.hole))
         renderer.resetCamera()
@@ -212,6 +214,7 @@ final class PGAGameSession: ObservableObject {
         savedRound = PGARoundStore.load(code: courseCode)
         setPaused(false)
         awaitingSetup = true
+        audio?.playMusic("music.menu")
     }
 
     private func showHole(_ mesh: PGAOriginalHoleMesh) {
@@ -441,6 +444,9 @@ final class PGAGameSession: ObservableObject {
             if let audio, audio.scripted { audio.perform(commentary.update(simulation, events: events)) }
         }
         if previousPhase != simulation.phase {
+            // music.stn sub 20: end-of-game music once the round is complete.
+            if simulation.phase == .roundComplete { audio?.playMusic("music.end_of_game") }
+            else if previousPhase == .roundComplete { audio?.playMusic(nil) }
             if !isOriginal && (simulation.phase == .airborne || simulation.phase == .rolling) { renderer.animateSwing() }
             previousPhase = simulation.phase
         }

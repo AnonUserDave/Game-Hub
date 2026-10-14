@@ -286,6 +286,14 @@ final class PGAAudioEngine: @unchecked Sendable {
     private static let speechFileLimit = 2 * 1024 * 1024
     private static let waitingLimit = 6
 
+    /// music.stn (class 6): streamed from disk, never decoded into memory.
+    private let musicNode = AVAudioPlayerNode()
+    private var musicFormat: AVAudioFormat?
+    private var musicEvent: String?
+    private var musicGeneration = 0
+    /// CMachineSettings::SuggestSound music slider: 35 %.
+    static let musicGain: Float = 0.35
+
     private struct Placed { var folder: String; var position: PGAVector?; var radius: Double }
     private var emitters: [Int: [Placed]] = [:]
     private var folders: [String: PGAAudioRules.Folder] = [:]
@@ -344,6 +352,7 @@ final class PGAAudioEngine: @unchecked Sendable {
             running = false
             for voice in voices { voice.node.stop(); voice.loopKey = nil }
             speech.stop(); speechGeneration += 1; speechEndsAt = 0; waiting.removeAll()
+            musicNode.stop(); musicEvent = nil; musicGeneration += 1
             engine.stop()
             cache.removeAll(); cacheOrder.removeAll(); cacheBytes = 0
         }
@@ -409,6 +418,38 @@ final class PGAAudioEngine: @unchecked Sendable {
             guard self.running, !self.paused,
                   let name = self.rules.select(eventClass: eventClass, sub: sub, facts: facts, fired: self.fired, using: &self.random) else { return }
             self.playEvent(name, at: position)
+        }
+    }
+
+    /// Starts the music.stn situation (e.g. "music.menu" sub 9, "music.end_of_game"
+    /// sub 20) with its least-played track looping, or stops music for nil.
+    func playMusic(_ event: String?) {
+        queue.async {
+            guard self.running, event != self.musicEvent else { return }
+            self.musicEvent = event
+            self.musicGeneration += 1
+            self.musicNode.stop()
+            guard let event, let files = self.rules.events[event]?.groups.first, let file = self.leastPlayed(files),
+                  let source = try? AVAudioFile(forReading: self.directory.appendingPathComponent(file)) else { return }
+            if self.musicFormat != source.processingFormat {
+                self.engine.disconnectNodeOutput(self.musicNode)
+                self.engine.connect(self.musicNode, to: self.engine.mainMixerNode, format: source.processingFormat)
+                self.musicFormat = source.processingFormat
+            }
+            self.musicNode.volume = Self.musicGain
+            self.loopMusic(source, generation: self.musicGeneration)
+            self.musicNode.play()
+        }
+    }
+
+    private func loopMusic(_ file: AVAudioFile, generation: Int) {
+        musicNode.scheduleFile(file, at: nil, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+            guard let self else { return }
+            self.queue.async {
+                guard self.running, self.musicGeneration == generation else { return }
+                file.framePosition = 0
+                self.loopMusic(file, generation: generation)
+            }
         }
     }
 
@@ -594,6 +635,7 @@ final class PGAAudioEngine: @unchecked Sendable {
         engine.attach(speech)
         engine.connect(speech, to: engine.mainMixerNode, format: speechFormat)
         speech.volume = Self.speechGain
+        engine.attach(musicNode)
         engine.mainMixerNode.outputVolume = 0.9
         engine.prepare()
         configurationObserver = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: nil) { [weak self] _ in

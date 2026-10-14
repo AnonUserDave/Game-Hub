@@ -92,7 +92,7 @@ def main():
     sky = decode_pga2005_objects.prepare_sky(root, "PBL" if "PBL" in args.courses else args.courses[0])
     print(f"Sky: {sky['domes']} original domes")
     # Original sounds and per-course ambience (needs the course materials above).
-    if import_pga2005_audio.main(["--courses", *args.courses]) != 0:
+    if import_pga2005_audio.main(["--courses", *args.courses, "--music"]) != 0:
         raise SystemExit("Audio import failed")
     # Original shot-effect sprites, divot and tee meshes (anim.stn).
     if import_pga2005_effects.main([]) != 0:
