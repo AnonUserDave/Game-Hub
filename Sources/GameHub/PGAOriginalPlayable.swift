@@ -82,6 +82,8 @@ final class PGAOriginalCourseData: @unchecked Sendable {
         var pins: [PGAVector]
         var aimPoints: [PGAVector]
         var yardagesByTee: [Int]?
+        /// Original OB (type 2) and unplayable (type 1) lines, raw XZ.
+        var boundaryLines: [PGAHoleBoundaries.Line] = []
     }
     enum LoadError: LocalizedError {
         case invalid(String)
@@ -219,6 +221,8 @@ final class PGAOriginalCourseData: @unchecked Sendable {
             var number: Int; var par: Int; var handicap: Int
             var tees: [Point]; var pins: [Point]; var aim_points: [Point]
             var yardages_by_tee: [Int]?
+            struct Boundary: Decodable { var type: Int; var points_raw: [[Double]] }
+            var ob_polygons: [Boundary]?
         }
         struct Conditions: Decodable { var green_cond: Int?; var rough_length: Int?; var wind_speed: Int? }
         var schema_version: Int
@@ -242,9 +246,13 @@ final class PGAOriginalCourseData: @unchecked Sendable {
             guard hole.number == index + 1, (3...6).contains(hole.par), !hole.tees.isEmpty, !hole.pins.isEmpty else {
                 throw LoadError.invalid("Original hole \(index + 1) is incomplete.")
             }
+            let lines = (hole.ob_polygons ?? []).compactMap { line -> PGAHoleBoundaries.Line? in
+                let points = line.points_raw.compactMap { $0.count == 2 && $0.allSatisfy({ $0.isFinite && abs($0) < 1e7 }) ? SIMD2($0[0], $0[1]) : nil }
+                return points.count > 1 && points.count <= 10_000 ? PGAHoleBoundaries.Line(type: line.type, points: points) : nil
+            }
             return SourceHole(number: hole.number, par: hole.par, handicap: hole.handicap,
                               tees: try hole.tees.map(vector), pins: try hole.pins.map(vector),
-                              aimPoints: try hole.aim_points.map(vector), yardagesByTee: hole.yardages_by_tee)
+                              aimPoints: try hole.aim_points.map(vector), yardagesByTee: hole.yardages_by_tee, boundaryLines: lines)
         }
         var defaults = PGAConditions()
         if let c = file.conditions {
@@ -338,10 +346,13 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
               let pin = snap(rawPin, in: terrain, preferring: .green, transform: transform) else { return nil }
         let aims = source.aimPoints.map { transform.meters(raw: $0) }
         let yards = source.yardagesByTee.flatMap { $0.indices.contains(teeIndex) ? $0[teeIndex] : nil }
+        let line = ([rawTee] + source.aimPoints + [rawPin]).map { SIMD2($0.x, $0.z) }
+        let boundaries = source.boundaryLines.isEmpty ? nil : PGAHoleBoundaries(lines: source.boundaryLines, holeLine: line, origin: transform.origin)
         let hole = PGAHole(name: "Hole \(source.number)", par: source.par, tee: tee.point, cup: pin.point,
                            centerline: [tee.point] + aims + [pin.point], fairwayWidth: 0, greenRadius: 0, hazards: [],
                            terrainSeed: 0, source: PGAHoleSource(number: source.number, teeIndex: teeIndex, pinIndex: pinIndex,
-                                                                 handicap: source.handicap, scorecardYards: yards))
+                                                                 handicap: source.handicap, scorecardYards: yards),
+                           boundaries: boundaries)
         return (hole, tee.surface, pin.surface)
     }
 

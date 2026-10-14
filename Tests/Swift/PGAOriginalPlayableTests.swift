@@ -238,6 +238,51 @@ final class PGAOriginalPlayableTests: XCTestCase {
         XCTAssertEqual(again.wind, first)
     }
 
+    func testIntersectLineCodesFollowUtilsDLL() {
+        let s = { (x: Double, y: Double) in SIMD2(x, y) }
+        XCTAssertEqual(PGAHoleBoundaries.intersect(s(0, 0), s(10, 10), s(0, 10), s(10, 0)), 1, "proper crossing")
+        XCTAssertEqual(PGAHoleBoundaries.intersect(s(0, 0), s(10, 0), s(20, -5), s(20, 5)), 0, "beyond the segment")
+        XCTAssertEqual(PGAHoleBoundaries.intersect(s(0, 0), s(5, 5), s(0, 10), s(10, 0)), 3, "ending exactly on the line")
+        XCTAssertEqual(PGAHoleBoundaries.intersect(s(0, 0), s(10, 10), s(5, 5), s(10, 0)), 4, "through the line's start")
+        XCTAssertEqual(PGAHoleBoundaries.intersect(s(0, 0), s(10, 0), s(0, 1), s(10, 1)), 0, "parallel")
+    }
+
+    func testOriginalLinesKeepThePlayAreaInPlay() throws {
+        let course = try pebbleCourse()
+        for (index, source) in course.data.holes.enumerated() {
+            let hole = course.course.holes[index]
+            let lines = try XCTUnwrap(hole.boundaries, "hole \(index + 1) has OB lines")
+            for pin in source.pins { XCTAssertEqual(lines.check(course.transform.meters(raw: pin)), 0, "hole \(index + 1) pin in play") }
+            for aim in source.aimPoints { XCTAssertEqual(lines.check(course.transform.meters(raw: aim)), 0) }
+            XCTAssertEqual(lines.check(hole.tee), 0, "hole \(index + 1) selected tee in play")
+        }
+        // Far off to the side of hole 1 is out of bounds.
+        let one = course.course.holes[0], along = (one.cup - one.tee).horizontalUnit
+        let side = PGAVector(x: -along.z, y: 0, z: along.x)
+        let flags = [one.tee + side * 400, one.tee - side * 400].map { one.boundaries!.check($0) }
+        XCTAssertTrue(flags.contains(PGAHoleBoundaries.outOfBounds), "\(flags)")
+    }
+
+    func testOceanShotOnEighteenDropsBackWithOnePenalty() throws {
+        let course = try pebbleCourse()
+        var setup = PGARoundSetup(); setup.teeIndex = 3
+        let base = try course.course(for: setup)
+        var game = PGASimulation(course: base, terrains: course.terrains)
+        game.restoreHoleForTest(strokes: 4)
+        for _ in 0..<16 { game.restoreHoleForTest(strokes: 4) }
+        XCTAssertEqual(game.holeIndex, 17)
+        let tee = game.ball
+        game.alignToCup(); game.selectClub(.iron7)
+        game.aim(0.6)   // positive aim turns left: into Carmel Bay
+        game.strike(power: 1, accuracy: 0)
+        for _ in 0..<4000 where game.phase.inMotion { game.update(deltaTime: 1.0 / 60) }
+        XCTAssertEqual(game.phase, .aiming)
+        XCTAssertEqual(game.strokes, 2, "the stroke played plus one penalty")
+        XCTAssertTrue(game.lie.playable, "dropped on a playable lie: \(game.lieLabel)")
+        XCTAssertEqual(game.hole.boundaries?.check(game.ball), 0)
+        XCTAssertTrue(game.message.hasPrefix("Water hazard"), game.message)
+    }
+
     func testRoundSetupKeepsConditionsAcrossSaves() throws {
         var setup = PGARoundSetup()
         setup.conditions = PGAConditions(greenSpeed: 5, roughLength: 3, windSpeed: 4, windSeed: 4242)

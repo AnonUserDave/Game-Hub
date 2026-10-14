@@ -1,4 +1,5 @@
 import Foundation
+import simd
 
 // Native development simulation. These values and rules are deliberately
 // independent of SceneKit, input devices, and the as-yet-undecoded 2005 engine.
@@ -81,6 +82,82 @@ struct PGAHoleSource: Codable, Equatable {
     var scorecardYards: Int?
 }
 
+/// A hole's original out-of-bounds (type 2) and unplayable (type 1) lines,
+/// compiled into the TCR hole record and tested by CHole::CheckHazard
+/// (0x10181371) when the ball comes to rest (PGA2005-RULES.md §1–2). Lines are
+/// open polylines in the source's raw inch XZ frame; the test counts crossings
+/// of the segment from the nearest hole-line point (selected tee, aim points,
+/// selected pin) to the ball.
+struct PGAHoleBoundaries: Codable, Equatable {
+    struct Line: Codable, Equatable {
+        var type: Int
+        var points: [SIMD2<Double>]
+    }
+    var lines: [Line]
+    var holeLine: [SIMD2<Double>]
+    /// Raw-frame origin of the course transform, to map simulation meters back.
+    var origin: PGAVector
+
+    static let unplayable: UInt32 = 0x20
+    static let outOfBounds: UInt32 = 0x80
+
+    func raw(_ meters: PGAVector) -> SIMD2<Double> {
+        SIMD2(meters.x / 0.0254 + origin.x, -meters.z / 0.0254 + origin.z)
+    }
+
+    /// 0x20 unplayable, 0x80 out of bounds, or 0.
+    func check(_ ball: PGAVector) -> UInt32 {
+        let point = raw(ball)
+        guard let reference = holeLine.min(by: { simd_length_squared($0 - point) < simd_length_squared($1 - point) }) else { return 0 }
+        var unplayable = 0, out = 0
+        for line in lines where line.points.count > 1 {
+            var crossings = 0
+            for index in 1..<line.points.count {
+                let a = line.points[index - 1], b = line.points[index]
+                let code = Self.intersect(reference, point, a, b)
+                if code == 1 || code == 4 { crossings += 1 }
+                else if code == 3 { crossings = 0; break }
+            }
+            guard crossings % 2 == 1 else { continue }
+            if line.type == 1 || line.type == 3 { unplayable += 1 } else if line.type == 2 { out += 1 }
+        }
+        if unplayable % 2 == 1 { return Self.unplayable }
+        return out % 2 == 1 ? Self.outOfBounds : 0
+    }
+
+    /// Utils.dll IntersectLine (0x1000cdc0) for segments p1–p2 and p3–p4:
+    /// 0 no hit or parallel, 1 proper hit, 2/3/4/5 at p1/p2/p3/p4.
+    static func intersect(_ p1: SIMD2<Double>, _ p2: SIMD2<Double>, _ p3: SIMD2<Double>, _ p4: SIMD2<Double>) -> Int {
+        let eps = 0.001, vertical = 1e300
+        let (x1, y1, x2, y2, x3, y3, x4, y4) = (p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y)
+        let m1 = abs(x1 - x2) >= eps ? (y1 - y2) / (x1 - x2) : vertical
+        let m2 = abs(x3 - x4) >= eps ? (y3 - y4) / (x3 - x4) : vertical
+        let b1 = abs(m1 - vertical) >= eps ? y1 - m1 * x1 : 1e300
+        let b2 = abs(m2 - vertical) >= eps ? y3 - m2 * x3 : 1e300
+        if abs(m1 - m2) < eps { return 0 }
+        let x: Double, y: Double
+        if abs(m1 - vertical) >= eps {
+            if abs(m2 - vertical) >= eps {
+                x = (b1 - b2) / (m2 - m1)
+                y = abs(m1) >= eps ? x * m1 + b1 : y2
+            } else {
+                x = x3
+                y = y2 - ((x2 - x3) * (y2 - y1)) / (x2 - x1)
+            }
+        } else {
+            x = x1
+            y = y4 - ((y4 - y3) * (x4 - x1)) / (x4 - x3)
+        }
+        let near = [abs(x - x1) < eps, abs(x - x2) < eps, abs(x - x3) < eps, abs(x - x4) < eps,
+                    abs(y - y1) < eps, abs(y - y2) < eps, abs(y - y3) < eps, abs(y - y4) < eps]
+        let spans = [near[0] || near[1] ? 0 : (x - x2) * (x - x1), near[2] || near[3] ? 0 : (x - x4) * (x - x3),
+                     near[4] || near[5] ? 0 : (y - y2) * (y - y1), near[6] || near[7] ? 0 : (y - y4) * (y - y3)]
+        if spans.contains(where: { $0 > 0 }) { return 0 }
+        for (code, pair) in [(2, (0, 4)), (3, (1, 5)), (4, (2, 6)), (5, (3, 7))] where near[pair.0] && near[pair.1] { return code }
+        return 1
+    }
+}
+
 struct PGAHole: Codable, Equatable {
     var name: String
     var par: Int
@@ -92,6 +169,8 @@ struct PGAHole: Codable, Equatable {
     var hazards: [PGAHazard]
     var terrainSeed: Double
     var source: PGAHoleSource? = nil
+    /// Original OB/unplayable lines; nil for generated holes.
+    var boundaries: PGAHoleBoundaries? = nil
 
     var length: Double { tee.distance(to: cup) }
     var minX: Double { min(tee.x, cup.x, centerline.map(\.x).min() ?? 0) - 100 }
@@ -370,6 +449,9 @@ struct PGASimulation {
     /// Where and how fast the ball first touched a bunker during this shot.
     private var bunkerEntry: (position: PGAVector, speed: Double)?
     private var meterMilliseconds = 0.0
+    /// The current shot's path (every 4th 60 Hz tick) for the original relief walk.
+    private var shotPath: [PGAVector] = []
+    private var pathTick = 0
     private var accumulator = 0.0
     private var shotOrigin: PGAVector = .zero
     private var lowSpeedTime = 0.0
@@ -575,6 +657,7 @@ struct PGASimulation {
             return
         }
         flight = started
+        shotPath = [ball]; pathTick = 0
         shotOrigin = ball; originLieIndex = lieIndex
         shotFromTee = strokes == 0; shotLie = lie
         strokes += 1; accumulator = 0
@@ -615,12 +698,20 @@ struct PGASimulation {
         flight = active
         ball = adapter.frame.meters(active.position) + PGAVector(x: 0, y: Self.ballRadius, z: 0)
         velocity = adapter.frame.metersPerSecond(active.velocity)
+        pathTick += 1
+        if pathTick % 4 == 0 && shotPath.count < 4000 { shotPath.append(ball) }
         lastShotDistance = ball.distance(to: shotOrigin)
         for change in changes {
             switch change {
             case let .impact(position, normalSpeed, _, surface, _, bounce):
                 let flags = surface.records[0].flags
-                if flags & PGABallSurfaceFlag.water != 0 { applyPenalty(.water); return }
+                if flags & PGABallSurfaceFlag.water != 0 {
+                    // Lost where it lands; the original drops back along the
+                    // ball's path with one penalty stroke (PGA2005-RULES.md §3).
+                    ball = adapter.frame.meters(position) + PGAVector(x: 0, y: Self.ballRadius, z: 0)
+                    random = active.random
+                    takeRelief(penalty: true, from: .water); return
+                }
                 if flags & PGABallSurfaceFlag.outOfBounds != 0 { applyPenalty(.out); return }
                 if bounce == 1 || normalSpeed >= 0.5 {
                     let point = adapter.frame.meters(position) + PGAVector(x: 0, y: Self.ballRadius, z: 0)
@@ -641,7 +732,9 @@ struct PGASimulation {
         phase = active.state == .flying ? .airborne : .rolling
         // Rolling can enter a hazard without another impact event.
         if phase == .rolling, let floor = lieSample, floor.surface == .water || floor.surface == .out {
-            applyPenalty(floor.surface); return
+            random = active.random
+            if floor.surface == .water { takeRelief(penalty: true, from: .water) } else { applyPenalty(.out) }
+            return
         }
         if active.isFinished {
             random = active.random
@@ -774,6 +867,19 @@ struct PGASimulation {
         velocity = .zero; phase = .aiming
         lastShotDistance = ball.distance(to: shotOrigin)
         if strokes >= 12 { finishHole(pickedUp: true); return }
+        if course.isOriginal {
+            // CHole::CheckHazard at rest: the hole's OB/unplayable lines, then
+            // the floor's own flags; no floor under the ball is out of bounds.
+            guard let floor = lieSample else { applyPenalty(.out); return }
+            let lines = hole.boundaries?.check(ball) ?? 0
+            let flags = (floor.properties?.flags ?? 0) | lines
+            if lines == PGAHoleBoundaries.unplayable || flags & 0x40 != 0 || floor.surface == .water || floor.surface == .unplayable {
+                takeRelief(penalty: true, from: floor.surface == .water || flags & 0x40 != 0 ? .water : .unplayable); return
+            }
+            // A quirk kept from the original: no penalty within 5 in of the pin.
+            if flags & 0x80 != 0 && ball.distance(to: hole.cup) > 5 * 0.0254 { applyPenalty(.out); return }
+            if floor.properties?.freeDrop == true { takeRelief(penalty: false, from: floor.surface); return }
+        }
         var note = ""
         let resting = lieSample
         if lie == .unplayable, let drop = nearestPlayableDrop() {
@@ -832,6 +938,35 @@ struct PGASimulation {
         let note = message
         loadTurn(next)
         message = "\(playerName) is away · \(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd · (\(players[previous].name): \(note))"
+    }
+
+    /// Original relief (PGA2005-RULES.md §3, spec 6–7): walk the shot's path back
+    /// to the first point more than 9 ft from where the ball stopped that
+    /// allows a drop (0x200), is not green, fringe, bunker or a hazard, sits
+    /// inside the lines and is flat (normal y ≥ 0.93). Reaching the green or
+    /// finding nothing falls back to the spot the shot was played from.
+    private mutating func takeRelief(penalty: Bool, from surface: PGASurface) {
+        flight = nil; velocity = .zero; phase = .aiming
+        let rest = ball
+        var spot: PGAVector?
+        walk: for point in shotPath.reversed() where point.distance(to: rest) > 9 * 0.3048 {
+            guard let floor = ground(x: point.x, z: point.z, ceiling: point.y + 0.3), let properties = floor.properties else { continue }
+            let flags = properties.flags
+            if flags & 0x4 != 0 { break walk }
+            guard flags & 0x200 != 0, flags & (0x8 | 0x10 | 0x20 | 0x40 | 0x80) == 0, floor.surface.playable,
+                  floor.normal.y >= 0.93, (hole.boundaries?.check(point) ?? 0) == 0 else { continue }
+            spot = PGAVector(x: point.x, y: floor.height + Self.ballRadius, z: point.z)
+            break
+        }
+        if penalty { strokes += 1; events.append(.penalty(surface)) }
+        ball = spot ?? shotOrigin
+        lieIndex = spot == nil ? originLieIndex : 0
+        lastShotDistance = 0
+        if strokes >= 12 { finishHole(pickedUp: true); return }
+        let reason = surface == .water ? "Water hazard" : surface == .unplayable ? "Unplayable" : "Free relief"
+        message = "\(reason) · \(penalty ? "one penalty stroke · " : "")\(spot == nil ? "replay from your previous lie" : "dropped back along the ball's line")"
+        alignToPlayLine()
+        passTurn()
     }
 
     /// Nearest playable floor within 30 m that is not nearer the hole.
