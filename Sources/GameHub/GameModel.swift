@@ -219,7 +219,10 @@ final class GameStore: ObservableObject {
     /// archive in the library never makes an unimplemented port appear playable.
     func readiness(_ game: GameManifest) -> String? {
         guard let launch = game.launch else { return "Native rewrite needed" }
-        if launch.kind == "builtin" { return Self.builtinIDs.contains(launch.builtin ?? "") ? nil : "Native module unavailable" }
+        if launch.kind == "builtin" {
+            guard Self.builtinIDs.contains(launch.builtin ?? "") else { return "Native module unavailable" }
+            if !RetroOriginalMedia.requiredIDs.contains(launch.builtin ?? "") { return nil }
+        }
         guard let cached = nativeReadiness[game.id] else { return "Checking native build…" }
         return cached.isEmpty ? nil : cached
     }
@@ -290,11 +293,26 @@ final class GameStore: ObservableObject {
             return
         }
         if let reason = readiness(game) {
-            issue = HubIssue(title: reason, message: ([game.title + " has not been rewritten for this Mac."] + game.notes).joined(separator: "\n\n"))
+            let explanation = RetroOriginalMedia.requiredIDs.contains(game.launch?.builtin ?? "") ? "This native development module requires its prepared original graphics." : game.title + " has not been rewritten for this Mac."
+            issue = HubIssue(title: reason, message: ([explanation] + game.notes).joined(separator: "\n\n"))
             return
         }
         guard let launch = game.launch else { return }
-        if launch.kind == "builtin" { recordPlay(game); activeGame = game; return }
+        if launch.kind == "builtin" {
+            guard RetroOriginalMedia.requiredIDs.contains(launch.builtin ?? "") else { recordPlay(game); activeGame = game; return }
+            let mediaRoot = root, builtin = launch.builtin ?? ""
+            launchingGameID = game.id
+            Task { [weak self] in
+                let reason = await Task.detached(priority: .userInitiated) { RetroOriginalMedia.readiness(id: builtin, root: mediaRoot) }.value
+                guard let self else { return }
+                self.launchingGameID = nil
+                guard self.root == mediaRoot else { return }
+                self.nativeReadiness[game.id] = reason
+                guard reason.isEmpty else { self.issue = HubIssue(title: "Original media changed", message: "\(game.title) needs its prepared original graphics. Run the title's preparation tool and refresh the library."); return }
+                self.recordPlay(game); self.activeGame = game
+            }
+            return
+        }
         let currentReadiness = Self.externalBuildReadiness(launch, root: root)
         guard currentReadiness.isEmpty else {
             nativeReadiness[game.id] = currentReadiness
@@ -419,8 +437,8 @@ private enum CatalogLoader {
                 try GameStore.validateManifest(game)
                 guard !result.games.contains(where: { $0.id == game.id }) else { throw ManifestError.invalid("Duplicate game ID: \(game.id)") }
                 result.games.append(game)
-                if let launch = game.launch, launch.kind != "builtin" {
-                    result.readiness[game.id] = GameStore.externalBuildReadiness(launch, root: root)
+                if let launch = game.launch {
+                    result.readiness[game.id] = launch.kind == "builtin" ? RetroOriginalMedia.readiness(id: launch.builtin ?? "", root: root) : GameStore.externalBuildReadiness(launch, root: root)
                 }
             } catch { result.errors.append("\(url.lastPathComponent): \(error.localizedDescription)") }
         }

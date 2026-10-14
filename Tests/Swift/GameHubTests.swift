@@ -19,7 +19,7 @@ final class GameHubTests: XCTestCase {
         XCTAssertTrue(Set(archives.map(\.lastPathComponent)).isSubset(of: catalogSources))
         XCTAssertEqual(games.filter { $0.fidelity == "source" }.count, 17)
         let prototypes = games.filter { $0.fidelity == "prototype" }
-        XCTAssertEqual(Set(prototypes.map(\.id)), ["pga2005-native-development", "pga2005-original-courses", "breakout-native-development", "conflict2500-native-development"])
+        XCTAssertEqual(Set(prototypes.map(\.id)), ["pga2005-native-development", "pga2005-original-courses", "breakout-native-development", "conflict2500-native-development", "apple-panic-native-development", "crossfire-native-development", "night-driver-native-development"])
         XCTAssertTrue(prototypes.allSatisfy { NativeGameFactory.availableIDs.contains($0.launch?.builtin ?? "") })
         XCTAssertEqual(Set(games.map(\.id)).count, games.count)
         XCTAssertFalse(games.contains { $0.fidelity == "verified" })

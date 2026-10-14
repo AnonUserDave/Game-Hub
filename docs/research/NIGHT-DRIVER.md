@@ -182,10 +182,15 @@ snapshot restore, original-media identity, malformed HUD bounds, malformed
 packed data and bounded output. They are
 static/first-party checks, not comparison with the running original game.
 
-Next, integrate original tile/sprite/HUD rendering and controls into the native
-hub, implement native sound with stated SID
-limitations, port the attract sequence, establish source cadence/crash delays
+The native session integration follow-up below covers character/HUD presentation
+and controls. Next implement source sound with stated SID limitations, port
+attract/high-score sequences, establish source cadence/crash delays
 against a running original, then capture behavior/visual comparisons. Physical
 Fusion Pro and keyboard focus/reconnect tests and sustained **M1 Air / 8 GB /
 2560×1600** acceptance remain required. No work ran on the owner's laptop and
 no background monitor was created.
+
+
+## Native development session checkpoint
+
+Native integration follow-up: a separate development hub entry presents original instructions,40×25 character road/car/crash/HUD data and digit sprites, with source keyboard/F1/F3 modes and native arrow/stick/paddle/drag adapters. A single320×200 nearest-sampled bitmap uses256KB temporary pixels and removes per-tile clipping seams; this is an engineering allocation bound, not an M1 benchmark. Rightward stick and drag both decrease the original paddle reading. Independent control and interrupt schedules merge in time order, and taps wait for their relevant update. Development pacing is explicitly120 controls/50 interrupts per second and0.2s per crash stage; none is qualified original timing. Saves retain mode/source state/schedule fractions and restore paused. Live M5 acceleration/save/return/restore preserved speed16/time98. Original RGB/VIC crop, audio/attract/high-score sequences, all source comparisons, physical input and M1 gates remain open. See [QA](../QA.md).

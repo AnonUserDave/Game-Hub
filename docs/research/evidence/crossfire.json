@@ -52,6 +52,41 @@
       "count": 6
     }
   ],
+  "bonusSprites": {
+    "drawRoutine": 22400,
+    "pointerTable": 22485,
+    "idle": {
+      "kind": 0,
+      "name": "bonus-idle",
+      "address": 25344,
+      "anchorDelta": [
+        4,
+        3
+      ],
+      "width": 21,
+      "height": 9
+    },
+    "collected": {
+      "kinds": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "names": [
+        "bonus-0",
+        "bonus-1",
+        "bonus-2",
+        "bonus-3"
+      ],
+      "anchorDelta": [
+        1,
+        4
+      ]
+    },
+    "expiredKind": 5,
+    "expiredPointer": 0
+  },
   "spriteLocations": [
     {
       "name": "player",
@@ -164,6 +199,14 @@
       "width": 28,
       "height": 6,
       "sha256": "3fb9041f50f233c3d929c0c5225f3186fe3dd44626c2ee4eb59d119b213de14b"
+    },
+    {
+      "name": "bonus-idle",
+      "address": 25344,
+      "sourceFileOffset": 17152,
+      "width": 21,
+      "height": 9,
+      "sha256": "f5a883949d9b7d72f2eee5ee823f46ea5aeae0769e231317ee1b421b1600bdb0"
     }
   ],
   "claims": [
@@ -204,6 +247,14 @@
         "$5D5F-$5D6C"
       ],
       "finding": "Seven-by-six 16x16 obstacle blocks; eleven source enemy spawns; 35 initial ammo decreasing by 5 per wave to 15."
+    },
+    {
+      "addresses": [
+        "$5780-$57D4",
+        "$57D5-$57E0",
+        "$6300"
+      ],
+      "finding": "Bonus kind0 is the collectible 21x9 sprite at$6300, anchored x+4/y+3. Kinds1..4 display score art at$8100/$8200/$8300/$8400, anchored x+1/y+4; expired kind5 has a zero sprite pointer."
     }
   ],
   "unresolved": [

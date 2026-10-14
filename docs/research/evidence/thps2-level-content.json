@@ -1,0 +1,940 @@
+{
+  "schema": 1,
+  "date": "2026-10-13",
+  "hardware": "M5 Pro 24 GB development only; M1 unverified",
+  "archive": {
+    "bytes": 543723047,
+    "path": "Tony_Hawks_Pro_Skater_2_Win_ISO_EN.zip",
+    "sha256": "fc3fcde2565e284e62a25925e9a1586df3621b601fc3253dfadcb4c089e329a8"
+  },
+  "pack": {
+    "bytes": 197886331,
+    "image": "Tony Hawk's Pro Skater 2.iso",
+    "path": "SETUP/DATA/ALL.PKR",
+    "sha256": "7e2ae173577c41598dc644824b52f7eaf9664ea478e177a8703f77c0185207da"
+  },
+  "source_scope": "Supplied THPS2 PC ALL.PKR only; no executable execution",
+  "levels": [
+    {
+      "name": "hangar",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKHAN.PSX",
+          "sha256": "56cc7f02ac45e0772621e6d9866fda4562e8a71669a0dee826bd93512fe9e6f8",
+          "objects": 470,
+          "models": 471,
+          "vertices": 5368,
+          "planes": 3231,
+          "faces": 3231,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -29581312,
+                -43610112,
+                73199628,
+                59170828
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 1805
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKHAN_L.PSX",
+          "sha256": "d4b3c2ea67f95a00faa79076709381c34da73b9cb18dff069ffeca70e9b1a64a",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 105,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKHAN_O.PSX",
+          "sha256": "7af3598d306a60cb1ee85ebf4dc5919a4a2b6ee4d7c2db03a79ad2f26fcaeb26",
+          "objects": 20,
+          "models": 20,
+          "vertices": 699,
+          "planes": 640,
+          "faces": 640,
+          "textures": 39,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKHAN_T.TRG",
+        "sha256": "3946dc1ef6c7393512de65153cdbeea147f1433bc2976ba3d7c944c60cf7ae81",
+        "nodes": 713,
+        "node_types": {
+          "1": 81,
+          "2": 27,
+          "4": 1,
+          "5": 19,
+          "6": 188,
+          "8": 14,
+          "10": 181,
+          "12": 188,
+          "13": 12,
+          "15": 1,
+          "255": 1
+        }
+      },
+      "visible_triangles": 4706,
+      "native_material_groups": 127,
+      "texture_identifiers": 117,
+      "pc_bmp_identifiers": 73,
+      "prepared_image_pixels": 1695744,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "school-ii",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKSL2.PSX",
+          "sha256": "cf55f9681c4019012541e4c565b4b439e95aff0845a11a9faa6b20be3441cd14",
+          "objects": 1164,
+          "models": 1164,
+          "vertices": 11445,
+          "planes": 6004,
+          "faces": 6004,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -27910144,
+                17539072,
+                117198856,
+                162648072
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 2580
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKSL2_L.PSX",
+          "sha256": "674e4d3ac73468966b69fc6b71a190f1861674038cabda247c51276a7d7d19de",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 225,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKSL2_O.PSX",
+          "sha256": "c4f294a8263f5e67aa77e85f8566c306897aed8e464b6500a6fe47cbc1a6a159",
+          "objects": 6,
+          "models": 6,
+          "vertices": 138,
+          "planes": 126,
+          "faces": 126,
+          "textures": 0,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKSL2_T.TRG",
+        "sha256": "291e4b5abe18c50b6d658da87cff07c6bb31a664c8b7da2ce56d965ef9460e1a",
+        "nodes": 920,
+        "node_types": {
+          "1": 29,
+          "2": 2,
+          "4": 1,
+          "5": 23,
+          "6": 179,
+          "8": 13,
+          "10": 502,
+          "12": 90,
+          "13": 27,
+          "15": 1,
+          "255": 1,
+          "1000": 52
+        }
+      },
+      "visible_triangles": 9888,
+      "native_material_groups": 220,
+      "texture_identifiers": 223,
+      "pc_bmp_identifiers": 197,
+      "prepared_image_pixels": 2788160,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "new-york",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKNY.PSX",
+          "sha256": "b640e0f7f340620308603ff62c0f3d566ddf5d4ecb3914f3d21b8cc31b8e71f3",
+          "objects": 1218,
+          "models": 1218,
+          "vertices": 11993,
+          "planes": 5754,
+          "faces": 5754,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -316477440,
+                -101003264,
+                -67432440,
+                148041736
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 2491
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKNY_L.PSX",
+          "sha256": "abe12361c5660123585e74f7a84ed75c866d5afd9ddc8c95e2e363c17676bd51",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 186,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKNY_O.PSX",
+          "sha256": "d39fd17ff3884c1e3d7c595f6e34410ffce0dcedc7f30aea264a8502f05e5cf8",
+          "objects": 5,
+          "models": 5,
+          "vertices": 123,
+          "planes": 72,
+          "faces": 72,
+          "textures": 8,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKNY_T.TRG",
+        "sha256": "7e96a5918b49dea1a2fb476eacfd50bb74052226fc756c630f8753a7290b6980",
+        "nodes": 1015,
+        "node_types": {
+          "1": 65,
+          "2": 6,
+          "3": 14,
+          "4": 1,
+          "5": 23,
+          "6": 234,
+          "8": 20,
+          "10": 388,
+          "12": 232,
+          "13": 27,
+          "15": 1,
+          "255": 1,
+          "501": 3
+        }
+      },
+      "visible_triangles": 8420,
+      "native_material_groups": 194,
+      "texture_identifiers": 184,
+      "pc_bmp_identifiers": 111,
+      "prepared_image_pixels": 1768896,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "marseille",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKMAR.PSX",
+          "sha256": "4094452c42eb6631ab3f6c38a95cea568d312cf540488b5980b57ca84c7b8400",
+          "objects": 853,
+          "models": 865,
+          "vertices": 7765,
+          "planes": 4133,
+          "faces": 4133,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -73318400,
+                -34181120,
+                56979460,
+                96116740
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 2176
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKMAR_L.PSX",
+          "sha256": "2c470a77c4ca8d584663c56e79ba7af6626ae4a7dd48771c95d5aee08d8745b5",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 194,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKMAR_O.PSX",
+          "sha256": "2f27213b5dadc70deb07363b2eb5540842050c5a141575ea5ac52fd2b0f79c38",
+          "objects": 6,
+          "models": 6,
+          "vertices": 180,
+          "planes": 181,
+          "faces": 181,
+          "textures": 0,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKMAR_T.TRG",
+        "sha256": "110e852503952bf9f33b14a8718ed976ffed9221e88dfab18df23c8e29664f4b",
+        "nodes": 682,
+        "node_types": {
+          "1": 33,
+          "2": 31,
+          "4": 1,
+          "5": 8,
+          "6": 175,
+          "8": 12,
+          "10": 288,
+          "12": 106,
+          "13": 10,
+          "15": 1,
+          "255": 1,
+          "1000": 16
+        }
+      },
+      "visible_triangles": 6080,
+      "native_material_groups": 191,
+      "texture_identifiers": 187,
+      "pc_bmp_identifiers": 164,
+      "prepared_image_pixels": 2568640,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "venice",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKVEN.PSX",
+          "sha256": "987f7071b58ca95d78d20da45c0958028a791737d1fed3c66c2d08f700f3f849",
+          "objects": 1008,
+          "models": 1008,
+          "vertices": 10559,
+          "planes": 5897,
+          "faces": 5897,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                35250176,
+                -80490496,
+                226066436,
+                110325764
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 2853
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKVEN_L.PSX",
+          "sha256": "063133f6d173875019e96a69ff83c37cd192ce530a0bca9c18b8238b91340280",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 176,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKVEN_O.PSX",
+          "sha256": "d4bff1b62fde282790906383823ed6472195c87206ec09cc69e188919dd84d92",
+          "objects": 8,
+          "models": 8,
+          "vertices": 207,
+          "planes": 200,
+          "faces": 200,
+          "textures": 0,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKVEN_T.TRG",
+        "sha256": "a74c8f7885c1613084b0488faffdb83fb0ef13305822b9622f1e98295079a912",
+        "nodes": 997,
+        "node_types": {
+          "1": 46,
+          "4": 1,
+          "5": 23,
+          "6": 299,
+          "8": 15,
+          "10": 427,
+          "12": 156,
+          "13": 22,
+          "15": 1,
+          "255": 1,
+          "1000": 6
+        }
+      },
+      "visible_triangles": 9332,
+      "native_material_groups": 169,
+      "texture_identifiers": 173,
+      "pc_bmp_identifiers": 134,
+      "prepared_image_pixels": 2364992,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "skatestreet",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKSS.PSX",
+          "sha256": "c1389fe2db9c3bd07d98f4adaf6a17466167ff0f04592d64dc80c350f11593f5",
+          "objects": 898,
+          "models": 922,
+          "vertices": 8420,
+          "planes": 4175,
+          "faces": 4175,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -324694016,
+                6160384,
+                -173469676,
+                157384724
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 3095
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKSS_L.PSX",
+          "sha256": "d15909a4d6adf59c4d2a39533122ffc226b98dc242887956c6927cd6811d7d47",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 132,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKSS_O.PSX",
+          "sha256": "e5115d8a400428ac09774a70d4581a25d9d062df75389676c6e5886c98714aec",
+          "objects": 5,
+          "models": 5,
+          "vertices": 124,
+          "planes": 47,
+          "faces": 47,
+          "textures": 11,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKSS_T.TRG",
+        "sha256": "ede24c91056e951712e933b652c279351bca42774ff69eb0b52a2f0bedbb3270",
+        "nodes": 842,
+        "node_types": {
+          "1": 44,
+          "4": 1,
+          "5": 8,
+          "6": 149,
+          "8": 15,
+          "10": 328,
+          "12": 274,
+          "13": 20,
+          "14": 1,
+          "15": 1,
+          "255": 1
+        }
+      },
+      "visible_triangles": 5891,
+      "native_material_groups": 135,
+      "texture_identifiers": 142,
+      "pc_bmp_identifiers": 105,
+      "prepared_image_pixels": 2320704,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "philadelphia",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKPH.PSX",
+          "sha256": "6f276f73bfd035edf7baa85481c79b8a23b13a683b8859a554475671ab7457e7",
+          "objects": 1001,
+          "models": 1015,
+          "vertices": 11185,
+          "planes": 5721,
+          "faces": 5721,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -68136960,
+                -76234752,
+                123248660,
+                115150868
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 2690
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKPH_L.PSX",
+          "sha256": "7cc6e034343a74ccd0a0f08090b3e28d3300590408bd76f29c7c0a9cf4aa69e0",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 188,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKPH_O.PSX",
+          "sha256": "53ba055974e3e10fa06d30c0f065f09c129cb65685959a896de7bc4143a45c8c",
+          "objects": 8,
+          "models": 8,
+          "vertices": 192,
+          "planes": 159,
+          "faces": 159,
+          "textures": 12,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKPH_T.TRG",
+        "sha256": "4d312b1e3fd18e2d5d0f54db7c909cfcdbcf7ad7bf740ee0a45eb8184887509d",
+        "nodes": 1145,
+        "node_types": {
+          "1": 60,
+          "2": 11,
+          "4": 1,
+          "5": 24,
+          "6": 223,
+          "8": 15,
+          "10": 570,
+          "12": 211,
+          "13": 28,
+          "15": 1,
+          "255": 1
+        }
+      },
+      "visible_triangles": 8048,
+      "native_material_groups": 196,
+      "texture_identifiers": 194,
+      "pc_bmp_identifiers": 129,
+      "prepared_image_pixels": 2220480,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "bullring",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKBUL.PSX",
+          "sha256": "9e4785626a927c66045f13a561ae9288453fd809fdae120d5b2249b9d3084038",
+          "objects": 837,
+          "models": 837,
+          "vertices": 8798,
+          "planes": 5242,
+          "faces": 5242,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -39346176,
+                -39346176,
+                39350284,
+                39350284
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 5909
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKBUL_L.PSX",
+          "sha256": "7a9f233c90d0ed34ffc3049a4280954089bd878e5dd442559f1d7826967a08c2",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 114,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKBUL_O.PSX",
+          "sha256": "279e910e8362ce68a35b318c163e1922854239d986d9510190cbb36b399fa647",
+          "objects": 3,
+          "models": 3,
+          "vertices": 455,
+          "planes": 305,
+          "faces": 305,
+          "textures": 0,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKBUL_T.TRG",
+        "sha256": "fc22a922aeee1772b13019851d6c1757b963865bc4989c9eabf0cb74c2e4a1cc",
+        "nodes": 1500,
+        "node_types": {
+          "1": 46,
+          "2": 53,
+          "4": 1,
+          "5": 10,
+          "6": 354,
+          "8": 18,
+          "10": 673,
+          "12": 241,
+          "13": 30,
+          "15": 1,
+          "255": 1,
+          "1000": 72
+        }
+      },
+      "visible_triangles": 6577,
+      "native_material_groups": 109,
+      "texture_identifiers": 114,
+      "pc_bmp_identifiers": 96,
+      "prepared_image_pixels": 1891072,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "chopper-drop",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKB1.PSX",
+          "sha256": "fce7c698075f57dc608b10632e5de98311105d53c91884f7978aec7224b5275c",
+          "objects": 186,
+          "models": 186,
+          "vertices": 1572,
+          "planes": 649,
+          "faces": 649,
+          "textures": 51,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -58486784,
+                -55701504,
+                55205896,
+                57991176
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 1948
+            }
+          ]
+        },
+        {
+          "role": "objects",
+          "path": "data/SKB1_O.PSX",
+          "sha256": "b927c91d243a9bb57f8de6036e8dfd12afae0cdc665a80ed769cd6a58443a48d",
+          "objects": 19,
+          "models": 19,
+          "vertices": 377,
+          "planes": 210,
+          "faces": 210,
+          "textures": 20,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKB1_T.TRG",
+        "sha256": "8e24f02d7f345bb7ea84e459eb6abecab50ada1c41a23e8ae70c647ba98411c0",
+        "nodes": 164,
+        "node_types": {
+          "1": 20,
+          "4": 1,
+          "6": 23,
+          "8": 8,
+          "10": 66,
+          "12": 30,
+          "13": 6,
+          "15": 1,
+          "255": 1,
+          "1000": 8
+        }
+      },
+      "visible_triangles": 1267,
+      "native_material_groups": 66,
+      "texture_identifiers": 69,
+      "pc_bmp_identifiers": 58,
+      "prepared_image_pixels": 1187456,
+      "unresolved_texture_ids": []
+    },
+    {
+      "name": "skate-heaven",
+      "layers": [
+        {
+          "role": "level",
+          "path": "data/SKHVN.PSX",
+          "sha256": "655bc2b702be8fa9819d1b862fefdc54bd434356dbffeeae3bf820a9a73e5f10",
+          "objects": 766,
+          "models": 766,
+          "vertices": 10920,
+          "planes": 6416,
+          "faces": 6416,
+          "textures": 0,
+          "blockmaps": [
+            {
+              "bounds_fixed24": [
+                -48738304,
+                -231976960,
+                346984456,
+                163745800
+              ],
+              "dimensions": [
+                20,
+                20
+              ],
+              "object_references": 2024
+            }
+          ]
+        },
+        {
+          "role": "texture-library",
+          "path": "data/SKHVN_L.PSX",
+          "sha256": "8da7baf9a40813739c08b7f5dde75928cfbc1b713d7a9c00ae1cf2e26cd70a85",
+          "objects": 0,
+          "models": 0,
+          "vertices": 0,
+          "planes": 0,
+          "faces": 0,
+          "textures": 105,
+          "blockmaps": []
+        },
+        {
+          "role": "objects",
+          "path": "data/SKHVN_O.PSX",
+          "sha256": "1e89612ee63dacb1c275bbdae30e5ca911914cf9b8ccd689604aabed3ddb2318",
+          "objects": 12,
+          "models": 12,
+          "vertices": 201,
+          "planes": 172,
+          "faces": 172,
+          "textures": 0,
+          "blockmaps": []
+        }
+      ],
+      "trg": {
+        "path": "data/SKHVN_T.TRG",
+        "sha256": "c381bfd76226cd46def14a0e6731733c85bb14cb2428d730de0611220b8ab961",
+        "nodes": 1289,
+        "node_types": {
+          "1": 19,
+          "2": 2,
+          "4": 1,
+          "6": 191,
+          "8": 20,
+          "10": 758,
+          "12": 226,
+          "13": 70,
+          "15": 1,
+          "255": 1
+        }
+      },
+      "visible_triangles": 8039,
+      "native_material_groups": 93,
+      "texture_identifiers": 104,
+      "pc_bmp_identifiers": 88,
+      "prepared_image_pixels": 2270208,
+      "unresolved_texture_ids": []
+    }
+  ],
+  "corpus_counts": {
+    "psx": 263,
+    "objects": 27737,
+    "models": 28501,
+    "vertices": 361012,
+    "planes": 265536,
+    "faces": 222626,
+    "textures": 6412,
+    "trg": 32,
+    "nodes": 20220
+  },
+  "unqualified_sources": [
+    {
+      "path": "data/SKED4_W1.PSX",
+      "sha256": "2a6199b279f3da4fd6d2d236837c8422c0e00a40954ed4b8826c88b1f978336f",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/SKED4_W3.PSX",
+      "sha256": "4360766c031fcc9afe1a0c83992c6ab997867f28c8c64aec14f4b0fe8e9db63f",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/SKED4_W2.PSX",
+      "sha256": "fde085a04536d894895359546320115a88aaa8435287aee1ab8e9e8ccd5a4a96",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/PROCFIRE.PSX",
+      "sha256": "54971c2632a59cf09d360c795888664242f8e0a7ccf49889eba0c7ade79c4211",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/SECRE1_L.PSX",
+      "sha256": "f453044d63545962561a44c09ab04c670d8feee253cf6234836cff12bd7ee70a",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/SKED4_W5.PSX",
+      "sha256": "8ac866b7364b1d4acc3f8f35a120941a198d311cfd42e8e686796f293b06cbe9",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/HAWK4_FE.PSX",
+      "sha256": "d5cef8761d2b592c435d6ef323b46dfea6e61a780e9fd6bf5fa113450be71193",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/BITS.PSX",
+      "sha256": "3b6fb52c5353c85a3ba25f0f655dbdfff3d761a0891d50c491c398fcc1f54a42",
+      "reason": "Overlapping or unexplained THPS2 texture extent"
+    },
+    {
+      "path": "data/SKED4_W4.PSX",
+      "sha256": "145339a9a14237ce1858c85d6c49873d7eb396079a922fe7b1b1fe4b507d1925",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/DYNAMICLOGOS.PSX",
+      "sha256": "c61379cfc93c4db38879326fd7d517ac795c12052908d9f145ea86619cc4559d",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/HAWK2_FE.PSX",
+      "sha256": "d5cef8761d2b592c435d6ef323b46dfea6e61a780e9fd6bf5fa113450be71193",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/SKHVN_O2.PSX",
+      "sha256": "56e7973f23c015fe172878318e21f4e770328a4706bfb4a0593e3e04fc38e673",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/LASEK2BL.PSX",
+      "sha256": "aa52996954b8546915e21dec51aff8d35e97cd8161d91a81b523f6d60b85f3f1",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/HAWK1_FE.PSX",
+      "sha256": "d5cef8761d2b592c435d6ef323b46dfea6e61a780e9fd6bf5fa113450be71193",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/SKBUL_O2.PSX",
+      "sha256": "7383d384ec32c4d0ccd40f0f5fdd6d5583d3dae5e71643081810982b56474249",
+      "reason": "THPS2 tagged section overlaps object/model tables"
+    },
+    {
+      "path": "data/SKATREST.PSX",
+      "sha256": "744565fb6a51399fb1a703bc573173314ad141b519fd67eab720c2247421f1ea",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/SKATEOBJ.PSX",
+      "sha256": "703735edda029c56d1e7b4031c0fa866ede4817e2a1107f097d10414e140c5fa",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/BURNQ_L.PSX",
+      "sha256": "0f0d02b7b830b62eb1178240080ddc55c11db9580f04011166c5585fbfcf313f",
+      "reason": "THPS2 record outside source extent"
+    },
+    {
+      "path": "data/HAWK3_FE.PSX",
+      "sha256": "d5cef8761d2b592c435d6ef323b46dfea6e61a780e9fd6bf5fa113450be71193",
+      "reason": "THPS2 record outside source extent"
+    }
+  ],
+  "native_probe": {
+    "architecture": "ARM64",
+    "optimization": "-O",
+    "original_paletted_scenes": 10,
+    "pc_bmp_scenes": 10,
+    "rendered_pixels": false,
+    "default_metal_device_available": false
+  },
+  "fidelity": "Static source-content foundation only. Skating/animation/VM/modes/saves/visual and behavior comparisons/physical controller/M1 acceptance remain unfinished.",
+  "supplied_symbol_definitions": {
+    "path": "data/SYMBOLS.TDF",
+    "bytes": 31865,
+    "sha256": "decfecaf33159458d1d13671d9c9dedb7c63e4b0798272d963dc2d23e9ef7190",
+    "selected_numeric_definitions": {
+      "TriggerFileVersion": 2,
+      "Terminator": 255,
+      "RailPoint": 10,
+      "RailDef": 11,
+      "TrickOb": 12,
+      "GoalOb": 14,
+      "AutoExec2": 15,
+      "SpoolIn": 126,
+      "SetRestart": 140,
+      "SetObjFile": 142,
+      "SetGameLevel": 147,
+      "C_DONE": 16640,
+      "C_WAIT": 17024,
+      "C_GOALCOUNTER": 17088,
+      "V_APPLY_GRAVITY": 8483
+    },
+    "limits": "Numeric declaration identities only; script/control execution and timing still unqualified"
+  }
+}

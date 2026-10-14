@@ -7,19 +7,19 @@ No title below is a completed faithful rewrite. The current development host is 
 | Title / source edition | Current source-backed implementation | Required next work |
 | --- | --- | --- |
 | PGA2004 / Windows | Offline disc/cabinet reader; available PBL/SAW/STA course records and original engine binaries recovered with integrity checks | Missing cabinet volume 3 and complete source media; version-4 terrain decode and title-specific behaviors/content/modes |
-| THPS2 / Windows | PKR2 decoder recovers 3,771 assets | PSX mesh/material/texture/placement, TRG goals, skating/tricks/scoring, content/modes/saves and native runtime |
+| THPS2 / Windows | PKR2 source assets; bounded PSX/TRG/blockmap readers and native builder construct eight career/two secret original scenes; eight Swift/six Python checks | Rendered pixels/source renderer, title-specific collision/skating/tricks/scoring/scripts/goals, actors/animation, modes/multiplayer/saves/input/runtime and all comparisons/M1 gates |
 | THUG / Windows | PRE3/LZSS decode; 47 unique original collision assets; bounded native GHSC loader | Original scene/material/animation/script loaders, skating/walking/driving, missions/modes/saves and native runtime |
 | THUG2 / Windows | Three-disc/CAB/PRE3 decode; 94 unique collision assets and native loader | Remaining installation-name/cabinet coverage, scene/material/animation/scripts, original gameplay/modes/saves |
-| Apple Panic / Apple II | Source-byte Foundation state/update core; original layout/spawn/type/sprite-mask loader; 13 Swift and five Python checks | Native UI/audio/screens; exact hole-edge/chain-score rules, source randomness/timing, original comparisons, controls/saves and integration |
+| Apple Panic / Apple II | Native development session with original sprites and supplied hole/slot/capture/crush/chain rules; controls/pause/Ctrl-R/saves/launch/return; 25 core/seven decoder checks plus integration tests and live M5 smoke | Original art/colors/font/audio/screens/visible drop sequences, ROM randomness/source clocks, complete controls/source comparisons and M1 acceptance |
 | Asteroids / Atari2600 | Selected banked cartridge; exact reset/RNG primitive and static instruction records | Main state/variants, motion/collision/splitting, controls/score/lives, art/audio and native session |
 | Asteroids / Atari7800 | Selected cartridge; exact rotation, wave arithmetic and explicit-state RNG primitives | Complete lifecycle/options, thrust/motion, collision/splitting/score/lives, sprites/audio and native session |
 | Asteroids / Atari8-bit | Selected US XEX; source motion/wrap/reflection/spawn/control/collision/score primitives | Complete scheduler and entities, thrust/hyperspace, waves/UFOs/hit effects, sprites/audio and session |
-| Breakout / Atari2600 | Playable native **development reconstruction**, 12 variations / 1–4 player configurations, ROM-derived velocity/score/state tables, save/resume | Reconcile timed second-wall/terminal paths, source raster collision, exact color/audio/control behavior; original comparison |
+| Breakout / Atari2600 | Native development session;26 source-core checks cover prior-frame pixel contacts, sampling/steering/fractions, timed/no-rebuild and scored/team transitions, five rounds, selection overflow; original HUD digits prepared | Intraline graphics, rotation/attract/selection art, cadence/color/audio conversion, independent split-paddle catches, original/physical comparisons and M1 acceptance |
 | Conflict2500 / AppleII | Playable native **development reconstruction** of recovered BASIC rules; scenario, map/tactical/status, commands, AI/turns and save/resume | Applesoft RNG/numeric parity, original display/animation/timing and multi-ship docking prompts; original comparison |
-| Crossfire / AppleII | Source-derived native actor/projectile/control/score/ammunition/bonus/wave loop and snapshots; 14 source masks prepared; 12 Swift/four Python checks | Native presentation/audio/input/saves, source timing and startup, integration and original comparison |
+| Crossfire / AppleII | Native development session with15 original masks, XOR silhouettes/anchors, independent movement/fire adapters, pauses/saves/launch/return; native/static and live M5 shot/resume evidence | Selected source startup, exact HGR field/color/font/screens, audio/cadence, all original/physical comparisons and M1 acceptance |
 | DigDug / C64 | T64 program recovered with load/range/hash metadata | Static loader/game/asset reconstruction, complete original gameplay and native session |
 | NFLFootball / Intellivision | Selected cartridge recovered and hashed | CP1610/EXEC/GROM dependencies, original modes/rules/assets and disc/keypad/side-button controls; native session |
-| NightDriver / C64 | Static packed-game decode, native control/interrupt/road/steering/time/distance rules, source graphic/HUD loader and snapshots; ten Swift/four Python checks | Qualified original clocks and crash delays, audio/attract mode, native UI/input/saves/session and comparison |
+| NightDriver / C64 | Native development session with original instruction/character road/car/crash/HUD/digit data, independent control/timer scheduling, keyboard/paddle adapters, pause/save/launch/return | Qualified foreground/CIA/crash timing (development120/50/0.2s are provisional), RGB/VIC crop/audio/attract/high-score sequences, source comparisons/physical input and M1 acceptance |
 | Preppie! / Atari8-bit | Plain US XEX selected; all ordered segments recovered and hashed | Source level/lane/actor/control/timing/art/audio reconstruction and native session |
 | SpaceInvaders / intended 1978 Taito shooter | Supplied archive mismatch confirmed; contains Bally pinball firmware | Correct shooter reference/media; source reconstruction and complete native runtime. Pinball firmware cannot establish shooter fidelity |
 
@@ -35,7 +35,7 @@ No title below is a completed faithful rewrite. The current development host is 
 
 ## Current checkpoint verification
 
-The final M5 checkpoint passed **145 Swift XCTest** (3 skipped: two opt-in golf snapshots and no audio output), **179 Python tests** and an optimized native ARM64 build. This includes the new Apple Panic/Crossfire/Night Driver cores and final Night Driver source-order regressions. Native UI checks confirmed Breakout launch, short-tap serve, held paddle input, pause/save/return and restored four-ball state. Conflict checks confirmed scenario/map/tactical display, fire/turn progression (energy 22531 to 17531), pause/save/return and restoration at turn 1/energy 17531/tactical view. A final empty-log layout correction and protected tactical crosshair rendering compiled but still need their rebuilt UI check. These are functional M5 development receipts, not original comparison or M1 acceptance. The three additional cores are unregistered pending native presentation/input integration.
+The final M5 integration checkpoint passes **192 Swift XCTest** (three expected skips), **193 Python tests** and optimized ARM64 compilation. Eleven native integration regressions cover focused/neutralized input, pending source taps, original key maps, both sticks, source stop at intersections, media recheck before launch, HUD bounds and character pixel continuity. Live checks cover Apple Panic original masks/movement/pause/save/return/paused restore (X82/Y160,15 source half-dispatches, level1/lives3/score0), Crossfire original masks/stop/shot/pause/save/return/paused restore (ammo35→34), and Night Driver original instruction/road/car/HUD, acceleration/pause/save/return/paused restore (speed16/source time98). These are native and M5 development receipts. Original behavior/visual/audio comparisons, physical controller transitions and every M1 gate remain open. The active all16-title goal is unfinished.
 
 Reproduction:
 
@@ -44,9 +44,13 @@ python3 Tools/prepare_retro_media.py
 python3 Tools/prepare_breakout2600.py
 python3 Tools/prepare_asteroids.py
 python3 Tools/prepare_other_windows.py
+python3 Tools/decode_thps2.py --all-levels
+python3 Tools/decode_apple_panic.py
+python3 Tools/decode_crossfire.py
+python3 Tools/decode_night_driver.py
 ./Tools/build.sh
 ./Tools/test.sh
 python3 -m unittest discover -s Tests -p 'test_*.py'
 ```
 
-Native development games work without source media; Conflict's original tactical bit patterns require local preparation. Recovery output is reference content, not playable original gameplay. Detailed reconstruction and limits are in [Breakout](research/BREAKOUT.md), [Conflict2500](research/CONFLICT2500.md), [Asteroids](research/ASTEROIDS.md) and [Windows content](research/OTHER-WINDOWS.md).
+Apple Panic/Crossfire/Night Driver require their prepared original graphics. The other development entries retain their existing media requirements; Conflict's source tactical bit patterns need preparation. All originals and generated original packages stay ignored. Source content recovery or scene construction alone never counts as a completed rewrite. See [Apple Panic](research/APPLE-PANIC.md), [Breakout](research/BREAKOUT.md), [Conflict2500](research/CONFLICT2500.md), [Crossfire](research/CROSSFIRE.md), [Night Driver](research/NIGHT-DRIVER.md), [Asteroids](research/ASTEROIDS.md), [THPS2](research/THPS2.md) and [Windows content](research/OTHER-WINDOWS.md).

@@ -112,3 +112,22 @@ Auto short-wedge shots now use chip/pitch flags and a power-scaled landing estim
 2026-10-13, M5 Pro MacBook Pro / 24 GB / macOS 26.3. The hub now rechecks an external build's executable ARM64 slice before launch; two synthetic tests cover a build changed after catalog load and an app bundle without executable permissions. Original-course shot launch and condition calculations now use the chosen round difficulty; a synthetic bridge compares all four levels to direct reconstructed `CBallFlight` initialization. PGA held-key aiming and controller actions are gated on its key window, with button history updated while focus is elsewhere. These input transitions were inspected in code but not exercised with the physical Fusion Pro.
 
 `./Tools/test.sh` passed 69 Swift XCTest with three skips (two opt-in snapshots and no CoreAudio output), and `python3 -m unittest discover -s Tests -p 'test_*.py'` passed 149 tests. `./Tools/build.sh` produced `Game Hub.app/Contents/MacOS/GameHub`, identified by `file` as a Mach-O 64-bit arm64 executable. Weather/time preset research checked the local `Engine.dll` disassembly and all 40 installed INIs; it is static evidence, not rendered output. No live original-game, Fusion Pro, or M1 test was performed at this checkpoint.
+
+
+## Remaining-rewrite source and native-session checkpoint
+
+2026-10-13, freshly identified **Mac17,9 / Apple M5 Pro / 24 GB / ARM64**, macOS26.3 development only. The mandatory M1 Air /8GB /2560×1600 target is unchanged and paused. No original executable or emulated game ran.
+
+`./Tools/test.sh` passed **192 XCTest, three expected skips** (two opt-in golf snapshots, unavailable CoreAudio output). `python3 -m unittest discover -s Tests -p 'test_*.py'` passed **193 tests**. Final optimized `./Tools/build.sh` passed; `file` identifies the app binary as Mach-O64-bit ARM64. Logs remain local under `/tmp/gamehub-retro-integration-{swift,python,build}.log`. Eleven new integration regressions cover both sticks across pause/focus/reconnect, short taps until the proper source schedule, original key maps, ordered Crossfire input/stop at intersections, changed media before launch, malformed schedule fractions, HUD bounds and contiguous character pixels.
+
+| Native M5 UI check | Observed result |
+| --- | --- |
+| Catalog |24 entries:17 original source records and seven development prototypes; no verified games. New original-media packages validate before launch. |
+| Apple Panic | Original player/creature masks and reconstructed ladders/floors displayed. Start, heldK for250ms, Escape, save, library return, reopen/resume passed. Save state retained X82/Y160,15 half-dispatches, level1/lives3/score0; resume was paused. Floor/ladder/hole art/color/font/timing remain provisional. |
+| Crossfire | Original masks displayed. Space stop plusF held750ms produced one directional shot (ammo35→34). Pause/save/return/reopen restored34 paused. Final renderer showed all four source kind0 collectibles after XOR composition, with source anchors/explosion order. HGR field/color/font/audio/cadence/startup remain unqualified. |
+| Night Driver | Original instructions/road/car/HUD/digits displayed. Keyboard start andA held2.5s reached source speed16/time98. Pause/save/return/reopen restored16/98 paused. Final single-bitmap renderer visibly removed per-character seams and retained crisp car/road/HUD pixels. Real clocks, RGB/VIC crop, audio and attract/high-score sequences remain open. |
+| Revised Breakout | Setup displayed monochrome switch; old approximate save was unavailable after schema2 migration. Start, short Space serve, Escape, source digit HUD, save/return/reopen restored the playing round paused with five shared rounds and score0. Source logical geometry/colors/HUD were visible; source scanline layout/rotation and calibrated output remain unqualified. |
+
+Static source checkpoints separately passed25 Apple Panic core/seven decoder checks;26 Breakout core/five media checks, including full2048-byte classification; and eight THPS2/six Python checks, with ten original scene constructions. THPS2's isolated probe had no Metal device, so no rendered pixels are claimed. Its original content/trigger/blockmap loading is not skating gameplay.
+
+No physical Fusion Pro, multi-controller, original behavior/visual/audio comparison, sustained performance/memory/thermal run or M1 acceptance was performed. Source-dependent titles remain development reconstructions; the all16-title goal is active and unfinished. Originals/prepared assets/builds stay out of Git.

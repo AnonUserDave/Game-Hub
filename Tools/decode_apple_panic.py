@@ -36,6 +36,16 @@ WINDOWS = {
     "supplied_keyboard_patch": (0x8D80, 0x8D9F),
     "dispatcher": (0x4400, 0x4434),
     "enemy_collision": (0x8702, 0x87C4),
+    "player_hole_lookup": (0x801A, 0x803B),
+    "player_horizontal_holes": (0x81A9, 0x826C),
+    "enemy_capture_dispatch_order": (0x87C6, 0x87DF),
+    "enemy_occupied_hole_lookahead": (0x88BF, 0x890B),
+    "chain_accumulator_insertion": (0x8F38, 0x8F4D),
+    "chain_crushing": (0x8F6E, 0x8FDF),
+    "chain_score_total": (0x9023, 0x904C),
+    "chain_strength_threshold": (0x904D, 0x906E),
+    "chain_accumulator_multiply": (0x906E, 0x9089),
+    "chain_survivor_push": (0x909D, 0x9109),
 }
 # Official 6502 encodings used only to compare a static annotated listing.
 OPCODES = {}
@@ -156,7 +166,10 @@ def decode(source: bytes) -> dict:
         layouts.append(ladders)
     spawns = [[{"x": raw[i], "y": raw[i + 1]} for i in range(0, 16, 2)]
               for raw in [read(0x4E00 + index * 16, 16) for index in range(4)]]
-    pointer_names = ["digLeft0", "digRight0", "digLeft1", "digRight1", "walkRight0", "walkLeft0", "climb0", "walkRight1", "walkLeft1", "climb1"]
+    # The external handler labels call $7A22 "SPRITE_DIG_L", but odd source
+    # action7 validates target X+7 and selects this pointer. Name by actual dig
+    # direction, not the erroneous public left/right annotation.
+    pointer_names = ["digRight0", "digLeft0", "digRight1", "digLeft1", "walkRight0", "walkLeft0", "climb0", "walkRight1", "walkLeft1", "climb1"]
     sprites = {}
     for index, name in enumerate(pointer_names):
         pointer = int.from_bytes(read(0x7A22 + index * 2, 2), "little")
@@ -175,9 +188,51 @@ def evidence(source: bytes, reference: str | None = None) -> dict:
     result = {"schema": 1, "source": {"sha256": hashlib.sha256(source).hexdigest(), "bytes": len(source), "load_address": hex(BASE), "exclusive_end": hex(BASE + len(source))},
               "method": "Static byte/table decoder and optional reference instruction re-encoding; no CPU emulation or original execution; not REA Evidence",
               "windows": {name: {"start": hex(a), "exclusive_end": hex(z), "sha256": hashlib.sha256(source[a - BASE:z - BASE]).hexdigest()} for name, (a, z) in WINDOWS.items()},
+              "rules": rule_evidence(source),
               "limits": ["Payload ends at $95FF; no identity claim for reference $9600..$A7FF", "ROM $F800 pseudo-random stream absent", "Original CPU delay timing and HGR artifact color not reproduced", "M1 acceptance unverified"]}
     if reference is not None: result["reference_comparison"] = reference_comparison(reference, source)
     return result
+
+
+def rule_evidence(source: bytes) -> dict:
+    """Recover the operands supporting native hole/score rules from actual bytes.
+
+    This reads selected instruction operands; it never interprets or runs a CPU.
+    Opcode guards prevent accidentally citing a comment or a different revision.
+    """
+    if len(source) != LENGTH or hashlib.sha256(source).hexdigest() != SOURCE_SHA256:
+        raise ValueError("Apple Panic rules require the selected source identity")
+    def immediate(address, opcode):
+        if source[address - BASE] != opcode:
+            raise ValueError(f"Unexpected rule instruction at ${address:04X}")
+        return {"instruction": hex(address), "value": source[address - BASE + 1]}
+    return {
+        "player_odd_x_lookahead": immediate(0x81C0, 0x69),
+        "player_partial_hole_push": immediate(0x80B2, 0x69),
+        "nearby_hole_distance_exclusive": immediate(0x809B, 0xC9),
+        "new_hole_clearance_exclusive": immediate(0x8173, 0xC9),
+        "hole_row_slots": {"instruction": "0x8085", "value": immediate(0x8085, 0xA2)["value"] - 1,
+                           "reason": "DEX precedes the BEQ end test, so initial15 checks14 entries"},
+        "stack_floor_spacing": immediate(0x8216, 0x69),
+        "stack_terminal_row": immediate(0x821C, 0xC9),
+        "unoccupied_full_hole_code": immediate(0x81D8, 0xC9),
+        "occupied_full_hole_code": immediate(0x8EB1, 0xC9),
+        "score_accumulator_count": immediate(0x8E73, 0xC0),
+        "chain_insertion_after_first_zero": {"instruction": "0x8f44", "extra_increment": source[0x8F44 - BASE] == 0xC8,
+                                             "effect": "Slot1 stayszero; successive occupied victims overwrite slot2"},
+        "chain_bypasses_type_threshold": {"instruction": "0x8fe2", "branch": "0x8fe5", "destination": "0x8ff1"},
+        "enemy_survivor_hole_push": immediate(0x90E5, 0x69),
+        "enemy_occupied_hole_lookahead": {"right_instruction": "0x88d6", "left_instruction": "0x88e1", "value": 8,
+                                         "source_step_sequences_verified": source[0x88D6 - BASE:0x88DE - BASE] == bytes([0xE8]) * 8
+                                             and source[0x88E1 - BASE:0x88E9 - BASE] == bytes([0xCA]) * 8},
+        "capture_order": {"entry_call": "0x87c6", "trapped_call": "0x87db",
+                          "effect": "Entry and first countdown/climb occur in the same dispatch"},
+        "dig_sprite_direction": {"right_target_instruction": "0x80fe", "right_action": 7,
+                                 "right_pose_pointer": "0x7a22", "left_pose_pointer": "0x7a24",
+                                 "effect": "Public left/right handler names are reversed relative to validated dig target"},
+        "crush_collision": {"call": "0x8f92", "routine": "0x8702",
+                            "effect": "Inclusive6x9 bounds predict current direction; crushed victim scores immediately"},
+    }
 
 
 def main():

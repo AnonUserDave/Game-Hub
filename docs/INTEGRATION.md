@@ -89,3 +89,11 @@ Current built-in identifiers: `pga2005-native-development` (generated practice h
 ```
 
 The build uses Xcode's installed Swift compiler and macOS SDK directly. It does not accept an Xcode license on your behalf, download dependencies, or require a paid developer account. `DEVELOPER_DIR` can select another Xcode installation. The resulting unsigned local application is `Game Hub.app` in the checkout. Distributing it to other Macs will require a separate signing and notarization decision.
+
+## Original-media native development modules
+
+Apple Panic, Crossfire and Night Driver are separate built-in **development reconstructions**, alongside Breakout/Conflict2500 and the two golf prototypes. Their original source records remain non-launching. No title is verified complete.
+
+Run `Tools/prepare_retro_media.py`, then the title's `decode_apple_panic.py`, `decode_crossfire.py` or `decode_night_driver.py`, and refresh the library. The three entries require their bounded, source-identified original graphics; validation happens on a worker and again immediately before launch. They load asynchronously, report unavailable media explicitly, and stop session timers/load tasks on return. Local saves live under `~/Library/Application Support/GameHub/NativeRetro/` and restore paused after source/version validation. Night Driver saves include its provisional schedule fractions; Breakout schema2 rejects saves from the old approximate rules.
+
+Original images/data stay in ignored `Library/Prepared/`, `Library/Imported/` or `Library/SourceMedia/`. Native source/tests/preparation tools and compact research receipts belong in Git. See [remaining-title gates](OTHER_REWRITES.md) before any completion claim.

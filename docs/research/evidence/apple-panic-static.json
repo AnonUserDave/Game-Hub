@@ -117,6 +117,136 @@
       "start": "0x8702",
       "exclusive_end": "0x87c4",
       "sha256": "b1d8d1bb535cbd1464679e8402b270b7aa37894f9233ea4d2ffcfb20acedbfe0"
+    },
+    "player_hole_lookup": {
+      "start": "0x801a",
+      "exclusive_end": "0x803b",
+      "sha256": "569b7ddeab68613acca499a97ef26bffc748cb365d24f03184168744e105382c"
+    },
+    "player_horizontal_holes": {
+      "start": "0x81a9",
+      "exclusive_end": "0x826c",
+      "sha256": "121d52b986fb31f6746b0326e3dca164022158f744eda9707c7bd79febb76681"
+    },
+    "enemy_capture_dispatch_order": {
+      "start": "0x87c6",
+      "exclusive_end": "0x87df",
+      "sha256": "5e246d01b668f048f689f98fdde8310c8222844526ced54717979c5db2b5d8dc"
+    },
+    "enemy_occupied_hole_lookahead": {
+      "start": "0x88bf",
+      "exclusive_end": "0x890b",
+      "sha256": "206414b6673e30af07387c31f57024dd94c9d44cebdaa648fa2384765ebb56a6"
+    },
+    "chain_accumulator_insertion": {
+      "start": "0x8f38",
+      "exclusive_end": "0x8f4d",
+      "sha256": "d7c3f49b52b834dec72906658ffce4d1e159242b572f04cae55f68418e2e4bba"
+    },
+    "chain_crushing": {
+      "start": "0x8f6e",
+      "exclusive_end": "0x8fdf",
+      "sha256": "701e58685e31f0a6ee9b0f08e36c4ed86ec3c4702077a21ebd75238bd55da021"
+    },
+    "chain_score_total": {
+      "start": "0x9023",
+      "exclusive_end": "0x904c",
+      "sha256": "be42e9cf22204fe94addb82ea9b5c94425003794956016ea8cedce770f994ece"
+    },
+    "chain_strength_threshold": {
+      "start": "0x904d",
+      "exclusive_end": "0x906e",
+      "sha256": "582c80dcf7e9e79c3f97edd3a420bfee105e4acc16b4b82b2016fe1b4ff6f737"
+    },
+    "chain_accumulator_multiply": {
+      "start": "0x906e",
+      "exclusive_end": "0x9089",
+      "sha256": "dc367eefef3c1f68a653640d5c1487bf478ab7c3de0d0b98b7f1f4f393ca81e4"
+    },
+    "chain_survivor_push": {
+      "start": "0x909d",
+      "exclusive_end": "0x9109",
+      "sha256": "5736fd3dc024417b663b7de532b405111802b6f974dd8cb91759fd7f226b6010"
+    }
+  },
+  "rules": {
+    "player_odd_x_lookahead": {
+      "instruction": "0x81c0",
+      "value": 7
+    },
+    "player_partial_hole_push": {
+      "instruction": "0x80b2",
+      "value": 7
+    },
+    "nearby_hole_distance_exclusive": {
+      "instruction": "0x809b",
+      "value": 6
+    },
+    "new_hole_clearance_exclusive": {
+      "instruction": "0x8173",
+      "value": 9
+    },
+    "hole_row_slots": {
+      "instruction": "0x8085",
+      "value": 14,
+      "reason": "DEX precedes the BEQ end test, so initial15 checks14 entries"
+    },
+    "stack_floor_spacing": {
+      "instruction": "0x8216",
+      "value": 32
+    },
+    "stack_terminal_row": {
+      "instruction": "0x821c",
+      "value": 175
+    },
+    "unoccupied_full_hole_code": {
+      "instruction": "0x81d8",
+      "value": 5
+    },
+    "occupied_full_hole_code": {
+      "instruction": "0x8eb1",
+      "value": 133
+    },
+    "score_accumulator_count": {
+      "instruction": "0x8e73",
+      "value": 6
+    },
+    "chain_insertion_after_first_zero": {
+      "instruction": "0x8f44",
+      "extra_increment": true,
+      "effect": "Slot1 stayszero; successive occupied victims overwrite slot2"
+    },
+    "chain_bypasses_type_threshold": {
+      "instruction": "0x8fe2",
+      "branch": "0x8fe5",
+      "destination": "0x8ff1"
+    },
+    "enemy_survivor_hole_push": {
+      "instruction": "0x90e5",
+      "value": 8
+    },
+    "enemy_occupied_hole_lookahead": {
+      "right_instruction": "0x88d6",
+      "left_instruction": "0x88e1",
+      "value": 8,
+      "source_step_sequences_verified": true
+    },
+    "capture_order": {
+      "entry_call": "0x87c6",
+      "trapped_call": "0x87db",
+      "effect": "Entry and first countdown/climb occur in the same dispatch"
+    },
+    "dig_sprite_direction": {
+      "right_target_instruction": "0x80fe",
+      "right_action": 7,
+      "right_pose_pointer": "0x7a22",
+      "left_pose_pointer": "0x7a24",
+      "effect": "Public left/right handler names are reversed relative to validated dig target"
+    },
+    "crush_collision": {
+      "call": "0x8f92",
+      "routine": "0x8702",
+      "effect": "Inclusive6x9 bounds predict current direction; crushed victim scores immediately"
     }
   },
   "limits": [

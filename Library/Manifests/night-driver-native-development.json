@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "night-driver-native-development",
+  "title": "Night Driver \u00b7 Native Development",
+  "edition": "Commodore / HAL V.01 source reconstruction",
+  "platform": "Native Mac development",
+  "year": 1982,
+  "genre": "Racing",
+  "summary": "Native source-derived speed, steering, road, distance and timer rules with the original character graphics, car, instructions and HUD. Development pacing, RGB palette, audio and attract behavior await original comparison.",
+  "sourceArchive": "Night_Driver_C64_ROM_EN.zip",
+  "accent": "9EBAE2",
+  "artwork": "pixel",
+  "launch": {
+    "kind": "builtin",
+    "builtin": "night-driver-native-development",
+    "arguments": []
+  },
+  "fidelity": "prototype",
+  "notes": [
+    "Native ARM64 development reconstruction; no source CPU executes. This is not a completed faithful rewrite.",
+    "Prepared original media are required. Run Tools/decode_night_driver.py after Tools/prepare_retro_media.py, then refresh the library. Original media stay local and are excluded from Git.",
+    "Native source/version-validated save/resume, pause and launch/return adapters. Behavior, visuals, audio, original modes and physical controller acceptance remain incomplete.",
+    "M5 Pro / 24 GB is development evidence only. Mandatory M1 Air / 8 GB sustained acceptance remains unverified."
+  ],
+  "keyboard": [
+    "A or Up: accelerate",
+    "L / semicolon or Left / Right: steer",
+    "F1: keyboard / joystick; F3: paddle / trackpad",
+    "Drag: paddle; Escape: pause"
+  ],
+  "controller": [
+    "Left stick / D-pad: steer; A: accelerate / start",
+    "Left stick: paddle in paddle mode",
+    "B / Menu: pause"
+  ]
+}
