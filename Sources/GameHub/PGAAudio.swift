@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreAudio
 import Foundation
 
 /// The original PGA Tour 2005 sound rules: basic.stn and gallery.stn situations
@@ -249,8 +250,8 @@ final class PGAAudioEngine: @unchecked Sendable {
     let rules: PGAAudioRules
     private let directory: URL
     private let queue = DispatchQueue(label: "GameHub.PGAAudio", qos: .userInitiated)
-    private let engine = AVAudioEngine()
-    private let environment = AVAudioEnvironmentNode()
+    private let engine: AVAudioEngine
+    private let environment: AVAudioEnvironmentNode
     private let format = AVAudioFormat(standardFormatWithSampleRate: PGAAudioEngine.sampleRate, channels: 1)!
     private var voices: [Voice] = []
     private var configured = false
@@ -284,9 +285,18 @@ final class PGAAudioEngine: @unchecked Sendable {
 
     init?(root: URL) {
         let directory = root.appendingPathComponent("Library/Imported/pga2005/audio", isDirectory: true)
-        guard let rules = PGAAudioRules.load(directory: directory) else { return nil }
+        var device = AudioDeviceID(kAudioObjectUnknown)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+                                                 mScope: kAudioObjectPropertyScopeGlobal,
+                                                 mElement: kAudioObjectPropertyElementMain)
+        guard let rules = PGAAudioRules.load(directory: directory),
+              AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &device) == noErr,
+              device != kAudioObjectUnknown else { return nil }
         self.rules = rules
         self.directory = directory
+        engine = AVAudioEngine()
+        environment = AVAudioEnvironmentNode()
     }
 
     deinit {

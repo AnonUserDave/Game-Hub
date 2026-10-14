@@ -18,12 +18,16 @@ final class PGASnapshotTests: XCTestCase {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let code = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_COURSE"] ?? "PBL"
         let course = try PGAOriginalPlayableCourse.load(code: code, root: root)
+        XCTAssertNotNil(PGACameraDirector(root: root), "Prepared original camera scripts are required for tee-view captures")
         let golferAssets = try? PGAOriginalGolferAssets.load(root: root)
         let holes = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_HOLES"]?.split(separator: ",").compactMap { Int($0) } ?? Array(1...18)
         let directory = URL(fileURLWithPath: output, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let cameras = (ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_CAMERAS"] ?? "0,2").split(separator: ",").compactMap { Int($0) }
         try await MainActor.run {
+            guard let device = MTLCreateSystemDefaultDevice() else {
+                throw XCTSkip("Metal device unavailable in this test environment")
+            }
             _ = NSApplication.shared
             let textures = PGAOriginalTextureCache()
             let art = PGAHUDImages(root: root)
@@ -35,7 +39,7 @@ final class PGASnapshotTests: XCTestCase {
                 let single = PGACourse(name: course.course.name, provenance: course.course.provenance,
                                        holes: [course.course.holes[index]], identity: course.course.identity)
                 var game = PGASimulation(course: single, terrains: [course.terrains[index]])
-                let renderer = PGARenderer()
+                let renderer = PGARenderer(assetRoot: root.appendingPathComponent("Library/Imported/pga2005/\(code)"))
                 renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures), hole: single.holes[0],
                                flagImage: art.courseImage("FLAG", course: code), holeImage: art.image("hole-decal"))
                 XCTAssertNotNil(renderer.scene.rootNode.childNode(withName: PGAOriginalSkyNode.nodeName, recursively: true),
@@ -45,7 +49,6 @@ final class PGASnapshotTests: XCTestCase {
                 renderer.useOriginalBallShadow(art.image("ball-shadow"))
                 renderer.useOriginalAimArrow(art.image("aim-arrow"))
                 if let golferAssets { renderer.useOriginalGolfer(golferAssets) }
-                let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
                 let snapshot = SCNRenderer(device: device, options: nil)
                 snapshot.scene = renderer.scene
                 for camera in cameras {

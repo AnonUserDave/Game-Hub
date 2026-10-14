@@ -1,3 +1,4 @@
+import CoreAudio
 import XCTest
 @testable import GameHub
 
@@ -73,6 +74,16 @@ final class PGAAudioTests: XCTestCase {
     }
 
     func testEnginePlaysSwingImpactAndAmbience() throws {
+        var device = AudioDeviceID(kAudioObjectUnknown)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+                                                 mScope: kAudioObjectPropertyScopeGlobal,
+                                                 mElement: kAudioObjectPropertyElementMain)
+        guard AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &size, &device) == noErr,
+              device != kAudioObjectUnknown else {
+            XCTAssertNil(PGAAudioEngine(root: root), "A missing output device should leave the golf session playable without audio")
+            throw XCTSkip("CoreAudio has no default output device in this test environment")
+        }
         _ = try rules()
         let course = try PGAOriginalPlayableCourse.load(code: "PBL", root: root)
         let audio = try XCTUnwrap(PGAAudioEngine(root: root))

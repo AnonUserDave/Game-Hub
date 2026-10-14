@@ -39,7 +39,7 @@ The decoded Tiger 01 mesh, textures, clubs and swing clips now load on a worker 
 
 ## Original data and evidence
 
-Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` extracts the install cabinets in pure Python and regenerates `Library/Imported/pga2005/` (all 11 courses, HUD art, audio, original scenery and Tiger golfer assets). The objects and golfer decoders are part of preparation; the camera decoder still runs separately (`decode_pga2005_cameras.py`).
+Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` extracts the install cabinets in pure Python and regenerates `Library/Imported/pga2005/` (all 11 courses, HUD art, audio, original scenery, Tiger golfer assets and decoded camera scripts). The objects, golfer and camera decoders are part of preparation.
 
 - **GHPC v3** (`terrain.ghpc`) keeps v2's vertex and triangle records, adds a 48-byte header with a patch count, and ends with one 20-byte record per source patch: layer field, first vertex, vertex count, first triangle, triangle count.
 - **Patch layers.** The layer field is `tagPatch::PatchLayerInfoS`. Its low five bits are the owning hole; the higher bits are course-condition variants. Holes are separate overlapping worlds, so play and the Lab show one hole at a time. The standard selector is `0x420` (CHole::Load). See the ledger.
@@ -51,7 +51,7 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
 
 ## Next work, in order
 
-1. **Publish the checkpoint.** The son's GitHub account has read-only access, so local commits are not on GitHub yet. Either the owner adds `Pablo-Rogers` as a collaborator, or the son pushes to a fork and opens a pull request. Then `git push origin main`.
+1. **Publish the checkpoint.** The connected `Pablo-Rogers` account has no push permission on `AnonUserDave/Game-Hub`, local `gh` authentication is invalid, and no `Pablo-Rogers/Game-Hub` fork exists. The owner can grant write access, or the son can refresh GitHub authentication, create a fork, push the local commits and open a pull request. Do not claim these local commits are on GitHub yet.
 2. **Validate the integrated original gameplay.** The native camera director, `CBallFlight` port, scenery renderer and skinned golfer are on `main`. Compare behavior and visuals against a running original game; camera flight-progress and landing values are approximations. Check golfer size, materials, clip alignment and scene performance. Expand the bag to the original clubs and add wind/settings UI with save tests.
 3. **Weather and time of day.** The original blends two of 40 `renderN.ini` presets (`RenderCommand::renderIni1/2`); research is in progress. Then fog, global diffuse, terrain/tree contrast, sky type and the original lens flare per preset, and a setup choice.
 4. **M1 acceptance**, when the owner makes the laptop available: every course at fullscreen 2560 × 1600 for 30 minutes; FPS, p95/p99 frame time, footprint, swap, thermals and load time.
@@ -78,7 +78,7 @@ The snapshot test writes original-course images; keep its output outside Git. `T
 1. **Done.** `PGATerrainSampling` is injected into `PGASimulation`. `PGAProceduralTerrain` keeps the practice course and its tests unchanged.
 2. **Done.** `PGAOriginalPlayableCourse` assembles one immutable package: mapped GHPC v3, per-hole CSR floor indexes, materials and 18 TCR holes. It uses one tested transform, and tee/pin floor validation is part of loading and tests.
 3. **Done, differently than planned.** The mapped course file is shared across holes. Each hole gets compact render buffers of only its own vertices (about 40–65k), built on a worker, with the next hole prefetched. The 18 hole worlds overlap, so a single combined mesh could not be drawn anyway. Textures are cached per session (all 181 PBL images are about 60 MB as RGBA8 with mipmaps).
-4. **Done.** Loading is asynchronous with a distinct hub entry. The minimap is rasterized from the hole's triangles. HUD and docs keep physics labeled approximate, and original material IDs and flags are preserved.
+4. **Done.** Loading is asynchronous with a distinct hub entry. The minimap is rasterized from the hole's triangles. Original material IDs and flags are preserved. Original-course shots now use a static reconstruction of `CBallFlight`; its fidelity to a running original game remains unverified.
 5. **Done.** Tests cover the predicate, transform, flags and records, all-hole tees and pins, coast handedness, deterministic play through 18 holes and snapshot restore by course identity.
 
 ## Completion gates

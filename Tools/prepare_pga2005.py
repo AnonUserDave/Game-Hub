@@ -12,6 +12,7 @@ from inspect_pga2005 import ISO9660, extract_media
 from import_pga2005 import atomic_write, run_import
 from import_pga2005_hud import convert as convert_hud
 import import_pga2005_audio
+import decode_pga2005_cameras
 import decode_pga2005_objects
 from installshield_cab import Cabinet
 
@@ -97,6 +98,11 @@ def main():
                                        list(decode_pga2005_golfer.DEFAULT_CLIPS), None, False)
     print(f"Golfer: {golfer['mesh']['vertices']} vertices, {golfer['clubs']['triangles']} club triangles, "
           f"{len(golfer['clips'])} clips")
+    # The native director needs these prepared scripts on a fresh install.
+    cameras = decode_pga2005_cameras.run(media_dir, root / "Library/Imported/pga2005")
+    if cameras["missing"]:
+        raise ValueError(f"Missing original camera scripts: {cameras['missing']}")
+    print(f"Cameras: {cameras['scripts']} original scripts")
 
 
 if __name__ == "__main__":
