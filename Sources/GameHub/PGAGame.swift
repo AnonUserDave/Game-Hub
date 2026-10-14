@@ -614,6 +614,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         let ballGeometry = SCNSphere(radius: 0.13)
         ballGeometry.segmentCount = 20
         ballGeometry.firstMaterial = Self.material(NSColor.white, roughness: 0.48)
+        ball.name = "Golf ball"
         ball.geometry = ballGeometry; ball.castsShadow = true
         scene.rootNode.addChildNode(ball)
         let shadow = SCNCylinder(radius: 0.20, height: 0.008)
@@ -667,6 +668,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
 
     /// Balls of players waiting their turn (multiplayer), on their lies.
     private func updateOtherBalls(_ simulation: PGASimulation) {
+        let original = simulation.course.isOriginal
         let waiting = simulation.players.indices.filter { $0 != simulation.currentPlayer && !simulation.players[$0].holed }
         while otherBalls.count < waiting.count {
             let node = SCNNode(geometry: ball.geometry); node.scale = SCNVector3(0.8, 0.8, 0.8)
@@ -676,7 +678,9 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
             guard slot < waiting.count else { node.isHidden = true; continue }
             let position = simulation.players[waiting[slot]].ball
             node.isHidden = false
-            node.position = Self.vector(position + PGAVector(x: 0, y: 0.08, z: 0))
+            let scale = original ? PGASimulation.ballRadius / 0.13 : 0.8
+            node.scale = SCNVector3(scale, scale, scale)
+            node.position = Self.vector(position + PGAVector(x: 0, y: original ? 0 : 0.08, z: 0))
         }
     }
 
@@ -734,11 +738,14 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         let direction = simulation.direction
         let ground = simulation.groundHeight(x: position.x, z: position.z, near: position.y)
         SCNTransaction.begin(); SCNTransaction.animationDuration = 0; SCNTransaction.disableActions = true
-        ball.position = Self.vector(position + PGAVector(x: 0, y: 0.10, z: 0))
+        let originalBall = simulation.course.isOriginal
+        ball.position = Self.vector(position + PGAVector(x: 0, y: originalBall ? 0 : 0.10, z: 0))
         ball.isHidden = simulation.phase == .holed || simulation.phase == .roundComplete
-        let visualScale = simulation.phase.inMotion ? max(1, min(2.5, (position.y - ground) / 14)) : 1
+        let baseScale = originalBall ? PGASimulation.ballRadius / 0.13 : 1
+        let visualScale = baseScale * (simulation.phase.inMotion ? max(1, min(2.5, (position.y - ground) / 14)) : 1)
         ball.scale = SCNVector3(visualScale, visualScale, visualScale)
-        ballShadow.position = SCNVector3(position.x, ground + 0.025, position.z)
+        ballShadow.position = SCNVector3(position.x, ground + (originalBall ? 0.003 : 0.025), position.z)
+        ballShadow.scale = originalBall ? SCNVector3(0.25, 1, 0.25) : SCNVector3(1, 1, 1)
         ballShadow.isHidden = ball.isHidden
         let targetDistance = min(simulation.targetDistance, simulation.distanceToCup + 45)
         let target = position + direction * targetDistance
@@ -791,11 +798,18 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         cameraPosition.y = max(cameraPosition.y, simulation.groundHeight(x: cameraPosition.x, z: cameraPosition.z, near: cameraPosition.y) + (directedPose == nil ? 1.4 : 0.381))
         if let directedPose { camera.camera?.fieldOfView = directedPose.fieldOfView / zoom }
         camera.position = Self.vector(cameraPosition)
-        camera.look(at: Self.vector(cameraTarget))
+        // Some original scripts move from behind the player to a close side or
+        // overhead view. Keep the horizon upright through those cuts; the
+        // one-argument SceneKit look-at can retain an inverted roll.
+        Self.orientCamera(camera, toward: cameraTarget)
         originalGolfer?.update(simulation, cameraPosition: cameraPosition, delta: delta,
                                sceneReady: content.childNodes.isEmpty == false && (simulation.course.isOriginal || cameraMode != 2))
         freshCamera = false
         SCNTransaction.commit()
+    }
+
+    static func orientCamera(_ camera: SCNNode, toward target: PGAVector) {
+        camera.look(at: Self.vector(target), up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
     }
 
     func animateSwing() {

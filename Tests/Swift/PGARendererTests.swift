@@ -4,6 +4,38 @@ import XCTest
 @testable import GameHub
 
 final class PGARendererTests: XCTestCase {
+    func testCameraKeepsWorldUpThroughSteepCuts() async {
+        await MainActor.run {
+            let camera = SCNNode()
+            for position in [SCNVector3(0, 1, 4), SCNVector3(4, 1, 0),
+                             SCNVector3(-4, 1, 0), SCNVector3(0, 4, 0.1)] {
+                camera.position = position
+                PGARenderer.orientCamera(camera, toward: .zero)
+                XCTAssertGreaterThan(camera.simdWorldTransform.columns.1.y, 0,
+                                     "A close or overhead source camera must not roll upside down")
+            }
+        }
+    }
+
+    func testOriginalBallUsesPhysicalRadiusAndRestingHeight() async {
+        await MainActor.run {
+            _ = NSApplication.shared
+            var hole = PGACourse.development.holes[0]
+            hole.source = PGAHoleSource(number: 1, teeIndex: 0, pinIndex: 0, handicap: 1)
+            let course = PGACourse(name: "Original ball fixture", provenance: "Renderer regression fixture", holes: [hole])
+            let simulation = PGASimulation(course: course)
+            let renderer = PGARenderer()
+            renderer.build(hole: hole)
+            renderer.update(simulation, cameraMode: 0, zoom: 1, delta: 1)
+            guard let ball = renderer.scene.rootNode.childNode(withName: "Golf ball", recursively: true),
+                  let sphere = ball.geometry as? SCNSphere else {
+                return XCTFail("Expected a rendered golf ball")
+            }
+            XCTAssertEqual(Double(sphere.radius) * Double(ball.scale.x), PGASimulation.ballRadius, accuracy: 0.0001)
+            XCTAssertEqual(Double(ball.position.y), simulation.ball.y, accuracy: 0.0001)
+        }
+    }
+
     func testDevelopmentForestRetainsCoursePositionsAndClearTeeCamera() async {
         await MainActor.run {
             _ = NSApplication.shared
