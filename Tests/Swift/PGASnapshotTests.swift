@@ -37,6 +37,10 @@ final class PGASnapshotTests: XCTestCase {
                 let renderer = PGARenderer()
                 renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures), hole: single.holes[0],
                                flagImage: art.courseImage("FLAG", course: code), holeImage: art.image("hole-decal"))
+                XCTAssertNotNil(renderer.scene.rootNode.childNode(withName: PGAOriginalSkyNode.nodeName, recursively: true),
+                                "Decoded sky must be present in the original-course scene")
+                let trees = renderer.scene.rootNode.childNode(withName: PGAOriginalVegetationNode.nodeName, recursively: true) as? PGAOriginalVegetationNode
+                XCTAssertNotNil(trees, "Decoded trees must be present in the original-course scene")
                 renderer.useOriginalBallShadow(art.image("ball-shadow"))
                 renderer.useOriginalAimArrow(art.image("aim-arrow"))
                 let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
@@ -58,6 +62,15 @@ final class PGASnapshotTests: XCTestCase {
                     snapshot.pointOfView = renderer.camera
                     let image = snapshot.snapshot(atTime: 1.3, with: CGSize(width: 2560, height: 1600), antialiasingMode: .multisampling4X)
                     try write(image, to: directory.appendingPathComponent(String(format: "%@-hole%02d-camera%d.png", code.lowercased(), number, camera)))
+                    if let trees {
+                        let stats = trees.drawer.stats
+                        XCTAssertGreaterThan(stats.drawCalls, 0, "Original scenery must submit Metal draws")
+                        XCTAssertGreaterThan(stats.lodTrees[0] + stats.lodTrees[1] + stats.lodTrees[2] + stats.lodTrees[3], 0,
+                                             "At least one decoded tree must be visible")
+                        print(String(format: "Hole %d camera %d vegetation: %d draws, %d vertices, LOD0-3 %d/%d/%d/%d, %d culled%@", number, camera,
+                                     stats.drawCalls, stats.vertices, stats.lodTrees[0], stats.lodTrees[1], stats.lodTrees[2], stats.lodTrees[3],
+                                     stats.culled, stats.meshCapApplied ? ", mesh cap applied" : ""))
+                    }
                 }
                 if let map = mesh.map.image {
                     try write(NSImage(cgImage: map, size: .zero), to: directory.appendingPathComponent(String(format: "%@-hole%02d-map.png", code.lowercased(), number)))

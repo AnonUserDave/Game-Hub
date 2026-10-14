@@ -14,6 +14,9 @@ struct PGAOriginalHoleMesh {
     var colors: Data
     var batches: [Batch]
     var map: PGAHoleMap
+    /// Original trees and panorama strips of this hole (nil when the
+    /// course's objects are not prepared).
+    var vegetation: PGAOriginalHoleVegetation?
 
     /// `hole` is the round's hole (its tee and pin set the minimap framing);
     /// it defaults to the course's default tee/pin hole.
@@ -82,8 +85,9 @@ struct PGAOriginalHoleMesh {
             }
         }
         let map = PGAHoleMap.render(hole: hole ?? course.course.holes[holeIndex], positions: positions, triangles: mapTriangles, surfaces: mapSurfaces)
+        let vegetation = course.scenery.vegetationLibrary().flatMap { PGAOriginalHoleVegetation(course: course, holeIndex: holeIndex, library: $0) }
         return PGAOriginalHoleMesh(holeIndex: holeIndex, vertexCount: count, positions: pack(positions), normals: pack(normals),
-                                   uvs: pack(uvs), colors: pack(colors), batches: batches, map: map)
+                                   uvs: pack(uvs), colors: pack(colors), batches: batches, map: map, vegetation: vegetation)
     }
 }
 
@@ -103,8 +107,12 @@ final class PGAOriginalTextureCache {
 enum PGAOriginalSceneBuilder {
     /// SceneKit node for one hole. Ground categories render opaque: several
     /// original ground textures carry alpha whose blending role is unknown.
+    /// The hole node also carries the original sky dome and the hole's
+    /// vegetation as custom-drawn children (`style` holds the render-preset
+    /// values; neutral by default).
     @MainActor
-    static func node(for mesh: PGAOriginalHoleMesh, course: PGAOriginalPlayableCourse, textures: PGAOriginalTextureCache) -> SCNNode {
+    static func node(for mesh: PGAOriginalHoleMesh, course: PGAOriginalPlayableCourse, textures: PGAOriginalTextureCache,
+                     style: PGAOriginalSceneryStyle = .standard) -> SCNNode {
         let count = mesh.vertexCount
         let sources = [
             SCNGeometrySource(data: mesh.positions, semantic: .vertex, vectorCount: count, usesFloatComponents: true,
@@ -169,6 +177,10 @@ enum PGAOriginalSceneBuilder {
         let node = SCNNode(geometry: geometry)
         node.name = "Original hole \(mesh.holeIndex + 1) terrain"
         node.castsShadow = false
+        if let gpu = PGAOriginalSceneryGPU.shared, let sky = course.scenery.sky(type: style.skyType) {
+            node.addChildNode(PGAOriginalSkyNode(dome: sky, gpu: gpu, skydomeDiffuse: style.skydomeDiffuse))
+        }
+        if let vegetation = mesh.vegetation { node.addChildNode(PGAOriginalVegetationNode(hole: vegetation, style: style)) }
         return node
     }
 

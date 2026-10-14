@@ -36,7 +36,7 @@ The 2026-10-13 son's checkpoint added playable original gameplay on all 11 cours
 
 ## Original data and evidence
 
-Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` extracts the install cabinets in pure Python and regenerates `Library/Imported/pga2005/` (all 11 courses, HUD art, audio) in about 70 s on the M5. The objects, golfer and camera decoders run separately for now (`decode_pga2005_objects.py --course PBL`, `decode_pga2005_golfer.py`, `decode_pga2005_cameras.py`); their branches wire them into prepare.
+Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` extracts the install cabinets in pure Python and regenerates `Library/Imported/pga2005/` (all 11 courses, HUD art, audio and original scenery). The objects decoder is now part of preparation; the golfer and camera decoders still run separately (`decode_pga2005_golfer.py`, `decode_pga2005_cameras.py`).
 
 - **GHPC v3** (`terrain.ghpc`) keeps v2's vertex and triangle records, adds a 48-byte header with a patch count, and ends with one 20-byte record per source patch: layer field, first vertex, vertex count, first triangle, triangle count.
 - **Patch layers.** The layer field is `tagPatch::PatchLayerInfoS`. Its low five bits are the owning hole; the higher bits are course-condition variants. Holes are separate overlapping worlds, so play and the Lab show one hole at a time. The standard selector is `0x420` (CHole::Load). See the ledger.
@@ -49,12 +49,12 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
 ## Next work, in order
 
 1. **Publish the checkpoint.** The son's GitHub account has read-only access, so local commits are not on GitHub yet. Either the owner adds `Pablo-Rogers` as a collaborator, or the son pushes to a fork and opens a pull request. Then `git push origin main`.
-2. **Merge the remaining branches** (each in `.worktrees/`, git-ignored via `.git/info/exclude`): `vegetation` (trees and sky) and `golfer` (animated Tiger Woods). The first native camera director and the `CBallFlight` port are on `main`. Compare both against a running original game; camera flight-progress and landing values are approximations. Expand the bag to the original clubs and add wind/settings UI with save tests.
+2. **Merge the remaining `golfer` branch** from `.worktrees/golfer` (git-ignored via `.git/info/exclude`). The native camera director, `CBallFlight` port and original scenery renderer are on `main`. Compare behavior and visuals against a running original game; camera flight-progress and landing values are approximations. Expand the bag to the original clubs and add wind/settings UI with save tests.
 3. **Weather and time of day.** The original blends two of 40 `renderN.ini` presets (`RenderCommand::renderIni1/2`); research is in progress. Then fog, global diffuse, terrain/tree contrast, sky type and the original lens flare per preset, and a setup choice.
 4. **M1 acceptance**, when the owner makes the laptop available: every course at fullscreen 2560 × 1600 for 30 minutes; FPS, p95/p99 frame time, footprint, swap, thermals and load time.
 5. **Rules.** INI OB polygons (`[Hole N OB k]`), lateral water-hazard drops, the original tee/pin selection.
 6. **Presentation.** Replays (`Replay.stn` chances are decoded; filming is not), effects from `anim.stn` (sand, splash, divots), commentary and music.
-7. **Memory and performance.** Keep the 3 GB budget. Consider memoryless MSAA/depth attachments, compressed (BC1/BC2) textures instead of RGBA8 PNGs.
+7. **Memory and performance.** Keep the 3 GB budget. Original scenery submits 14–75 draws per Pebble tee view on the M5; these are draw counts, not frame-time evidence. Consider memoryless MSAA/depth attachments and compressed (BC1/BC2) textures instead of RGBA8 PNGs.
 8. **Controller.** Validate every action, held buttons across pause and hole transitions, focus loss and unplug/replug on the Fusion Pro.
 9. **Remaining titles**, individually. PGA 2004 has only disc 1. The intended Space Invaders is the Taito shooter, but the archive holds Bally pinball firmware.
 

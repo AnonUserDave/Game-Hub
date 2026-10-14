@@ -294,9 +294,11 @@ class ObjectDecoderTests(unittest.TestCase):
         tcr, tcl = course_fixture()
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory)
-            result = O.decode_course_objects(tcr, [tcl], out, b"[HOLE 3]\nHolePanId=1\nPanRotate=0\n")
+            result = O.decode_course_objects(tcr, [tcl], out, b"[HOLE 3]\nHolePanId=1\nPanRotate=0\n"
+                                             b"[SkyDome]\nScaleX=1\nScaleZ=1\nYOffset=500\n")
             objects = result["objects"]
             self.assertEqual(objects["summary"]["instances"], 2)
+            self.assertEqual(objects["sky_ini"]["SkyDome"], {"ScaleX": "1", "ScaleZ": "1", "YOffset": "500"})
             pan = objects["panoramas"]
             self.assertEqual(len(pan["blocks"]), 1)
             self.assertEqual(pan["blocks"][0]["groups"][0]["texture_name"], "obtest.x.tga")

@@ -66,3 +66,7 @@ Not checked in this wave: live play with sound in the native UI, M1 anything.
 ## Son's M5 physics branch checkpoint (development checks, not M1 acceptance)
 
 2026-10-13, M5 Pro MacBook Pro / 24 GB / macOS 26.3. `python3 Tools/make_ballflight_fixtures.py --check` confirmed 125 golden scenarios. The branch passed 47 Swift XCTest (2 opt-in snapshots skipped), 99 Python tests and an optimized native arm64 build. The simulation bridge matches direct `CBallFlight` at 60 Hz; the deterministic 18-hole original-course test passed. These are checks against a static reconstruction, not against a running original game. Live UI, controller behavior, original-game comparisons and M1 sustained performance were not checked for this branch.
+
+## Son's M5 scenery branch checkpoint (development checks, not M1 acceptance)
+
+2026-10-13, M5 Pro MacBook Pro / 24 GB / macOS 26.3. The branch passed the optimized arm64 build, 34 ordinary Swift XCTest (2 opt-in snapshot tests skipped) and 96 Python tests. Its opt-in GPU snapshots captured all 18 Pebble tee views and Turnberry holes 1, 9 and 18 at 2560 × 1600 with 4× MSAA, asserting sky, vegetation and nonzero Metal draws. Pebble 1/9/18 and Turnberry 1 images were inspected. The scenery submitted 14–75 draws per Pebble tee view, with a maximum of 516,381 vertices on hole 4. These are draw counts, not FPS, frame-time, memory or thermal measurements. Exact original lighting and M1 acceptance remain unverified.
