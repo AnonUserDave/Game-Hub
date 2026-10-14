@@ -10,6 +10,23 @@ from pathlib import Path
 
 from inspect_pga2005 import ISO9660, extract_media
 from import_pga2005 import atomic_write, run_import
+from import_pga2005_hud import convert as convert_hud
+from installshield_cab import Cabinet
+
+# Install-cabinet groups the native module reads (HUD art, sky, ball and tee
+# meshes, generic course objects, sounds, golfer, render/camera settings,
+# shaders). Extracted from the install/media ISOs in place, no installer run.
+INSTALL_GROUPS = ["DataImages", "CoursesRoot", "Data-Golfball", "Courses - Generic", "Sounds - Basic",
+                  "Sounds - Gallery", "Sounds - Interface", "Golfer", "Executable", "Data - Shaders"]
+
+
+def prepare_install(media_dir: Path) -> Path:
+    install = media_dir / "install"
+    isos = [media_dir / "EA-TigerWoodsPGATour2005-CD1-Install.iso", media_dir / "EA-TigerWoodsPGATour2005-CD2-MediaDisc.iso"]
+    with Cabinet.from_isos(isos) as cabinet:
+        written = cabinet.extract_all(install, groups=INSTALL_GROUPS, layout="unshield")
+    print(f"Install cabinets: {len(written)} files in {len(INSTALL_GROUPS)} groups")
+    return install
 from decode_pga2005_terrain import decode
 from decode_pga2005_library import decode_materials
 from decode_pga2005_holes import decode_holes
@@ -27,7 +44,8 @@ def main():
     args = parser.parse_args()
     media_dir = root / "Library/SourceMedia/pga2005"
     media = media_dir / "EA-TigerWoodsPGATour2005-CD3-CoursesDisc.B6I"
-    if not media.exists():
+    needed = [media, media_dir / "EA-TigerWoodsPGATour2005-CD1-Install.iso", media_dir / "EA-TigerWoodsPGATour2005-CD2-MediaDisc.iso"]
+    if not all(path.exists() for path in needed):
         extract_media(args.archive, media_dir)
     iso = ISO9660(media)
     source_dir = media_dir / "disc3"
@@ -45,6 +63,9 @@ def main():
         iso.close()
     images = run_import(media, root / "Library/Imported/pga2005")
     print(f"Imported {len(images['images'])} disc images and {len(images['courses'])} course INIs.")
+    install = prepare_install(media_dir)
+    hud = convert_hud(install / "DataImages/Game", root / "Library/Imported/pga2005/hud")
+    print(f"HUD: {len(hud['images'])} original images")
     for code in args.courses:
         source = source_dir / "COURSES" / code
         output = root / "Library/Imported/pga2005" / code
