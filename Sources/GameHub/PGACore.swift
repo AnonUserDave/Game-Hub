@@ -449,8 +449,9 @@ struct PGASimulation {
     /// Where and how fast the ball first touched a bunker during this shot.
     private var bunkerEntry: (position: PGAVector, speed: Double)?
     private var meterMilliseconds = 0.0
-    /// The current shot's path (every 4th 60 Hz tick) for the original relief walk.
-    private var shotPath: [PGAVector] = []
+    /// The current shot's path (every 4th 60 Hz tick, 15 per second) for the
+    /// original relief walk and replays; ends where the ball stopped.
+    private(set) var shotPath: [PGAVector] = []
     private var pathTick = 0
     private var accumulator = 0.0
     private var shotOrigin: PGAVector = .zero
@@ -722,6 +723,7 @@ struct PGASimulation {
             case .holed:
                 random = active.random
                 flight = nil
+                shotPath.append(hole.cup)
                 events.append(.cup)
                 finishHole(); return
             case .outOfWorld:
@@ -865,6 +867,7 @@ struct PGASimulation {
 
     private mutating func endShot() {
         velocity = .zero; phase = .aiming
+        if course.isOriginal, shotPath.last != ball { shotPath.append(ball) }
         lastShotDistance = ball.distance(to: shotOrigin)
         if strokes >= 12 { finishHole(pickedUp: true); return }
         if course.isOriginal {

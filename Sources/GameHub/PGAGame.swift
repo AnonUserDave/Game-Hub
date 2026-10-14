@@ -77,6 +77,29 @@ final class PGAGameSession: ObservableObject {
         loadOriginal()
     }
     func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
+    /// Replay.stn automatic replays: the clip playing, or one waiting for the ball to settle.
+    @Published private(set) var replay: PGAReplayClip?
+    private var pendingReplay: (clip: PGAReplayClip, delay: Double)?
+    private lazy var replayRules = PGAReplayRules.load(root: GameStore.workspaceRoot())
+    private var replayRandom = PGARandom(seed: "replay-\(Date().timeIntervalSince1970)")
+
+    /// Any swing input skips a replay.
+    private func skipReplay() -> Bool {
+        guard replay != nil || pendingReplay != nil else { return false }
+        replay = nil; pendingReplay = nil
+        return true
+    }
+
+    private func considerReplay(holed: Bool, resultFlags: UInt32, distanceToPin: Double, shotDistance: Double) {
+        guard isOriginal, let strike = lastStrike, let rules = replayRules else { return }
+        let facts = PGAReplayRules.facts(fromTee: strike.fromTee, putt: strike.club == .putter, startFlags: strike.flags,
+                                         resultFlags: resultFlags, holed: holed, distanceToPin: distanceToPin,
+                                         shotDistance: shotDistance, par: strike.par, strokes: simulation.strokes)
+        guard let chance = rules.chance(for: facts, random: &replayRandom), replayRandom.int(100) + 1 <= chance,
+              let clip = PGAReplayClip(path: simulation.shotPath) else { return }
+        pendingReplay = (clip, 1.2)
+    }
+
     /// 0 dry, 1 light rain, 2 heavy rain for the weather sound bed.
     private var rainState = 0
     /// The 40 original weather/time presets, when prepared.
@@ -290,6 +313,7 @@ final class PGAGameSession: ObservableObject {
 
     func swing() {
         guard !paused, loadState == .ready, !awaitingSetup else { return }
+        if skipReplay() { return }
         if simulation.phase == .holed { nextHole(); return }
         if simulation.phase == .roundComplete { restartRound(); return }
         simulation.swing()
@@ -392,7 +416,16 @@ final class PGAGameSession: ObservableObject {
         if !ownsInputFocus { heldKeys.removeAll() }
         pollController(delta: delta)
         guard !stopped else { return }
-        if !paused && NSApp.isActive && loadState == .ready && !awaitingSetup {
+        if !paused, var pending = pendingReplay {
+            pending.delay -= delta
+            if pending.delay <= 0 { replay = pending.clip; pendingReplay = nil } else { pendingReplay = pending }
+        }
+        if !paused, var clip = replay {
+            clip.advance(delta)
+            replay = clip.finished ? nil : clip
+        }
+        renderer.replay = replay
+        if !paused && NSApp.isActive && loadState == .ready && !awaitingSetup && replay == nil {
             let left = heldKeys.contains(123) || heldKeys.contains(0)
             let right = heldKeys.contains(124) || heldKeys.contains(2)
             if ownsInputFocus && left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
@@ -432,29 +465,30 @@ final class PGAGameSession: ObservableObject {
     /// Maps simulation events onto the original sound situations: swings
     /// (class 1), collisions (class 3), the cup and gallery reactions.
     private func playSounds(_ events: [PGASimulationEvent]) {
-        guard let audio else { return }
         for event in events {
             switch event {
             case let .strike(club, lie, lieFlags, power, accuracy, fromTee, position):
                 let flags = lieFlags != 0 ? lieFlags : PGAAudioRules.flags(for: lie)
                 let distance = simulation.distanceToCup
                 lastStrike = (club, flags | (fromTee ? 0x8000 : 0), fromTee, distance, accuracy, simulation.hole.par)
-                audio.trigger(eventClass: 1, sub: 3, facts: PGAAudioRules.swingFacts(club: club, lieFlags: flags, teed: fromTee, power: power,
+                audio?.trigger(eventClass: 1, sub: 3, facts: PGAAudioRules.swingFacts(club: club, lieFlags: flags, teed: fromTee, power: power,
                                                                                     accuracy: accuracy, strokes: simulation.strokes, distanceToPin: distance),
                               at: position)
             case let .impact(position, surface, soundID, flags, normalSpeed):
                 guard let facts = PGAAudioRules.impactFacts(soundID: soundID ?? PGAAudioRules.soundID(for: surface),
                                                             flags: flags != 0 ? flags : PGAAudioRules.flags(for: surface),
                                                             normalSpeed: normalSpeed) else { continue }
-                audio.trigger(eventClass: 3, sub: 4, facts: facts, at: position)
+                audio?.trigger(eventClass: 3, sub: 4, facts: facts, at: position)
             case .cup:
-                audio.trigger(eventClass: 0, sub: 16, facts: [], at: simulation.hole.cup)
+                audio?.trigger(eventClass: 0, sub: 16, facts: [], at: simulation.hole.cup)
             case let .penalty(surface):
                 react(resultFlags: PGAAudioRules.flags(for: surface), resultDistance: 0, shotDistance: 0, holed: false, penalty: surface)
             case let .rest(lie, distanceToPin, shotDistance, _):
                 let flags = simulation.lieSample?.properties?.flags ?? PGAAudioRules.flags(for: lie)
+                considerReplay(holed: false, resultFlags: flags, distanceToPin: distanceToPin, shotDistance: shotDistance)
                 react(resultFlags: flags, resultDistance: distanceToPin, shotDistance: shotDistance, holed: false, penalty: nil)
             case let .holed(_, _, shotDistance, _):
+                considerReplay(holed: true, resultFlags: 0x4, distanceToPin: 0, shotDistance: shotDistance)
                 react(resultFlags: 0x4000, resultDistance: 0, shotDistance: shotDistance, holed: true, penalty: nil)
             }
         }
@@ -764,6 +798,9 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         lensFlare = flare
     }
 
+    /// The automatic replay being shown, set by the session each frame.
+    var replay: PGAReplayClip?
+
     /// Rain from the light/heavy-rain presets, kept over the camera without its rotation.
     let rain = PGARain()
 
@@ -871,10 +908,13 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         if simulation.phase == .power { clubPivot.eulerAngles.z = CGFloat(-simulation.meter * 1.6) }
         else if simulation.phase == .aiming { clubPivot.eulerAngles.z = 0 }
 
-        let directedPose = simulation.course.isOriginal ? originalCameraDirector?.update(simulation, mode: cameraMode, delta: delta) : nil
+        let directedPose = replay == nil && simulation.course.isOriginal ? originalCameraDirector?.update(simulation, mode: cameraMode, delta: delta) : nil
         let desiredPosition: PGAVector
         let desiredTarget: PGAVector
-        if let directedPose {
+        if let replay {
+            desiredPosition = replay.camera.position
+            desiredTarget = replay.camera.target
+        } else if let directedPose {
             desiredPosition = directedPose.position
             desiredTarget = directedPose.target
         } else if cameraMode == 2 {
@@ -895,7 +935,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
                 + PGAVector(x: 0, y: (cameraMode == 0 ? 5.5 : 19) * zoom, z: 0)
             desiredTarget = position + direction * 75 + PGAVector(x: 0, y: 2, z: 0)
         }
-        let alpha = directedPose != nil || freshCamera ? 1 : 1 - exp(-delta * (simulation.phase.inMotion ? 3.5 : 5))
+        let alpha = directedPose != nil || replay != nil || freshCamera ? 1 : 1 - exp(-delta * (simulation.phase.inMotion ? 3.5 : 5))
         cameraPosition = cameraPosition + (desiredPosition - cameraPosition) * alpha
         cameraTarget = cameraTarget + (desiredTarget - cameraTarget) * alpha
         cameraPosition.y = max(cameraPosition.y, simulation.groundHeight(x: cameraPosition.x, z: cameraPosition.z, near: cameraPosition.y) + (directedPose == nil ? 1.4 : 0.381))
@@ -922,8 +962,16 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
             lensFlare.update(camera: camera, fieldOfView: Double(camera.camera?.fieldOfView ?? 60), aspect: target,
                              sunDirection: direction, blocked: sunBlocked, delta: delta)
         }
+        if let replay {
+            // Replays show the recorded flight; the golfer and aim markers stay out of shot.
+            let shown = replay.ball
+            ball.position = Self.vector(shown)
+            ball.isHidden = false
+            ballShadow.position = SCNVector3(shown.x, simulation.groundHeight(x: shown.x, z: shown.z, near: shown.y) + 0.003, shown.z)
+            aimMarker.isHidden = true; aimArrow?.isHidden = true; effects?.tee?.isHidden = true
+        }
         originalGolfer?.update(simulation, cameraPosition: cameraPosition, delta: delta,
-                               sceneReady: content.childNodes.isEmpty == false && (simulation.course.isOriginal || cameraMode != 2))
+                               sceneReady: replay == nil && content.childNodes.isEmpty == false && (simulation.course.isOriginal || cameraMode != 2))
         freshCamera = false
         SCNTransaction.commit()
     }

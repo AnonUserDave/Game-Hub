@@ -44,6 +44,7 @@ struct PGAGameView: View {
                 else if case let .failed(message) = session.loadState { failureOverlay(message) }
                 else if session.awaitingSetup { PGARoundSetupView(session: session) }
                 else if session.paused { pauseOverlay }
+                else if session.replay != nil { replayBadge }
                 else if game.phase == .holed && !game.holeComplete { playerHoledBanner }
                 else if game.phase == .holed || game.phase == .roundComplete {
                     if session.isOriginal && session.hud.available { originalScoreOverlay } else { scoreOverlay }
@@ -331,6 +332,19 @@ struct PGAGameView: View {
     }
 
     /// Multiplayer: one player is in, others still play the hole.
+    /// Shown during a Replay.stn automatic replay.
+    private var replayBadge: some View {
+        VStack {
+            HStack(spacing: 8) {
+                Circle().fill(Color.red).frame(width: 9, height: 9)
+                Text("REPLAY").font(.system(size: 15, weight: .heavy)).tracking(3)
+                Text("Space / A to skip").font(.system(size: 10, design: .monospaced)).opacity(0.7)
+            }.padding(.horizontal, 16).padding(.vertical, 9).background(.black.opacity(0.55), in: Capsule()).foregroundStyle(.white)
+            .padding(.top, 70)
+            Spacer()
+        }.allowsHitTesting(false)
+    }
+
     private var playerHoledBanner: some View {
         VStack {
             Spacer()
