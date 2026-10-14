@@ -23,8 +23,27 @@ struct PGAOriginalSceneryStyle: Equatable {
     /// [TreeAmbient] value in the original's byte units. The original adds it
     /// to each baked lighting byte before doubling, so it adds 2 · value / 255.
     var treeAmbient: Float = 0
+    /// [GlobalLightingValues] Diffuse: multiplied into terrain (and trees via `treeTint`).
+    var diffuse = SIMD3<Float>(1, 1, 1)
+    /// [TerrainContrast] (MidValue, Scale, Shift), applied to the baked terrain
+    /// vertex lighting when Scale ≠ 1 (see PGARenderState.terrainLight).
+    var terrainContrast = SIMD3<Float>(1, 1, 1)
 
     static let standard = PGAOriginalSceneryStyle()
+
+    /// The scenery values of one blended render preset. Tree contrast and
+    /// TreeAmbient act on baked tree lighting the native trees do not carry
+    /// yet, so trees take only the global diffuse tint.
+    init(state: PGARenderState) {
+        skyType = state.skyType
+        skydomeDiffuse = state.skydomeDiffuse
+        treeTint = state.diffuse
+        diffuse = state.diffuse
+        terrainContrast = state.terrainContrast
+    }
+    init() {}
+
+    var neutralTerrain: Bool { diffuse == SIMD3(1, 1, 1) && abs(terrainContrast.y - 1) <= 1e-4 }
 }
 
 /// Per-frame values shared by every original scenery shader. Layout matches

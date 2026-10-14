@@ -40,8 +40,12 @@ final class PGASnapshotTests: XCTestCase {
                                        holes: [course.course.holes[index]], identity: course.course.identity)
                 var game = PGASimulation(course: single, terrains: [course.terrains[index]])
                 let renderer = PGARenderer(assetRoot: root.appendingPathComponent("Library/Imported/pga2005/\(code)"))
-                renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures), hole: single.holes[0],
-                               flagImage: art.courseImage("FLAG", course: code), holeImage: art.image("hole-decal"))
+                // GAMEHUB_SNAPSHOT_WEATHER="weather,time" applies an original render preset (e.g. "0,0" clear sunrise).
+                let weather = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_WEATHER"]?.split(separator: ",").compactMap { Int($0) }
+                let render = weather.flatMap { w in w.count == 2 ? PGARenderPresets.load(root: root)?.state(weather: w[0], time: w[1], hole: number) : nil }
+                renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures,
+                                                                      style: render.map(PGAOriginalSceneryStyle.init(state:)) ?? .standard),
+                               hole: single.holes[0], flagImage: art.courseImage("FLAG", course: code), holeImage: art.image("hole-decal"), render: render)
                 XCTAssertNotNil(renderer.scene.rootNode.childNode(withName: PGAOriginalSkyNode.nodeName, recursively: true),
                                 "Decoded sky must be present in the original-course scene")
                 let trees = renderer.scene.rootNode.childNode(withName: PGAOriginalVegetationNode.nodeName, recursively: true) as? PGAOriginalVegetationNode

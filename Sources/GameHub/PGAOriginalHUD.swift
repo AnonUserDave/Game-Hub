@@ -223,7 +223,7 @@ struct PGARoundSetupView: View {
     }
 
     private var panel: some View {
-        VStack(spacing: 13) {
+        VStack(spacing: 11) {
             HStack(spacing: 16) {
                 if session.courseCode == "PBL", let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
                 VStack(alignment: .leading, spacing: 4) {
@@ -326,7 +326,9 @@ struct PGARoundSetupView: View {
                 }
             }
             section("CONDITIONS") {
-                VStack(spacing: 5) {
+                VStack(spacing: 4) {
+                    conditionRow("WEATHER", PGARenderPresets.weatherNames, value: session.setup.weatherRow + 1) { session.setup.weather = $0 - 1 }
+                    conditionRow("TIME", PGARenderPresets.timeNames, value: session.setup.timeSlot + 1) { session.setup.timeOfDay = $0 - 1 }
                     conditionRow("WIND", PGAConditions.windNames, value: conditions.windSpeed) { conditions.windSpeed = $0 }
                     conditionRow("GREENS", PGAConditions.greenNames, value: conditions.greenSpeed) { conditions.greenSpeed = $0 }
                     conditionRow("ROUGH", PGAConditions.roughNames, value: conditions.roughLength) { conditions.roughLength = $0 }
@@ -364,7 +366,7 @@ struct PGARoundSetupView: View {
             Text(title).font(.system(size: 9, weight: .bold, design: .monospaced)).foregroundStyle(.white.opacity(0.55)).frame(width: 52, alignment: .leading)
             ForEach(Array(names.enumerated()), id: \.offset) { index, name in
                 Button { set(index + 1) } label: {
-                    Text(name).font(.system(size: 10, weight: .semibold)).frame(maxWidth: .infinity).padding(.vertical, 6)
+                    Text(name).font(.system(size: 10, weight: .semibold)).lineLimit(1).frame(maxWidth: .infinity).padding(.vertical, 5)
                         .background(RoundedRectangle(cornerRadius: 5).fill(value == index + 1 ? gold : .white.opacity(0.08)))
                         .foregroundStyle(value == index + 1 ? ink : .white)
                 }.buttonStyle(.plain)

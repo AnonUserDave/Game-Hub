@@ -77,6 +77,8 @@ final class PGAGameSession: ObservableObject {
         loadOriginal()
     }
     func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
+    /// The 40 original weather/time presets, when prepared.
+    private(set) lazy var renderPresets = PGARenderPresets.load(root: GameStore.workspaceRoot())
     /// The loaded course's INI conditions, for the setup screen.
     var defaultConditions: PGAConditions { original?.defaultConditions ?? PGAConditions() }
     private var prefetch: (index: Int, task: Task<PGAOriginalHoleMesh, Never>)?
@@ -181,8 +183,12 @@ final class PGAGameSession: ObservableObject {
 
     private func showHole(_ mesh: PGAOriginalHoleMesh) {
         guard let original else { return }
-        renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: original, textures: textures), hole: simulation.course.holes[mesh.holeIndex],
-                       flagImage: hud.courseImage("FLAG", course: original.data.code), holeImage: hud.image("hole-decal"))
+        // Time of day advances 20 units per hole through the chosen weather's presets.
+        let render = renderPresets?.state(weather: setup.weatherRow, time: setup.timeSlot, hole: mesh.holeIndex + 1)
+        renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: original, textures: textures,
+                                                              style: render.map(PGAOriginalSceneryStyle.init(state:)) ?? .standard),
+                       hole: simulation.course.holes[mesh.holeIndex],
+                       flagImage: hud.courseImage("FLAG", course: original.data.code), holeImage: hud.image("hole-decal"), render: render)
         holeMap = mesh.map
         lastHoleIndex = mesh.holeIndex
         view?.pointOfView = renderer.camera
@@ -667,15 +673,23 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
 
     /// Original course hole: decoded terrain, sky and vegetation are supplied
     /// by the scene builder. No generated practice trees or sea are added.
-    func build(original terrain: SCNNode, hole: PGAHole, flagImage: NSImage? = nil, holeImage: NSImage? = nil) {
+    func build(original terrain: SCNNode, hole: PGAHole, flagImage: NSImage? = nil, holeImage: NSImage? = nil, render: PGARenderState? = nil) {
         content.removeFromParentNode(); content = SCNNode(); scene.rootNode.addChildNode(content)
         content.addChildNode(terrain)
         if let flagImage { makeOriginalPin(pin: hole.cup, flagImage: flagImage, holeImage: holeImage) }
         else { makeFlag(pin: hole.cup) }
-        // render.ini [Fog] Start=800 End=64000 (inches): 20 m to 1,625 m.
-        scene.fogStartDistance = 800 * 0.0254
-        scene.fogEndDistance = 64_000 * 0.0254
-        camera.camera?.zFar = 2_400
+        if let render {
+            // The blended weather/time preset's linear fog (inches) and colour.
+            scene.fogStartDistance = render.fogStart * PGACourseTransform.metersPerInch
+            scene.fogEndDistance = render.fogEnd * PGACourseTransform.metersPerInch
+            scene.fogColor = NSColor(srgbRed: CGFloat(render.fogColor.x), green: CGFloat(render.fogColor.y), blue: CGFloat(render.fogColor.z), alpha: 1)
+            camera.camera?.zFar = min(4_000, max(2_400, scene.fogEndDistance))
+        } else {
+            // render.ini [Fog] Start=800 End=64000 (inches): 20 m to 1,625 m.
+            scene.fogStartDistance = 800 * 0.0254
+            scene.fogEndDistance = 64_000 * 0.0254
+            camera.camera?.zFar = 2_400
+        }
         freshCamera = true
     }
 

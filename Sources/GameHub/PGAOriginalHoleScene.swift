@@ -121,7 +121,7 @@ enum PGAOriginalSceneBuilder {
                               componentsPerVector: 3, bytesPerComponent: 4, dataOffset: 0, dataStride: 12),
             SCNGeometrySource(data: mesh.uvs, semantic: .texcoord, vectorCount: count, usesFloatComponents: true,
                               componentsPerVector: 2, bytesPerComponent: 4, dataOffset: 0, dataStride: 8),
-            SCNGeometrySource(data: mesh.colors, semantic: .color, vectorCount: count, usesFloatComponents: true,
+            SCNGeometrySource(data: style.neutralTerrain ? mesh.colors : Self.lit(mesh.colors, style), semantic: .color, vectorCount: count, usesFloatComponents: true,
                               componentsPerVector: 4, bytesPerComponent: 4, dataOffset: 0, dataStride: 16)
         ]
         let elements = mesh.batches.map { SCNGeometryElement(data: $0.indices, primitiveType: .triangles, primitiveCount: $0.triangles, bytesPerIndex: 4) }
@@ -182,6 +182,17 @@ enum PGAOriginalSceneBuilder {
         }
         if let vegetation = mesh.vegetation { node.addChildNode(PGAOriginalVegetationNode(hole: vegetation, style: style)) }
         return node
+    }
+
+    /// Baked terrain lighting through the preset's contrast and global diffuse.
+    static func lit(_ colors: Data, _ style: PGAOriginalSceneryStyle) -> Data {
+        var floats = colors.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) }
+        for base in stride(from: 0, to: floats.count - 3, by: 4) {
+            let rgb = PGARenderState.terrainLight(SIMD3(floats[base], floats[base + 1], floats[base + 2]),
+                                                  diffuse: style.diffuse, contrast: style.terrainContrast)
+            floats[base] = rgb.x; floats[base + 1] = rgb.y; floats[base + 2] = rgb.z
+        }
+        return floats.withUnsafeBytes { Data($0) }
     }
 
     static let waterSurface = """

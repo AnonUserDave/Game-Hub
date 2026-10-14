@@ -430,6 +430,12 @@ struct PGARoundSetup: Codable, Equatable {
     var level: PGATriClickMeter.Level { difficulty ?? .intermediate }
     /// Greens, rough and wind; nil uses the course INI defaults (older saves too).
     var conditions: PGAConditions? = nil
+    /// Original weather (0 Clear … 7 Heavy rain) and starting time of day
+    /// (0 Sunrise … 4 Sunset) settings bytes; nil is Clear at Noon.
+    var weather: Int? = nil
+    var timeOfDay: Int? = nil
+    var weatherRow: Int { max(0, min(7, weather ?? 0)) }
+    var timeSlot: Int { max(0, min(4, timeOfDay ?? 2)) }
 
     static let teeNames = ["Forward", "Middle", "Back", "Championship", "Tips"]
 
