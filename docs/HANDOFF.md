@@ -36,6 +36,17 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+Asteroids7800 now has a separate native33-object/four-mode source loop,
+version/source-bound snapshots and44 tables/813 original graphics records in a
+bounded267,887-byte package with canonical content hashing.16 isolated Swift/
+five Python tests pass on M5, including196,608 damping states and10,000 passes
+per mode. Startup requires explicit prior RNG RAM/timer/provenance. The source
+schedule keeps display interrupts separate from main passes (two DLIs per
+pass); original region/cadence is unqualified. There is **no playable hub entry
+yet**. Resolve pair-order/terminal details, real startup/optional high-score
+firmware, complete presentation/audio and native session integration before
+original/physical/M1 acceptance. See [the7800 ledger](research/ASTEROIDS-7800.md).
+
 Asteroids2600 now has its own native playing dispatcher and bounded, canonical
 hash-checked21-table/29-mask package. It covers all66 selected variation values,
 packed source movement, ship/two player missiles/saucer, deferred collisions and
