@@ -43,3 +43,16 @@ Remaining physical-input checks include shoulders/D-pad/menu, every gameplay map
 | Tests | 32 Swift (snapshot test opt-in) and 19 Python tests pass |
 
 Not checked here: fullscreen 2560 × 1600 on the M1, sustained 30-minute statistics, thermals, controller input in the Pebble module (gameplay input pauses while the app is inactive, so background automation cannot exercise it), and Turnberry gameplay.
+
+## Physics branch check (development only)
+
+2026-10-13, son's MacBook Pro, **Apple M5 Pro**, 24 GB, macOS 26.3. No test ran on the owner's M1. The Python and Swift models below both implement the same static reconstruction of `Engine.dll`; their agreement does not prove agreement with a running original game.
+
+| Check | Outcome |
+| --- | --- |
+| `python3 Tools/make_ballflight_fixtures.py --check` | Committed 125-scenario golden fixture is current |
+| `./Tools/test.sh` | 47 Swift XCTest passed, 2 opt-in snapshot tests skipped; bridge test matches direct `CBallFlight` positions and velocities at 60 Hz, and the 18-hole original-course deterministic test passed |
+| `python3 -m unittest discover -s Tests -p 'test_*.py'` | 99 tests passed |
+| `./Tools/build.sh` | Optimized app build passed; executable identified as Mach-O arm64 |
+
+No native gameplay UI check, original-game comparison, controller check or sustained M1 performance run was done for the physics branch.

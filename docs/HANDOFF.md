@@ -10,7 +10,7 @@ Executable byte identity across x86 Windows and ARM64 macOS is impossible. Track
 
 Work on the owner's laptop is paused at his request. His son continues on an M5 MacBook Pro with 24 GB RAM. The mandatory runtime target remains the owner's M1 Air, 8 GB, 2560 × 1600. Read [the binding hardware constraint](M1_TARGET_CONSTRAINT.md) and [status](STATUS.md). Do not start background work on the owner's laptop.
 
-The 2026-10-13 son's checkpoint added playable original Pebble Beach development gameplay (18 holes), corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and confirmed the practice forest fix visually. All of it was checked on the M5 only.
+The 2026-10-13 son's checkpoint added playable original Pebble Beach development gameplay (18 holes), corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and confirmed the practice forest fix visually. The physics branch adds a Swift port of the statically reconstructed `CBallFlight` and uses it for original-course shots. All checks were on the M5 Pro only; no running original-game or M1 comparison exists.
 
 ## Development environments
 
@@ -25,7 +25,7 @@ The 2026-10-13 son's checkpoint added playable original Pebble Beach development
 | Hub UI, library and native launch | `Sources/GameHub/HubView.swift`, `GameModel.swift`, `DetailSheets.swift` |
 | Controller discovery/navigation | `Sources/GameHub/ControllerManager.swift`, `FusionController.swift`, `Sources/FusionUSB/` |
 | Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-pebble-beach-development`) |
-| Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, snapshots), `PGATerrain.swift` (terrain protocol, original surface properties) |
+| Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, snapshots), `PGABallFlight.swift` (reconstructed shot model, terrain/frame adapter, assumption-labelled swing mapping), `PGATerrain.swift` (terrain protocol, original surface properties) |
 | Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round store), `PGAOriginalCollision.swift` (CSR floor index) |
 | Golf rendering and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAView.swift`, `PGAMetalView.swift` |
 | Original Course Lab | `PGAOriginalCourse.swift` |
@@ -52,7 +52,7 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
    - Pebble Beach at fullscreen 2560 × 1600 for a 30-minute run.
    - Record FPS, p95/p99 frame time, footprint, swap, thermals and load time.
    - Visually confirm the sRGB change and the Lab's per-hole view.
-3. **Reconstruct `CBallFlight`.** Cover flight drag and lift, `Collide` (c2/c3/c8/c9, surface damping), `RollingAndSlipping` (c4/c5), `PureRolling` break (c6), cup capture and `StopBall`. Build numeric fixtures from the decompiled formulas and keep units in inches per 60 Hz tick. Then remove the provisional bounce tuning.
+3. **Validate and extend the physics branch.** The Swift `CBallFlight` port covers flight drag/lift, `Collide`, slipping, rolling break, cup dynamics and `StopBall`, with 125 Python-reference golden scenarios. `PGASimulation` uses it only on original courses; generated practice retains the provisional bounce model. Compare against a running original game when available; resolve unmodelled wall/tree/object collisions and blend-material quirks. The eight-club UI and click-swing mapping are still development approximations. Expose original clubs and weather/condition settings only with corresponding UI and save tests.
 4. **Rules.** Decode INI OB polygons (`[Hole N OB k]`, type 1/2), lateral water-hazard drops and the original tee/pin selection. Add hazard and drop placement from the original rules.
 5. **Visuals.** Original sky dome, fog and lighting (`render.ini`), shaders (vertex-shader resources), water, alternate LODs, vegetation and object placement (Pebble's cypresses are missing), and the golfer/ball meshes and animation.
 6. **Memory and performance.** Keep the 3 GB budget. Consider memoryless MSAA/depth attachments on Apple Silicon, compressed (BC1/BC2) original DDS textures instead of RGBA8 PNGs, and whole-course buffers in the Lab.
@@ -70,7 +70,7 @@ python3 Tools/prepare_pga2005.py
 GAMEHUB_SNAPSHOT_DIR=/tmp/pga-snaps ./Tools/test.sh -XCTest GameHubTests.PGASnapshotTests
 ```
 
-The snapshot test writes original-course images; keep its output outside Git. `Tools/verify_original_course.swift` compiles with `PGACore.swift`, `PGATerrain.swift` and `PGAOriginalCollision.swift`.
+The snapshot test writes original-course images; keep its output outside Git. `Tools/verify_original_course.swift` also requires `PGABallFlight.swift` when compiled with `PGACore.swift`. `python3 Tools/make_ballflight_fixtures.py --check` verifies the committed golden fixture. `PGABallFlightTests` checks the Python model, simulation bridge and all 18 original Pebble tee shots; these are static-reconstruction checks, not a running original-game comparison.
 
 ## Original-course gameplay adapter plan (implemented 2026-10-13)
 
