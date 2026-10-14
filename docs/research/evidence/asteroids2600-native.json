@@ -1,0 +1,565 @@
+{
+  "method": "Selected bytes decoded as data; no original execution or emulation",
+  "source_sha256": "d1a6e808412b4535c7e54fc25414943a9418b1095b4d4969dc33290f7eaa72a4",
+  "content_sha256": "22d0866eecfa11c3d8d39e7638964ffa12fc44a8c32a65e8645c1708b2b11c5b",
+  "windows": [
+    {
+      "name": "horizontalIncreasing",
+      "bank": 0,
+      "address": "$D700",
+      "rom_offset": 1792,
+      "bytes": 256,
+      "sha256": "09c9db217d513a2329742a01836180a1789ea5ce737969ed5858f988d4c6bcba"
+    },
+    {
+      "name": "horizontalDecreasing",
+      "bank": 0,
+      "address": "$D800",
+      "rom_offset": 2048,
+      "bytes": 256,
+      "sha256": "93bf9759e94d3307b0307fa6b65e5dfa8b2dfc719540746cf21b604587a5078f"
+    },
+    {
+      "name": "projectileLifetime",
+      "bank": 1,
+      "address": "$FEDE",
+      "rom_offset": 7902,
+      "bytes": 16,
+      "sha256": "159c19b93e7e70f0daf9a1025923473beb8b91e4b9716bc8b4e051047ed88f09"
+    },
+    {
+      "name": "speedMasks",
+      "bank": 1,
+      "address": "$FEE6",
+      "rom_offset": 7910,
+      "bytes": 16,
+      "sha256": "34fda29b27971f2bb3d8355078f0ffd79942de256206be9d44ab3df2b4c7160f"
+    },
+    {
+      "name": "horizontalSubtract",
+      "bank": 1,
+      "address": "$FEF4",
+      "rom_offset": 7924,
+      "bytes": 16,
+      "sha256": "c2e53df387db6c09953d97bfb1b4ad036538ece9e9dfe133745dda94cdbd6d9e"
+    },
+    {
+      "name": "horizontalAdd",
+      "bank": 1,
+      "address": "$FEFF",
+      "rom_offset": 7935,
+      "bytes": 16,
+      "sha256": "d7dd0155f5064a72890016806b5f655cfc28c845c5de1be0d7dfb39306bfa054"
+    },
+    {
+      "name": "randomHorizontalLow",
+      "bank": 1,
+      "address": "$FF0D",
+      "rom_offset": 7949,
+      "bytes": 8,
+      "sha256": "6656577d3c498848c5bbe0b3a2802a206606c8352d520bb8aab2c82c54abadad"
+    },
+    {
+      "name": "horizontalHigh",
+      "bank": 1,
+      "address": "$FF15",
+      "rom_offset": 7957,
+      "bytes": 16,
+      "sha256": "bd1346bddd4956730953081e056352ffc648c8bb693699c0efb552d95d0e08f4"
+    },
+    {
+      "name": "horizontalLow",
+      "bank": 1,
+      "address": "$FF25",
+      "rom_offset": 7973,
+      "bytes": 16,
+      "sha256": "5315b57bd0b3a62a99384a70d42616cd6405434633b980ba6ba9733c717cb75d"
+    },
+    {
+      "name": "verticalExtent",
+      "bank": 1,
+      "address": "$FF33",
+      "rom_offset": 7987,
+      "bytes": 11,
+      "sha256": "1529c66e2dd87960d413c1a0067bb308818c98527334decb621d8c46c1fd12ac"
+    },
+    {
+      "name": "horizontalExtent",
+      "bank": 1,
+      "address": "$FF3E",
+      "rom_offset": 7998,
+      "bytes": 11,
+      "sha256": "3935ffbd244834111ce9dba05882c8d51ec661cd793312ea4ce2c097c05109cb"
+    },
+    {
+      "name": "scoreLowBCD",
+      "bank": 1,
+      "address": "$FF49",
+      "rom_offset": 8009,
+      "bytes": 7,
+      "sha256": "a41b14996daa5417f8d8ad34176ee48952b6a266550f1ac310c085343b763184"
+    },
+    {
+      "name": "scoreHighBCD",
+      "bank": 1,
+      "address": "$FF50",
+      "rom_offset": 8016,
+      "bytes": 7,
+      "sha256": "7038169d3d9d2db474c01f04fe51cbd9f5f3ff97d8a6e5baefaf18400c57dcad"
+    },
+    {
+      "name": "topRemoval",
+      "bank": 1,
+      "address": "$FF57",
+      "rom_offset": 8023,
+      "bytes": 4,
+      "sha256": "ff6f62dc420788c08921ad9c13bd717f195e0fd09f5e346b9728cb768e447120"
+    },
+    {
+      "name": "bottomDuplicate",
+      "bank": 1,
+      "address": "$FF5B",
+      "rom_offset": 8027,
+      "bytes": 4,
+      "sha256": "455cc567c3c306de28664aae5de7cbb99bdce8622b70fcb094979914ceef93c1"
+    },
+    {
+      "name": "selectionEnd",
+      "bank": 1,
+      "address": "$FF5F",
+      "rom_offset": 8031,
+      "bytes": 4,
+      "sha256": "3df990bc9ce5be741cbd499ec3903f49dfb3fef5abde36d39a1747d7d2288cc2"
+    },
+    {
+      "name": "selectionStart",
+      "bank": 1,
+      "address": "$FF63",
+      "rom_offset": 8035,
+      "bytes": 4,
+      "sha256": "67ef2efbbb46ff35c97565f643720161404b3e6d433e712e595c26594a11d465"
+    },
+    {
+      "name": "thrust",
+      "bank": 1,
+      "address": "$FF67",
+      "rom_offset": 8039,
+      "bytes": 16,
+      "sha256": "9fa8dbde2a578e75e07e20d500c2bd6ed17c15b085dc7e289cc1c30d335e3e6a"
+    },
+    {
+      "name": "projectileVertical",
+      "bank": 1,
+      "address": "$FF77",
+      "rom_offset": 8055,
+      "bytes": 16,
+      "sha256": "1659bfba8b0133430dc547bc4e181772c0017b664238e55775c074cf0fa24559"
+    },
+    {
+      "name": "projectileHorizontal",
+      "bank": 1,
+      "address": "$FF87",
+      "rom_offset": 8071,
+      "bytes": 16,
+      "sha256": "0b10cb5af5a23b820936aa5373f1e921786c9c37124c20da8c8f7209ccc68c88"
+    },
+    {
+      "name": "asteroidColor",
+      "bank": 0,
+      "address": "$DE75",
+      "rom_offset": 3701,
+      "bytes": 8,
+      "sha256": "162a72fd35d7c1de24ec4067c7dff9133192a90adf09c3997b4299e8e5a71261"
+    },
+    {
+      "name": "ship-0",
+      "bank": 0,
+      "address": "$DF74",
+      "rom_offset": 3956,
+      "bytes": 5,
+      "sha256": "57b910d702158ed1eeaf7f6775ea1c566b1f3d0472b0dc06d9e1ebf33d6b2962"
+    },
+    {
+      "name": "ship-1",
+      "bank": 0,
+      "address": "$DF7A",
+      "rom_offset": 3962,
+      "bytes": 5,
+      "sha256": "86637021c7b37461467a5fc12ccc60f12090c057a7ea1d0ee28da1e279510f79"
+    },
+    {
+      "name": "ship-2",
+      "bank": 0,
+      "address": "$DF80",
+      "rom_offset": 3968,
+      "bytes": 5,
+      "sha256": "17ee6e398c8920092dc80fe5af448ef3e363bcb8f3dd53ad0f7d3720fa5b5458"
+    },
+    {
+      "name": "ship-3",
+      "bank": 0,
+      "address": "$DF86",
+      "rom_offset": 3974,
+      "bytes": 5,
+      "sha256": "48eb9cb748f060e915606545bde3070159bf5edfb4013fb16967212c375bffc1"
+    },
+    {
+      "name": "ship-4",
+      "bank": 0,
+      "address": "$DF8C",
+      "rom_offset": 3980,
+      "bytes": 5,
+      "sha256": "b7e999c1b9b6de9ad33e9a16fa68e406d61987d85147e7655574ed97517febf4"
+    },
+    {
+      "name": "ship-5",
+      "bank": 0,
+      "address": "$DF92",
+      "rom_offset": 3986,
+      "bytes": 5,
+      "sha256": "1f40467f528912b294d8927f1e31e71e1631c69c6a338e12c832143f70ceb789"
+    },
+    {
+      "name": "ship-6",
+      "bank": 0,
+      "address": "$DF98",
+      "rom_offset": 3992,
+      "bytes": 5,
+      "sha256": "20a3396a4c447c9caa2ee262dd2b9686d8480b0dfebc57ca8eb42c2ef46b81d4"
+    },
+    {
+      "name": "ship-7",
+      "bank": 0,
+      "address": "$DF9E",
+      "rom_offset": 3998,
+      "bytes": 5,
+      "sha256": "2bd91153c1bfd052fe6e797a6bf3fc86f596c2add46b46f0ce3eea909cdda69e"
+    },
+    {
+      "name": "ship-8",
+      "bank": 0,
+      "address": "$DFA4",
+      "rom_offset": 4004,
+      "bytes": 5,
+      "sha256": "d84b5a18d0486724cfbca17611f378841aa77ba06974701dc39cc71be858bb39"
+    },
+    {
+      "name": "explosion-0",
+      "bank": 0,
+      "address": "$DFAA",
+      "rom_offset": 4010,
+      "bytes": 5,
+      "sha256": "b78a7abf00a3372e0bf9f55fcdd37ccbf46db35065881c927f6bbb6914470d4c"
+    },
+    {
+      "name": "explosion-1",
+      "bank": 0,
+      "address": "$DFB0",
+      "rom_offset": 4016,
+      "bytes": 5,
+      "sha256": "dc1104b4894d8a4a3f9b0dcb237d82a58c98499b8de970d110ff8d6b0cb0aa93"
+    },
+    {
+      "name": "explosion-2",
+      "bank": 0,
+      "address": "$DFB6",
+      "rom_offset": 4022,
+      "bytes": 5,
+      "sha256": "b9638f271bb0a393909184b648c31c1d59b7ef62d1b2adcd7161bd6221f60e16"
+    },
+    {
+      "name": "shield",
+      "bank": 0,
+      "address": "$DFBC",
+      "rom_offset": 4028,
+      "bytes": 5,
+      "sha256": "b0e530d080f22e41d93cfee7cdbc9678a982d2ed5502a27aed9a89a8c8bf46db"
+    },
+    {
+      "name": "saucer-small",
+      "bank": 0,
+      "address": "$DFC2",
+      "rom_offset": 4034,
+      "bytes": 3,
+      "sha256": "60a71186773997bd97343b7341c4d889dc1b72550a3dc94ab8648c8d73edd2f3"
+    },
+    {
+      "name": "saucer-large",
+      "bank": 0,
+      "address": "$DFC6",
+      "rom_offset": 4038,
+      "bytes": 5,
+      "sha256": "bacef881a6b5a904802d6075fa194fb93ac3c98371f21c1492071ae765711569"
+    },
+    {
+      "name": "asteroid-0",
+      "bank": 0,
+      "address": "$DF00",
+      "rom_offset": 3840,
+      "bytes": 15,
+      "sha256": "2266f4a421edcf377f5aea5e45db844b70031dd3f9aaaf5dcbd44a4ec647c62b"
+    },
+    {
+      "name": "asteroid-1",
+      "bank": 0,
+      "address": "$DF10",
+      "rom_offset": 3856,
+      "bytes": 15,
+      "sha256": "4a57ea4eafdc020e9469145f7105691c0d9a855064b605405a87613efb57355c"
+    },
+    {
+      "name": "asteroid-2",
+      "bank": 0,
+      "address": "$DF20",
+      "rom_offset": 3872,
+      "bytes": 7,
+      "sha256": "0335b94d0cc5b9626ef568f3b0ac03ab773e0d4e3fd1c54c54a71bea48c001b2"
+    },
+    {
+      "name": "asteroid-3",
+      "bank": 0,
+      "address": "$DF30",
+      "rom_offset": 3888,
+      "bytes": 4,
+      "sha256": "0239357eda9b1b19e362d0a5d2e69deaee8e312052c976438feffb5c4bfa0293"
+    },
+    {
+      "name": "digit-0",
+      "bank": 0,
+      "address": "$DD00",
+      "rom_offset": 3328,
+      "bytes": 5,
+      "sha256": "a6e1c3170c68d0aae7cb8f028e3aca4b69f7bb7106bf447703d9223d3b9742b2"
+    },
+    {
+      "name": "digit-1",
+      "bank": 0,
+      "address": "$DD05",
+      "rom_offset": 3333,
+      "bytes": 5,
+      "sha256": "0d892d52f08de747a0de5b33d6967f00f6bbe32305a9c192c01a84e15e075e6a"
+    },
+    {
+      "name": "digit-2",
+      "bank": 0,
+      "address": "$DD0A",
+      "rom_offset": 3338,
+      "bytes": 5,
+      "sha256": "fd2ac278d31b1bbd1dc5e112d9f815dd3f5d4b55b706769cbe83ae5b3c94c4d9"
+    },
+    {
+      "name": "digit-3",
+      "bank": 0,
+      "address": "$DD0F",
+      "rom_offset": 3343,
+      "bytes": 5,
+      "sha256": "f2a3cc293a7a240c09232891e76804d179a6890b11f32f68ed52737e0e78ff2a"
+    },
+    {
+      "name": "digit-4",
+      "bank": 0,
+      "address": "$DD14",
+      "rom_offset": 3348,
+      "bytes": 5,
+      "sha256": "8f8668eb6b41e3349c63126eff77768195028efe1e0240994ef796d605311d45"
+    },
+    {
+      "name": "digit-5",
+      "bank": 0,
+      "address": "$DD19",
+      "rom_offset": 3353,
+      "bytes": 5,
+      "sha256": "ba966b2498b29238afa3dfb68524f190276afe3266f55581ea37701579d39f9c"
+    },
+    {
+      "name": "digit-6",
+      "bank": 0,
+      "address": "$DD1E",
+      "rom_offset": 3358,
+      "bytes": 5,
+      "sha256": "85bfbaa2285ab3d09b2ee176ee14177c6a721df92f9065592c4da825aaf42110"
+    },
+    {
+      "name": "digit-7",
+      "bank": 0,
+      "address": "$DD23",
+      "rom_offset": 3363,
+      "bytes": 5,
+      "sha256": "a449907a87aad9d96e18a0f4b9726f0bdfdc332a12566f63ca54436f6f53f166"
+    },
+    {
+      "name": "digit-8",
+      "bank": 0,
+      "address": "$DD28",
+      "rom_offset": 3368,
+      "bytes": 5,
+      "sha256": "c8debaae2752cabbe24a7b44d2ac96b62d2cf32268dd3574b3c3294ab639a3c4"
+    },
+    {
+      "name": "digit-9",
+      "bank": 0,
+      "address": "$DD2D",
+      "rom_offset": 3373,
+      "bytes": 5,
+      "sha256": "9d5cc14b19fd0e96de5b150d103785d07c2e0b4a4128ee7c13a87f50c51f9351"
+    }
+  ],
+  "limitations": [
+    "Original masks are recovered; TIA intraline positioning, repeated pixels and RGB remain unqualified.",
+    "Source audio registers and cadence require original comparison."
+  ],
+  "routines": [
+    {
+      "name": "frame_dispatcher",
+      "bank": 1,
+      "address": "$F000",
+      "rom_offset": 4096,
+      "bytes": 2522,
+      "sha256": "163f5ac11c31bb7333a4ce6874de76b8b36e2b29256faf4e11cdcc4bc3e5dee7"
+    },
+    {
+      "name": "reset",
+      "bank": 1,
+      "address": "$F9DA",
+      "rom_offset": 6618,
+      "bytes": 41,
+      "sha256": "d3a82bd584a5314177c30bc1d02133bc0b7606b4ca801365c25fa8522ba01d71"
+    },
+    {
+      "name": "game_start",
+      "bank": 1,
+      "address": "$FA03",
+      "rom_offset": 6659,
+      "bytes": 56,
+      "sha256": "634739c4a0fb82b1ac749921c581525a76734ddd3e41e78c21acc9fc7a396e20"
+    },
+    {
+      "name": "asteroid_horizontal",
+      "bank": 1,
+      "address": "$FA3B",
+      "rom_offset": 6715,
+      "bytes": 98,
+      "sha256": "b531c7c8dfecc969acbcefb3314ecbacfc75d8e73d695845b12a44159a66cff2"
+    },
+    {
+      "name": "random_horizontal",
+      "bank": 1,
+      "address": "$FA9D",
+      "rom_offset": 6813,
+      "bytes": 37,
+      "sha256": "25a179042a2704b021603097245d15a6dda605262955b594be617ffb6ee7f33f"
+    },
+    {
+      "name": "player_exchange",
+      "bank": 1,
+      "address": "$FACE",
+      "rom_offset": 6862,
+      "bytes": 20,
+      "sha256": "7bee3b2ff576d9a8ce2f4f697f0af7bb0dcf557147baf7fac936f6ad120c8b62"
+    },
+    {
+      "name": "collision_scan",
+      "bank": 1,
+      "address": "$FAF0",
+      "rom_offset": 6896,
+      "bytes": 185,
+      "sha256": "04a7f7a4e413f635720861a0e50fb6bdef1f28b431e8d6ed6942f37df4dea164"
+    },
+    {
+      "name": "collision_effects_score_lives",
+      "bank": 1,
+      "address": "$FBA9",
+      "rom_offset": 7081,
+      "bytes": 289,
+      "sha256": "f34dab982795e33dfa950078c8d8c61dd01a96cd48a7f02ead0dfba0eadaeabe"
+    },
+    {
+      "name": "horizontal_decode",
+      "bank": 1,
+      "address": "$FCCA",
+      "rom_offset": 7370,
+      "bytes": 18,
+      "sha256": "018c32d5aee82d46ec4800489b90b690d6e6c126bfcbd616d8f506b374818dfd"
+    },
+    {
+      "name": "deferred_splits",
+      "bank": 1,
+      "address": "$FCE7",
+      "rom_offset": 7399,
+      "bytes": 250,
+      "sha256": "a59d1b061f288fc991ffeee800bc4e513fbde8e1e513da9d7e1220186698f8e2"
+    },
+    {
+      "name": "list_removal",
+      "bank": 1,
+      "address": "$FDE1",
+      "rom_offset": 7649,
+      "bytes": 18,
+      "sha256": "2dcba3340e6505c1feadf9d9525d3baf72b690617cb94a2118147176439b5973"
+    },
+    {
+      "name": "wave_spawn",
+      "bank": 1,
+      "address": "$FDF3",
+      "rom_offset": 7667,
+      "bytes": 129,
+      "sha256": "bf1b76dbc3bb3f08b71ca623a0241591f6e15fb10237c9483194b4336789d172"
+    },
+    {
+      "name": "list_insertion",
+      "bank": 1,
+      "address": "$FE74",
+      "rom_offset": 7796,
+      "bytes": 53,
+      "sha256": "59e66bc4c1107cc85922e6bb8c9b50bb680d06df852ca3366432d0fada0da4ad"
+    },
+    {
+      "name": "reentry_obstruction",
+      "bank": 1,
+      "address": "$FEA9",
+      "rom_offset": 7849,
+      "bytes": 53,
+      "sha256": "956914390b20fa06a6ab6f55954653a56bd832537cdcdcdd31d2880e7be660c6"
+    },
+    {
+      "name": "packed_pixel_movement",
+      "bank": 0,
+      "address": "$D600",
+      "rom_offset": 1536,
+      "bytes": 38,
+      "sha256": "48453c65bd1b98fad9ca4d653c38cdc5ec1e98f2cc3f945d49728766f6f7b9ea"
+    },
+    {
+      "name": "upward_clip_return",
+      "bank": 0,
+      "address": "$D900",
+      "rom_offset": 2304,
+      "bytes": 15,
+      "sha256": "c6d8d97ceb239b899ac4bef7f727f3756060d3145ed30bf3056ac855bcb00982"
+    },
+    {
+      "name": "downward_clip_return",
+      "bank": 0,
+      "address": "$D90F",
+      "rom_offset": 2319,
+      "bytes": 15,
+      "sha256": "5fac01274140531789bea828c3150486ded2023fc4f1d7479199e2a178f0edc4"
+    }
+  ],
+  "native_checks": {
+    "swift_cases": 25,
+    "python_cases": 7,
+    "stress_native_frames": 660000,
+    "stress_variations": 66,
+    "original_execution": false,
+    "hardware": "M5 Pro MacBook Pro, 24 GB, macOS 26.3; M1 untested"
+  },
+  "limits": [
+    "No original game behavior/visual/audio comparison",
+    "No TIA/6502 interpreter, emulation, Wine or Rosetta",
+    "No native registry/session/UI yet",
+    "Frame cadence, original intraline graphics and audio unqualified",
+    "Console selection/attract screens and physical controls not integrated",
+    "Mandatory M1 sustained performance and Fusion Pro acceptance absent"
+  ]
+}

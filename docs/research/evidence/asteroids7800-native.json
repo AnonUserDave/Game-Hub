@@ -1,0 +1,430 @@
+{
+  "schema": 1,
+  "sourceSHA256": "ec6ef6179644041a9fb77fc6b7c917387219fc388dd5a0fbf8236677f279402e",
+  "codeSHA256": "a1e293ed0e1af9ea6a7df257440a50e40a4ae9088d6bcf4800a5a6f51780183d",
+  "packageSHA256": "cb30bdde32aa700642d9ea5e499891e96a9b5dd64cd587d03d1ad3b0829de07d",
+  "packageBytes": 267887,
+  "method": "Static direct data decoding; no execution or emulation",
+  "windows": {
+    "seed": {
+      "address": "0xd000",
+      "fileOffset": 4224,
+      "bytes": 55,
+      "sha256": "9b2ae287996cdfd93aae5b7d4229b8ed40aec78d3ef86d8094536a163e8d8269"
+    },
+    "menuModes": {
+      "address": "0xd2af",
+      "fileOffset": 4911,
+      "bytes": 6,
+      "sha256": "077dc9331cecdbfb18032ae1dbc56e9c0100b1bb652a9666b532f5a3c3abe267"
+    },
+    "demoControls": {
+      "address": "0xd6ab",
+      "fileOffset": 5931,
+      "bytes": 8,
+      "sha256": "0fc7860cf01cf157f99f107f39e61e67450803ed85fc9c494fdd75410709d317"
+    },
+    "shipStartX": {
+      "address": "0xd814",
+      "fileOffset": 6292,
+      "bytes": 2,
+      "sha256": "21fcadc1e37e4c9f2a60da926952091521bf30ade49c1348bf5eecfbaa8e181e"
+    },
+    "collisionScan": {
+      "address": "0xdde0",
+      "fileOffset": 7776,
+      "bytes": 9,
+      "sha256": "a0f4a6d1fde3c0d272e8c3189963808abf9e78ae4ea63b93a3eec97d25d8d126"
+    },
+    "collisionX": {
+      "address": "0xdde9",
+      "fileOffset": 7785,
+      "bytes": 8,
+      "sha256": "99843c7326ba9c12b63e37f9e11acb372444d15b72af269505ae9c3d6645ba7e"
+    },
+    "collisionY": {
+      "address": "0xddf1",
+      "fileOffset": 7793,
+      "bytes": 8,
+      "sha256": "a2324cd4f05577266aa495d4c86d696ca622a47fe1e2fc511cfcf9f605c938ef"
+    },
+    "collisionDiagonal": {
+      "address": "0xddf9",
+      "fileOffset": 7801,
+      "bytes": 8,
+      "sha256": "06e95711a9617820733cf16e84d955a0e81267e2f6e0f556279465903dbc4b8c"
+    },
+    "shipOutlineX1": {
+      "address": "0xde01",
+      "fileOffset": 7809,
+      "bytes": 16,
+      "sha256": "9c7f11428bc94e342b16c958afc3088af87160b7cedf487601cf60beb8ff9943"
+    },
+    "shipOutlineY1": {
+      "address": "0xde11",
+      "fileOffset": 7825,
+      "bytes": 16,
+      "sha256": "f60c54ed8ac24715de65f0a5076030681a01bb4e5e43f4a061a0c02aefe6064c"
+    },
+    "shipOutlineX2": {
+      "address": "0xde21",
+      "fileOffset": 7841,
+      "bytes": 16,
+      "sha256": "6873799daf5bb62a93bbaead4cfce5bfb5d6f7ad83729ab82abd5467451a2ea1"
+    },
+    "shipOutlineY2": {
+      "address": "0xde31",
+      "fileOffset": 7857,
+      "bytes": 16,
+      "sha256": "7b6ceac0356923f666a7f0df1ab27be282d8ea1744a926b5d8cd473e92565d44"
+    },
+    "spinStyles": {
+      "address": "0xf3aa",
+      "fileOffset": 13354,
+      "bytes": 24,
+      "sha256": "a5966e2b69568c7d60bb3a710c2f308db1ad3c97dec7d7d258b90f4c5907a134"
+    },
+    "spinMasks": {
+      "address": "0xf3c2",
+      "fileOffset": 13378,
+      "bytes": 24,
+      "sha256": "42e126de306aa01ae8e37e79efc4ac63a31431c96ad906bdbbaf93c794c2ca7f"
+    },
+    "spinRanges": {
+      "address": "0xf3da",
+      "fileOffset": 13402,
+      "bytes": 12,
+      "sha256": "52f773f5b4b78e7bf62bce19090c90fb6a7e569e232f2f3640367c7fb6da1cf0"
+    },
+    "explosionStarts": {
+      "address": "0xf3e6",
+      "fileOffset": 13414,
+      "bytes": 8,
+      "sha256": "37a8234dc887272ddb05635f37c4a247f272bfd7c1d0beb1951109a602ade401"
+    },
+    "explosionEnds": {
+      "address": "0xf3ee",
+      "fileOffset": 13422,
+      "bytes": 8,
+      "sha256": "4044852be0d32fb6652193fd900287d02def39aad5eb4ee46ba61b525e75af1b"
+    },
+    "initialImages": {
+      "address": "0xf3f6",
+      "fileOffset": 13430,
+      "bytes": 3,
+      "sha256": "e6418efcf1dfab51d129cde3463d5f6d32d0798d467b554b82bb2ae56d21f095"
+    },
+    "centerX": {
+      "address": "0xf3f9",
+      "fileOffset": 13433,
+      "bytes": 7,
+      "sha256": "e82322752d76c6f78e89335707e27b047fe7db4428f287a244277bd3f9fda33d"
+    },
+    "centerY": {
+      "address": "0xf400",
+      "fileOffset": 13440,
+      "bytes": 7,
+      "sha256": "1a07b7e6cfd3894d069da019fd5cf5c58b39667eb0786e47bcbf244dec4a02bb"
+    },
+    "speedCaps": {
+      "address": "0xf4b1",
+      "fileOffset": 13617,
+      "bytes": 4,
+      "sha256": "9582c76f1764509e89c3e99f3a728f317e07fd496b853e02718a0e730eacad29"
+    },
+    "aimMasks": {
+      "address": "0xf762",
+      "fileOffset": 14306,
+      "bytes": 5,
+      "sha256": "d47a65a0136ace5394335ce9ab8c35be8116d778d7ac5b630eb418bd58c3e5fc"
+    },
+    "ufoVelocityXHigh": {
+      "address": "0xf767",
+      "fileOffset": 14311,
+      "bytes": 32,
+      "sha256": "855f5cf801cba39743b600d0b888d39d6d8a2c13a193ba17cec28d1f01e1714d"
+    },
+    "ufoVelocityXLow": {
+      "address": "0xf787",
+      "fileOffset": 14343,
+      "bytes": 32,
+      "sha256": "1eb288a1bc211152612e0135d863e708147ec2693dcff97862a092dad0772a64"
+    },
+    "ufoVelocityYHigh": {
+      "address": "0xf7a7",
+      "fileOffset": 14375,
+      "bytes": 32,
+      "sha256": "90559680bb873d3eef687ac311f4b927ab4db1e1719176bdbc06640a6c5bae89"
+    },
+    "ufoVelocityYLow": {
+      "address": "0xf7c7",
+      "fileOffset": 14407,
+      "bytes": 32,
+      "sha256": "45eecf5a55fb027b83cd27667b94bd3fef44435e5633120b190da2211c5aa6a7"
+    },
+    "waveCaps": {
+      "address": "0xf896",
+      "fileOffset": 14614,
+      "bytes": 4,
+      "sha256": "eaf9422c840c5df84015ad0bad8a68cf0c0445578664cadf814d1fcb4ae2cb58"
+    },
+    "waveTimers": {
+      "address": "0xf89a",
+      "fileOffset": 14618,
+      "bytes": 4,
+      "sha256": "08477b793d597426c154483dd85151e7531a336360498296b6de0077dbe6b044"
+    },
+    "safeRadius": {
+      "address": "0xf9b3",
+      "fileOffset": 14899,
+      "bytes": 2,
+      "sha256": "2a89803f19cf6f7cba535fe48d463be0e5e8714de76174adff4b9a65f706c662"
+    },
+    "explosionSteps": {
+      "address": "0xda8b",
+      "fileOffset": 6923,
+      "bytes": 7,
+      "sha256": "77edeb4c733d97fc8323cac104634ce853d5d4d4fd8b395df4ce7daef3f5d3a7"
+    },
+    "paletteRegisters": {
+      "address": "0xfe25",
+      "fileOffset": 16037,
+      "bytes": 32,
+      "sha256": "9dda547ddb7b406fa55232e733b159a6b8b82b7387e83c9004e218bc186bdf86"
+    },
+    "objectPalettes": {
+      "address": "0xfe45",
+      "fileOffset": 16069,
+      "bytes": 33,
+      "sha256": "46802e70c95521d63ad0ce5b8d89615c65b77b1c2123000c91eda754cac2f3c4"
+    },
+    "menuImages": {
+      "address": "0xfe68",
+      "fileOffset": 16104,
+      "bytes": 29,
+      "sha256": "ddf0db91b1c2ca777c6e746411500f8c5b55b8ea09f16b19767853079d55c48c"
+    },
+    "menuPalettes": {
+      "address": "0xfe85",
+      "fileOffset": 16133,
+      "bytes": 29,
+      "sha256": "bd1fc679b31d28ab026ba25d57f1f4e2b6f72349d39650cc7a209af0b959eea8"
+    },
+    "menuX": {
+      "address": "0xfea2",
+      "fileOffset": 16162,
+      "bytes": 29,
+      "sha256": "1acc05ffc990086b76e34f83c6787f886c37d7dc2d21b5a9a785713bc618354e"
+    },
+    "menuY": {
+      "address": "0xfebf",
+      "fileOffset": 16191,
+      "bytes": 29,
+      "sha256": "a083e5b435c6972ed141b52e102bb06d256152ab6a2d5c671d73310d3563bac7"
+    },
+    "scoreBCDLow": {
+      "address": "0xfedc",
+      "fileOffset": 16220,
+      "bytes": 8,
+      "sha256": "f2eca453d9c2eda645d2e3e5d83e041264cc7df94308a09cf8d6a782815acc13"
+    },
+    "scoreBCDHigh": {
+      "address": "0xfee4",
+      "fileOffset": 16228,
+      "bytes": 8,
+      "sha256": "6a97a3ae56b38e88adef041b6f0fa0cb92504830f9f39e758779963d7d3819c4"
+    },
+    "shotOffsetX": {
+      "address": "0xfeec",
+      "fileOffset": 16236,
+      "bytes": 16,
+      "sha256": "1e9d7c3c528efa253644d17f1b84b0f7b7bbbf074ec6f31174aad33ae94ebeff"
+    },
+    "shotOffsetY": {
+      "address": "0xfefc",
+      "fileOffset": 16252,
+      "bytes": 16,
+      "sha256": "ea8b212d0cf7229116be376745f43f1d1531029bce59a1964fd1be5af38c3185"
+    },
+    "thrustLow": {
+      "address": "0xff0c",
+      "fileOffset": 16268,
+      "bytes": 32,
+      "sha256": "da6f9c9e81f827bb4f750f0c3fe4b01d0c3beaf7c24f8b7b019fcca3df1d333a"
+    },
+    "thrustHigh": {
+      "address": "0xff2c",
+      "fileOffset": 16300,
+      "bytes": 32,
+      "sha256": "49347b2d260b7f6282d1f65205ae20a2f3159545913e05dd4e8a2310cacdf596"
+    },
+    "speedLimits": {
+      "address": "0xff4c",
+      "fileOffset": 16332,
+      "bytes": 32,
+      "sha256": "3406fb94e146b9b71911d40b70799207bb6e8fa5ac5c01d2f86543f92164ad99"
+    },
+    "displayZones": {
+      "address": "0xfdf2",
+      "fileOffset": 15986,
+      "bytes": 51,
+      "sha256": "f6b2540b96f5c241e23538b2b2cbad1e0978170cb330d78bf6377e39afb26c5e"
+    }
+  },
+  "frames": 813,
+  "contentSHA256": "12917c9cac4f193f1a2dab07a8a2955b44ada245aba4ac648392d319ec87798d",
+  "nativeFiles": [
+    "Sources/GameHub/Asteroids7800Core.swift",
+    "Tests/Swift/Asteroids7800CoreTests.swift",
+    "Tools/decode_asteroids7800.py",
+    "Tests/test_asteroids7800_media.py"
+  ],
+  "evidenceType": "Direct selected-byte Ghidra static reconstruction and native tests; not original execution",
+  "reaArchiveEvidence": "ev_3f72951713012d79566505552ea480c1a365af0540769a23b647c9538da434b9",
+  "sourceWindows": [
+    {
+      "purpose": "startup and menus",
+      "address": "0xd000",
+      "endExclusive": "0xd2af",
+      "carrierOffset": 4224,
+      "bytes": 687,
+      "sha256": "d101c33dc8945f9160595eff7582f4fe84d9fe96462fcdde674dbd1dc54596e3"
+    },
+    {
+      "purpose": "DLI",
+      "address": "0xd2fc",
+      "endExclusive": "0xd32c",
+      "carrierOffset": 4988,
+      "bytes": 48,
+      "sha256": "5a0c7896fcd16eec33f189a58fe1a01b1fe5eae264cf4c9e893774681d7ee17d"
+    },
+    {
+      "purpose": "ship controls thrust drag shots",
+      "address": "0xd32c",
+      "endExclusive": "0xd62d",
+      "carrierOffset": 5036,
+      "bytes": 769,
+      "sha256": "f4afb9b8981bd504fb9c44e37b73f56a37469e5929999ed1f15042c2ee4b46a0"
+    },
+    {
+      "purpose": "input",
+      "address": "0xd62d",
+      "endExclusive": "0xd6a5",
+      "carrierOffset": 5805,
+      "bytes": 120,
+      "sha256": "be21528301607fb0bca72879ebe9bbc59ca22a4c0cd5726713b7ec7dbf7ce8f1"
+    },
+    {
+      "purpose": "ship phases alternating winner",
+      "address": "0xd6b3",
+      "endExclusive": "0xda4f",
+      "carrierOffset": 5939,
+      "bytes": 924,
+      "sha256": "ba14f3a77306f8a14def95d2acf3417fef1366544a9b2e04b19848718d685acd"
+    },
+    {
+      "purpose": "explosions",
+      "address": "0xda4f",
+      "endExclusive": "0xda8b",
+      "carrierOffset": 6863,
+      "bytes": 60,
+      "sha256": "a0bb000510776a335facfc849741980d598906534c14a3179873d0ac65b833fe"
+    },
+    {
+      "purpose": "collision damage split",
+      "address": "0xda92",
+      "endExclusive": "0xddda",
+      "carrierOffset": 6930,
+      "bytes": 840,
+      "sha256": "8fb8aa62ae2290024c64c01cc2a9e1aff5f690eda37b0b465dfdb5855679e0fa"
+    },
+    {
+      "purpose": "score life",
+      "address": "0xde41",
+      "endExclusive": "0xdeb5",
+      "carrierOffset": 7873,
+      "bytes": 116,
+      "sha256": "6d321f2c56505ea2fdebeed94374e6e9bd19d8c4313cc31aad0d9e6220d062cf"
+    },
+    {
+      "purpose": "motion spin projectile lifetime",
+      "address": "0xf29c",
+      "endExclusive": "0xf3aa",
+      "carrierOffset": 13084,
+      "bytes": 270,
+      "sha256": "d9b40ebb62a5ffad0f704f9dc6e1795cb8ca2439e83ad38848ec1eafa33f8796"
+    },
+    {
+      "purpose": "wave spawn init",
+      "address": "0xf407",
+      "endExclusive": "0xf4b1",
+      "carrierOffset": 13447,
+      "bytes": 170,
+      "sha256": "340ec612e0f238de8a944c86818ada4dcaae76fef1a8800adcb190ce7ebd2f20"
+    },
+    {
+      "purpose": "saucer",
+      "address": "0xf510",
+      "endExclusive": "0xf762",
+      "carrierOffset": 13712,
+      "bytes": 594,
+      "sha256": "20b1ee7e18888c672e0438e313cd67320710ff595a7e62293b46902768eff207"
+    },
+    {
+      "purpose": "ordered gameplay wave RNG spawn",
+      "address": "0xf7f7",
+      "endExclusive": "0xf93c",
+      "carrierOffset": 14455,
+      "bytes": 325,
+      "sha256": "581e62acdc776c15a8271c695d65c429866e6029ddc2d3492a0cd4b48e324849"
+    },
+    {
+      "purpose": "entry safety",
+      "address": "0xf93c",
+      "endExclusive": "0xf9b3",
+      "carrierOffset": 14780,
+      "bytes": 119,
+      "sha256": "c92191caaa9b69f9539108849a009d47922e2131850f97e17588a9c93b447ac9"
+    },
+    {
+      "purpose": "high score firmware boundary",
+      "address": "0xfac0",
+      "endExclusive": "0xfbf4",
+      "carrierOffset": 15168,
+      "bytes": 308,
+      "sha256": "740e7c40e02f8e4ae6b3102a810796e4b8c6e900d7f98b1540e0b70f1f7fb608"
+    },
+    {
+      "purpose": "display construction",
+      "address": "0xfbf4",
+      "endExclusive": "0xfdce",
+      "carrierOffset": 15476,
+      "bytes": 474,
+      "sha256": "51881d29226226137b44420118f033d500f217d5910d04f206f0ac48bee969cf"
+    }
+  ],
+  "verification": {
+    "hardware": "M5 Pro MacBook Pro, 24 GB, macOS 26.3; native ARM64; not M1 acceptance",
+    "isolatedXCTest": {
+      "passed": 16,
+      "failures": 0,
+      "skipped": 0,
+      "dampingStates": 196608,
+      "perModeMainPasses": 10000
+    },
+    "pythonTests": {
+      "passed": 5,
+      "failures": 0
+    },
+    "originalBehaviorObserved": false,
+    "originalPixelsObserved": false,
+    "physicalControllerAccepted": false,
+    "sustainedM1Accepted": false
+  },
+  "limits": [
+    "Original boot RAM/timer and optional high-score firmware are unavailable.",
+    "Rare collision pair order and death/winner/attract terminal branches need further source and live reconciliation.",
+    "Raw graphical indexes are decoded; RGB and complete original presentation/audio are unqualified.",
+    "No native module registration, launch/return UI, original comparison, or M1 acceptance."
+  ]
+}

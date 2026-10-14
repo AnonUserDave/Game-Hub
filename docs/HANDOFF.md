@@ -36,6 +36,40 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+Asteroids7800 now has a separate native33-object/four-mode source loop,
+version/source-bound snapshots and44 tables/813 original graphics records in a
+bounded267,887-byte package with canonical content hashing.16 isolated Swift/
+five Python tests pass on M5, including196,608 damping states and10,000 passes
+per mode. Startup requires explicit prior RNG RAM/timer/provenance. The source
+schedule keeps display interrupts separate from main passes (two DLIs per
+pass); original region/cadence is unqualified. There is **no playable hub entry
+yet**. Resolve pair-order/terminal details, real startup/optional high-score
+firmware, complete presentation/audio and native session integration before
+original/physical/M1 acceptance. See [the7800 ledger](research/ASTEROIDS-7800.md).
+
+Asteroids2600 now has its own native playing dispatcher and bounded, canonical
+hash-checked21-table/29-mask package. It covers all66 selected variation values,
+packed source movement, ship/two player missiles/saucer, deferred collisions and
+splitting, wave density, thrust/special actions, BCD scores/bonus lives/death and
+alternating players; version/source-bound snapshots validate indexed state.
+25 isolated Swift/seven Python tests and660,000 native frame steps pass on M5.
+The selected movement-table anomaly is retained. There is **no playable hub
+entry yet**; finish original presentation/audio/clocks and session/input/save/
+launch/return integration, then every original/physical/M1 gate. See
+[the2600 ledger](research/ASTEROIDS-2600.md). Original data stays ignored.
+
+Dig Dug's supplied C64 `DIG DUG+` program now has a bounded first-party two-layer
+decoder, `Tools/decode_dig_dug.py`. It recovers a23,044-byte crack intro,19,333
+known relocated packed bytes and the24,576-byte body containing the trainer
+at `$7090` and game entry `$8000`. Every stage is size/hash fenced. Unknown
+intro RAM is excluded and the four optional trainer patches remain unapplied.
+Six Python tests and selected-media preparation pass on the M5. This is static
+content recovery with **no native Dig Dug gameplay entry**. Direct Ghidra has
+mapped the foreground/interrupt dependencies; next reconstruct source game,
+terrain/entity/pump/rock/bonus rules, modes/controls/assets/audio/saves/session
+and close all comparison/physical/M1 gates. See [the Dig Dug ledger](research/DIG-DUG.md)
+and [the hash/count receipt](research/evidence/dig-dug-unpack.json).
+
 **Son's M5 (current).** macOS 26.3, Xcode at `/Applications/Xcode.app` (Swift 6.3.1), Homebrew Python 3 with Pillow, Homebrew `unshield` 1.6.2 and OpenJDK 21/26. REA 6.4.0 is the global MCP server (`/opt/homebrew/bin/rea`), with a working Ghidra provider at `~/Desktop/Tools/ghidra_12.1.2`. REA's Ghidra session timed out during Engine.dll auto-analysis; direct `Tools/analyze_pga2005_ghidra.py` headless runs worked (88 s auto-analysis). Extracted DLLs are in the ignored `Library/SourceMedia/pga2005/engine/Executable`; the Ghidra database is in `Library/Research/ghidra-projects/pga2005-physics`. Git identity: the son's own.
 
 **Owner's M1 (paused).** Apple M1 MacBook Air, 8 GB RAM, macOS 15.6. Xcode is installed, but `/usr/bin/swift`, `git`, `python3` and `xcrun` are blocked by an unaccepted Xcode license; do not accept agreements for the user. The build scripts call `/Applications/Xcode.app/.../XcodeDefault.xctoolchain/usr/bin/swiftc` and the SDK directly, and `DEVELOPER_DIR` overrides them. Older notes mention Codex-bundled tools under `/Users/alexrogers/.cache/codex-runtimes/`; they exist only on that laptop.
