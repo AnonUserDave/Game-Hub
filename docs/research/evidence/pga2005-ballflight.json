@@ -1,0 +1,1597 @@
+{
+ "schema_version": 1,
+ "title": "PGA Tour 2005 ball simulation constants (CBallFlight and launch inputs)",
+ "date": "2026-10-13",
+ "method": "Static only. Direct Ghidra 12.1.2 headless decompilation (Tools/analyze_pga2005_ghidra.py, database Library/Research/ghidra-projects/pga2005-physics; outputs in ignored Library/Research/ghidra-ballflight{,-2,-3,-4,-5}) checked against Apple LLVM objdump x87 disassembly. Constant bytes read from the PE file at the cited addresses with the operand width of the referencing instruction. Not REA Evidence; nothing executed.",
+ "targets": {
+  "Engine.dll": "94aa30bb645ea089fed6e98df0dce38d75c309e4531386cbe33c07f65bd19728",
+  "Utils.dll": "2539899f22be0488d7b63783a988adc2b0a72f58d04984b955287fe257d85578"
+ },
+ "spec": "docs/research/PGA2005-PHYSICS.md",
+ "reference": "Tools/pga2005_ballflight_reference.py",
+ "units": "inches, radians, ticks of 1/fps s; human shots run at fps=60 (GolferHumanSwing::Update 0x101a7c93 -> HitBall(..., 0x3c))",
+ "constants": [
+  {
+   "name": "REFERENCE_FPS",
+   "address": "0x102d6598",
+   "width": "f32",
+   "bytes_hex": "00007042",
+   "value": 60.0,
+   "used_in": "StartBall 0x101f758b",
+   "use": "k=fps/60 (+0x325), inv=60/fps (+0x2d5)",
+   "confidence": "high"
+  },
+  {
+   "name": "GRAVITY_60HZ",
+   "address": "0x102d97c8",
+   "width": "f64",
+   "bytes_hex": "000000407e6fbb3f",
+   "value": 0.1071700006723404,
+   "used_in": "StartBall 0x101f758b",
+   "use": "g = inv^2 * 0.10717 in/tick^2 (+0x2dd); 9.80 m/s^2",
+   "confidence": "high"
+  },
+  {
+   "name": "CLUB_SPEED_SCALE",
+   "address": "0x102d9750",
+   "width": "f64",
+   "bytes_hex": "000000a0aaaa2040",
+   "value": 8.333333015441895,
+   "used_in": "Impact 0x101f4e6a",
+   "use": "speed = table[club]*8.3333*inv/f40, f40 = 1/power",
+   "confidence": "high"
+  },
+  {
+   "name": "BALL_RADIUS",
+   "address": "0x102d9758",
+   "width": "f64",
+   "bytes_hex": "000000a047e1ea3f",
+   "value": 0.8399999737739563,
+   "used_in": "Impact, Collide, RollingAndSlipping, PureRolling, CupDynamics",
+   "use": "0.84 in ball radius",
+   "confidence": "high"
+  },
+  {
+   "name": "BALL_RADIUS_SQ",
+   "address": "0x102d9760",
+   "width": "f64",
+   "bytes_hex": "000000804694e63f",
+   "value": 0.7056000232696533,
+   "used_in": "PureRolling, CupDynamics",
+   "use": "r^2",
+   "confidence": "high"
+  },
+  {
+   "name": "BALL_MASS",
+   "address": "0x102d9768",
+   "width": "f64",
+   "bytes_hex": "0000002085ebf93f",
+   "value": 1.6200000047683716,
+   "used_in": "Collide, PureRolling",
+   "use": "1.62 oz ball mass",
+   "confidence": "high"
+  },
+  {
+   "name": "FACE_TANGENT_LOSS",
+   "address": "0x102d9770",
+   "width": "f64",
+   "bytes_hex": "000000c0ccccec3f",
+   "value": 0.8999999761581421,
+   "used_in": "Impact",
+   "use": "ball keeps (1-0.9) of tangential club speed; spin uses the 0.9 part",
+   "confidence": "high"
+  },
+  {
+   "name": "PUTT_SPEED_SCALE",
+   "address": "0x102d9778",
+   "width": "f64",
+   "bytes_hex": "000000c0ccccfc3f",
+   "value": 1.7999999523162842,
+   "used_in": "Impact (club 20)",
+   "use": "putt velocity = tangent-plane club velocity * 1.8",
+   "confidence": "high"
+  },
+  {
+   "name": "MIN_LAUNCH_FRACTION",
+   "address": "0x102d9950",
+   "width": "f64",
+   "bytes_hex": "000000a09999d93f",
+   "value": 0.4000000059604645,
+   "used_in": "Impact",
+   "use": "launch angle >= f32(0.4*table angle)",
+   "confidence": "high"
+  },
+  {
+   "name": "LIE_COMP_TARGET",
+   "address": "0x102d98f8",
+   "width": "f64",
+   "bytes_hex": "000000e051b8ee3f",
+   "value": 0.9599999785423279,
+   "used_in": "Impact",
+   "use": "if lie factor < 0.96: += (0.96-f)*CBallFlight+0x90",
+   "confidence": "high"
+  },
+  {
+   "name": "SAND_WOOD_POWER",
+   "address": "0x102d9870",
+   "width": "f64",
+   "bytes_hex": "000000606666e63f",
+   "value": 0.699999988079071,
+   "used_in": "Impact",
+   "use": "bunker, club<8: f *= (0.7-1)*sandBlend+1",
+   "confidence": "high"
+  },
+  {
+   "name": "SAND_IRON_POWER",
+   "address": "0x102d98b8",
+   "width": "f64",
+   "bytes_hex": "000000000000f83f",
+   "value": 1.5,
+   "used_in": "Impact",
+   "use": "bunker, club>=8: f *= (1.5-1)*sandBlend+1",
+   "confidence": "high"
+  },
+  {
+   "name": "PITCH_ROUGH_BLEND",
+   "address": "0x102d62e8",
+   "width": "f64",
+   "bytes_hex": "000000000000e03f",
+   "value": 0.5,
+   "used_in": "Impact; Collide",
+   "use": "Pitch shot type from rough: f=(1-f)*0.5+f; weed/third-bounce c9 x0.5",
+   "confidence": "high"
+  },
+  {
+   "name": "SAND_SPIN_BLEND",
+   "address": "0x1038bb00",
+   "width": "f64",
+   "bytes_hex": "000000000000e03f",
+   "value": 0.5,
+   "used_in": "Impact",
+   "use": "bunker spin: club<20 s*=1-(1-blend)*0.5; club>20 s*=0.5",
+   "confidence": "high"
+  },
+  {
+   "name": "ONE_F32",
+   "address": "0x102d3820",
+   "width": "f32",
+   "bytes_hex": "0000803f",
+   "value": 1.0,
+   "used_in": "many",
+   "use": "1.0f",
+   "confidence": "high"
+  },
+  {
+   "name": "ROUGH_LENGTH_POWER_SLOPE",
+   "address": "0x102d9980",
+   "width": "f64",
+   "bytes_hex": "000000a09999c93f",
+   "value": 0.20000000298023224,
+   "used_in": "ConsiderTerrain 0x101fd3f3",
+   "use": "rough: ((rough-1)*0.2+1)*(0.05*magnet+c0)",
+   "confidence": "high"
+  },
+  {
+   "name": "SAND_DIFFICULTY_POWER_SLOPE",
+   "address": "0x102d9988",
+   "width": "f64",
+   "bytes_hex": "000000a09999c93f",
+   "value": 0.20000000298023224,
+   "used_in": "ConsiderTerrain 0x101fd3f3",
+   "use": "bunker: ((sand-1)*0.2+1)*c0",
+   "confidence": "high"
+  },
+  {
+   "name": "MAGNET_SCALE",
+   "address": "0x102d64dc",
+   "width": "f32",
+   "bytes_hex": "cdcc4c3d",
+   "value": 0.05000000074505806,
+   "used_in": "CGolfBall::SetupBall 0x1013786f",
+   "use": "global 0x10450140 = GetMagnetEffect()*0.05",
+   "confidence": "high"
+  },
+  {
+   "name": "WIND_MIN_HEIGHT",
+   "address": "0x102d9858",
+   "width": "f64",
+   "bytes_hex": "0000000000003240",
+   "value": 18.0,
+   "used_in": "Flying 0x101f5b7d",
+   "use": "wind only when y - groundHeight(+0x2ad) > 18 in",
+   "confidence": "high"
+  },
+  {
+   "name": "WIND_FACTOR",
+   "address": "0x102d98c8",
+   "width": "f64",
+   "bytes_hex": "000000403333e33f",
+   "value": 0.6000000238418579,
+   "used_in": "Flying",
+   "use": "relative air velocity = v - wind*0.6*inv",
+   "confidence": "high"
+  },
+  {
+   "name": "AERO_K",
+   "address": "0x102d9780",
+   "width": "f64",
+   "bytes_hex": "00000000f1193f3f",
+   "value": 0.00047456868924200535,
+   "used_in": "Flying",
+   "use": "rho*A/(2m) with rho~1.2 kg/m^3; Cd, Cl multiplier",
+   "confidence": "high"
+  },
+  {
+   "name": "DRAG_SW",
+   "address": "0x102d9788",
+   "width": "f64",
+   "bytes_hex": "000000a0f9d936bf",
+   "value": -0.00034868568764068186,
+   "used_in": "Flying",
+   "use": "Cd term * s*k * w*k",
+   "confidence": "high"
+  },
+  {
+   "name": "DRAG_W",
+   "address": "0x102d9790",
+   "width": "f64",
+   "bytes_hex": "000000e0ad4c913f",
+   "value": 0.01689407043159008,
+   "used_in": "Flying",
+   "use": "Cd term * w*k",
+   "confidence": "high"
+  },
+  {
+   "name": "DRAG_S",
+   "address": "0x102d9798",
+   "width": "f64",
+   "bytes_hex": "000000801a97493f",
+   "value": 0.0007809523958712816,
+   "used_in": "Flying",
+   "use": "Cd term * s*k",
+   "confidence": "high"
+  },
+  {
+   "name": "DRAG_0",
+   "address": "0x102d97a0",
+   "width": "f64",
+   "bytes_hex": "000000c0b3e6cc3f",
+   "value": 0.22579047083854675,
+   "used_in": "Flying",
+   "use": "Cd constant",
+   "confidence": "high"
+  },
+  {
+   "name": "LIFT_SW",
+   "address": "0x102d97a8",
+   "width": "f64",
+   "bytes_hex": "000000a0789644bf",
+   "value": -0.0006282891263253987,
+   "used_in": "Flying",
+   "use": "Cl term * s*k * w*k",
+   "confidence": "high"
+  },
+  {
+   "name": "LIFT_W",
+   "address": "0x102d97b0",
+   "width": "f64",
+   "bytes_hex": "00000020dfd7a43f",
+   "value": 0.040709469467401505,
+   "used_in": "Flying",
+   "use": "Cl term * w*k",
+   "confidence": "high"
+  },
+  {
+   "name": "LIFT_S",
+   "address": "0x102d97b8",
+   "width": "f64",
+   "bytes_hex": "000000c0095a2abf",
+   "value": -0.0002010476018767804,
+   "used_in": "Flying",
+   "use": "Cl term * s*k",
+   "confidence": "high"
+  },
+  {
+   "name": "LIFT_0",
+   "address": "0x102d97c0",
+   "width": "f64",
+   "bytes_hex": "0000006025b1b53f",
+   "value": 0.08473428338766098,
+   "used_in": "Flying",
+   "use": "Cl constant",
+   "confidence": "high"
+  },
+  {
+   "name": "SPIN_DECAY",
+   "address": "0x102d97f8",
+   "width": "f64",
+   "bytes_hex": "000000c07493683f",
+   "value": 0.003000000026077032,
+   "used_in": "Flying",
+   "use": "w *= 1-(1+head)*0.003*inv*ballDecay",
+   "confidence": "high"
+  },
+  {
+   "name": "HEADWIND_SPIN_DECAY",
+   "address": "0x102d98d0",
+   "width": "f64",
+   "bytes_hex": "000000403333d33f",
+   "value": 0.30000001192092896,
+   "used_in": "Flying",
+   "use": "head = 0.3*|(wind.v) v_xz|/|v|^2 when wind.v < 0",
+   "confidence": "high"
+  },
+  {
+   "name": "ZERO",
+   "address": "0x102d6788",
+   "width": "f64",
+   "bytes_hex": "0000000000000000",
+   "value": 0.0,
+   "used_in": "Flying, Collide, PureRolling, CupDynamics",
+   "use": "0.0 comparisons",
+   "confidence": "high"
+  },
+  {
+   "name": "GREEN_DENT",
+   "address": "0x1038bae0",
+   "width": "f64",
+   "bytes_hex": "000000a09999e93f",
+   "value": 0.800000011920929,
+   "used_in": "Collide 0x101f3310",
+   "use": "green/fringe dent x0.8; green restitution fall-off divisor c8/0.8",
+   "confidence": "high"
+  },
+  {
+   "name": "FULL_RESTITUTION_SPEED",
+   "address": "0x1038bae8",
+   "width": "f64",
+   "bytes_hex": "0000000000002040",
+   "value": 8.0,
+   "used_in": "Collide 0x101f3310",
+   "use": "restitution factor 1 when |v|*k <= 8 in/tick",
+   "confidence": "high"
+  },
+  {
+   "name": "RESTITUTION_FALLOFF",
+   "address": "0x1038baf0",
+   "width": "f64",
+   "bytes_hex": "000000000000fc3f",
+   "value": 1.75,
+   "used_in": "Collide 0x101f3310",
+   "use": "s = 1-1.75*(|v|k-8)/c8",
+   "confidence": "high"
+  },
+  {
+   "name": "FRICTION_SCALE",
+   "address": "0x1038baf8",
+   "width": "f64",
+   "bytes_hex": "000000403333d33f",
+   "value": 0.30000001192092896,
+   "used_in": "Collide 0x101f3310",
+   "use": "tangential impulse limit |Jn|*c3*0.3",
+   "confidence": "high"
+  },
+  {
+   "name": "SLIP_EPSILON",
+   "address": "0x102d6490",
+   "width": "f64",
+   "bytes_hex": "bbbdd7d9df7cdb3d",
+   "value": 1e-10,
+   "used_in": "Collide 0x101f3310",
+   "use": "contact slip below 1e-10 -> tangent (0,0,1)",
+   "confidence": "high"
+  },
+  {
+   "name": "TANGENT_MASS",
+   "address": "0x102d97d0",
+   "width": "f64",
+   "bytes_hex": "000000a0739fdd3f",
+   "value": 0.4628571569919586,
+   "used_in": "Collide 0x101f3310",
+   "use": "m/3.5 effective mass of a rolling sphere contact",
+   "confidence": "high"
+  },
+  {
+   "name": "R_OVER_I",
+   "address": "0x102d97e8",
+   "width": "f64",
+   "bytes_hex": "00000040fc64fd3f",
+   "value": 1.8371546268463135,
+   "used_in": "Collide 0x101f3310",
+   "use": "r/I angular impulse factor",
+   "confidence": "high"
+  },
+  {
+   "name": "ROUGH_SOFTNESS",
+   "address": "0x102d9948",
+   "width": "f64",
+   "bytes_hex": "000000601058e53f",
+   "value": 0.6669999957084656,
+   "used_in": "Collide 0x101f3310",
+   "use": "rough c9 x0.667",
+   "confidence": "high"
+  },
+  {
+   "name": "SECOND_BOUNCE_SOFTNESS",
+   "address": "0x102d7070",
+   "width": "f64",
+   "bytes_hex": "000000000000e83f",
+   "value": 0.75,
+   "used_in": "Collide 0x101f3310",
+   "use": "fairway/green second bounce c9 x0.75",
+   "confidence": "high"
+  },
+  {
+   "name": "TWO_F32",
+   "address": "0x102d6300",
+   "width": "f32",
+   "bytes_hex": "00000040",
+   "value": 2.0,
+   "used_in": "Collide 0x101f3310",
+   "use": "(2 - rough) and (2 - wet) factors",
+   "confidence": "high"
+  },
+  {
+   "name": "TWO_F64",
+   "address": "0x102d8640",
+   "width": "f64",
+   "bytes_hex": "0000000000000040",
+   "value": 2.0,
+   "used_in": "Collide 0x101f3310",
+   "use": "(2 - x) factors",
+   "confidence": "high"
+  },
+  {
+   "name": "WET_DENT_SLOPE",
+   "address": "0x102d9868",
+   "width": "f64",
+   "bytes_hex": "000000606666f63f",
+   "value": 1.399999976158142,
+   "used_in": "Collide 0x101f3310",
+   "use": "short grass dent x(2-((wet-1)*1.4+1))",
+   "confidence": "high"
+  },
+  {
+   "name": "WET_RESTITUTION_SLOPE",
+   "address": "0x102d9860",
+   "width": "f64",
+   "bytes_hex": "000000c0f528bc3f",
+   "value": 0.10999999940395355,
+   "used_in": "Collide 0x101f3310",
+   "use": "short grass restitution x((wet-1)*0.11+1)",
+   "confidence": "high"
+  },
+  {
+   "name": "FAIRWAY_C2_SCALE",
+   "address": "0x102d64c0",
+   "width": "f32",
+   "bytes_hex": "6666663f",
+   "value": 0.8999999761581421,
+   "used_in": "Collide 0x101f3310",
+   "use": "fairway c2 x0.9 (float store); StopBall 0.9 random threshold",
+   "confidence": "high"
+  },
+  {
+   "name": "ROLL_NORMAL_SPEED",
+   "address": "0x102d97d8",
+   "width": "f64",
+   "bytes_hex": "000000000000e03f",
+   "value": 0.5,
+   "used_in": "Collide 0x101f3310",
+   "use": "-> pure rolling when v_n*k < 0.5",
+   "confidence": "high"
+  },
+  {
+   "name": "ROLL_TANGENT_SPEED",
+   "address": "0x102d97e0",
+   "width": "f64",
+   "bytes_hex": "000000000000f03f",
+   "value": 1.0,
+   "used_in": "Collide 0x101f3310",
+   "use": "... and |v_t|*k < 1.0",
+   "confidence": "high"
+  },
+  {
+   "name": "SPIN_KICK_MIN_WET",
+   "address": "0x102d98d8",
+   "width": "f64",
+   "bytes_hex": "000000606666e63f",
+   "value": 0.699999988079071,
+   "used_in": "Collide 0x101f3310",
+   "use": "spin kick only if wet > 0.7",
+   "confidence": "high"
+  },
+  {
+   "name": "SPIN_KICK_MIN_DISTANCE",
+   "address": "0x102d98e0",
+   "width": "f64",
+   "bytes_hex": "0000000000b8a140",
+   "value": 2268.0,
+   "used_in": "Collide 0x101f3310",
+   "use": "spin kick only beyond 2268 in (63 yd) from start",
+   "confidence": "high"
+  },
+  {
+   "name": "SPIN_KICK_FORWARD",
+   "address": "0x102d98e8",
+   "width": "f64",
+   "bytes_hex": "000000a09999b93f",
+   "value": 0.10000000149011612,
+   "used_in": "Collide 0x101f3310",
+   "use": "forward (topspin) kick x0.1",
+   "confidence": "high"
+  },
+  {
+   "name": "SPIN_KICK_NUMERATOR",
+   "address": "0x102d9940",
+   "width": "f64",
+   "bytes_hex": "0000000000001040",
+   "value": 4.0,
+   "used_in": "Collide 0x101f3310",
+   "use": "static 0x10450088 = 4.0/0.3",
+   "confidence": "high"
+  },
+  {
+   "name": "WALL_DAMPING",
+   "address": "0x102d66c0",
+   "width": "f64",
+   "bytes_hex": "000000c0ccccec3f",
+   "value": 0.8999999761581421,
+   "used_in": "BallLoopTestTerrainCollisions 0x101f8d87",
+   "use": "steep-wall hit: v,w *= 0.9 and extra step",
+   "confidence": "high"
+  },
+  {
+   "name": "WALL_SLOPE_TEST",
+   "address": "0x102d85e8",
+   "width": "f64",
+   "bytes_hex": "000000000000d03f",
+   "value": 0.25,
+   "used_in": "BallLoopTestTerrainCollisions",
+   "use": "segment hit accepted if n_y <= 0.25*(n_x^2+n_z^2)",
+   "confidence": "high"
+  },
+  {
+   "name": "SNAP_HEIGHT",
+   "address": "0x102d9800",
+   "width": "f64",
+   "bytes_hex": "000000000000f83f",
+   "value": 1.5,
+   "used_in": "BallLoopTestTerrainCollisions",
+   "use": "rolling: snap y to ground if y-ground < 1.5, else fly",
+   "confidence": "high"
+  },
+  {
+   "name": "HEIGHT_PROBE_ABOVE",
+   "address": "0x102d6f88",
+   "width": "f64",
+   "bytes_hex": "0000000000002840",
+   "value": 12.0,
+   "used_in": "BallLoopTerrainHeight 0x101f7ccb",
+   "use": "first TerrainHeightCPP probe at y+12",
+   "confidence": "high"
+  },
+  {
+   "name": "HEIGHT_PROBE_SPAN",
+   "address": "0x102d9968",
+   "width": "f64",
+   "bytes_hex": "0000000000003840",
+   "value": 24.0,
+   "used_in": "BallLoopTerrainHeight",
+   "use": "second probe limit y+24*inv",
+   "confidence": "high"
+  },
+  {
+   "name": "SLIP_FRICTION",
+   "address": "0x1038bb08",
+   "width": "f64",
+   "bytes_hex": "000000000000f83f",
+   "value": 1.5,
+   "used_in": "RollingAndSlipping 0x101f6112",
+   "use": "F = g*n_y*c5*1.5",
+   "confidence": "high"
+  },
+  {
+   "name": "SLIP_TORQUE",
+   "address": "0x102d9958",
+   "width": "f64",
+   "bytes_hex": "0000000000000440",
+   "value": 2.5,
+   "used_in": "RollingAndSlipping",
+   "use": "dw = F*2.5/r (solid sphere)",
+   "confidence": "high"
+  },
+  {
+   "name": "GREEN_BREAK",
+   "address": "0x102d98a0",
+   "width": "f64",
+   "bytes_hex": "000000403333e33f",
+   "value": 0.6000000238418579,
+   "used_in": "PureRolling 0x101f6742",
+   "use": "green c6 x0.6",
+   "confidence": "high"
+  },
+  {
+   "name": "BALL_INERTIA",
+   "address": "0x102d97f0",
+   "width": "f64",
+   "bytes_hex": "000000a03c43dd3f",
+   "value": 0.45722880959510803,
+   "used_in": "PureRolling",
+   "use": "I = 0.4*m*r^2; precession angle = torque/(I*|w|)",
+   "confidence": "high"
+  },
+  {
+   "name": "FIVE",
+   "address": "0x102d64b8",
+   "width": "f64",
+   "bytes_hex": "0000000000001440",
+   "value": 5.0,
+   "used_in": "PureRolling",
+   "use": "5/7 rolling-sphere factor",
+   "confidence": "high"
+  },
+  {
+   "name": "SEVEN",
+   "address": "0x102d9960",
+   "width": "f64",
+   "bytes_hex": "0000000000001c40",
+   "value": 7.0,
+   "used_in": "PureRolling",
+   "use": "5/7 rolling-sphere factor",
+   "confidence": "high"
+  },
+  {
+   "name": "GREEN_ROLL",
+   "address": "0x102d9898",
+   "width": "f64",
+   "bytes_hex": "000000606666e23f",
+   "value": 0.574999988079071,
+   "used_in": "PureRolling",
+   "use": "green c7 x0.575",
+   "confidence": "high"
+  },
+  {
+   "name": "FAST_GREEN_SLOPE",
+   "address": "0x102d98a8",
+   "width": "f64",
+   "bytes_hex": "000000205c8ff23f",
+   "value": 1.159999966621399,
+   "used_in": "PureRolling",
+   "use": "wet>1: R *= 2-((wet-1)*1.16+1)",
+   "confidence": "high"
+  },
+  {
+   "name": "SLOW_GREEN_SLOPE",
+   "address": "0x102d98b0",
+   "width": "f64",
+   "bytes_hex": "000000a09999e13f",
+   "value": 0.550000011920929,
+   "used_in": "PureRolling",
+   "use": "wet<1: R *= 2-0.55*wet (discontinuous at 1)",
+   "confidence": "high"
+  },
+  {
+   "name": "BUNKER_MOVE_LIMIT",
+   "address": "0x102d9890",
+   "width": "f64",
+   "bytes_hex": "0000000000001840",
+   "value": 6.0,
+   "used_in": "StopBall 0x101f769c",
+   "use": "moved >= 6 in on any axis since entry -> Lt sand",
+   "confidence": "high"
+  },
+  {
+   "name": "BUNKER_SOFT_ENTRY",
+   "address": "0x102d9878",
+   "width": "f64",
+   "bytes_hex": "0000000000002440",
+   "value": 10.0,
+   "used_in": "StopBall 0x101f769c",
+   "use": "entry |v.n| < 10 -> Lt sand",
+   "confidence": "high"
+  },
+  {
+   "name": "BUNKER_MED_ENTRY",
+   "address": "0x102d9880",
+   "width": "f64",
+   "bytes_hex": "0000000000002840",
+   "value": 12.0,
+   "used_in": "StopBall 0x101f769c",
+   "use": "entry < 12 -> Med/Dp roll",
+   "confidence": "high"
+  },
+  {
+   "name": "BUNKER_PLUG_ENTRY",
+   "address": "0x102d9888",
+   "width": "f64",
+   "bytes_hex": "0000000000002c40",
+   "value": 14.0,
+   "used_in": "StopBall 0x101f769c",
+   "use": "entry >= 14 -> plug chance",
+   "confidence": "high"
+  },
+  {
+   "name": "BUNKER_P10",
+   "address": "0x102d5e78",
+   "width": "f32",
+   "bytes_hex": "cdcccc3d",
+   "value": 0.10000000149011612,
+   "used_in": "StopBall 0x101f769c",
+   "use": "0.1 random thresholds",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_RADIUS",
+   "address": "0x102d9808",
+   "width": "f64",
+   "bytes_hex": "0000000000000040",
+   "value": 2.0,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "2.0 in (search square half-size 2.5)",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_DEPTH",
+   "address": "0x102d9810",
+   "width": "f64",
+   "bytes_hex": "0000000000001040",
+   "value": 4.0,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "holed when sample y <= cupY - 4",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_STEP",
+   "address": "0x102d9818",
+   "width": "f64",
+   "bytes_hex": "000000000000c03f",
+   "value": 0.125,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "0.125 in path sampling; rim back-off",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_WALL_RESTITUTION",
+   "address": "0x102d9820",
+   "width": "f64",
+   "bytes_hex": "00000040e17aa43f",
+   "value": 0.03999999910593033,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "object collision restitution (wall and rim)",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_WALL_FRICTION",
+   "address": "0x102d9828",
+   "width": "f64",
+   "bytes_hex": "000000403333d33f",
+   "value": 0.30000001192092896,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "wall (n_y == 0)",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_RIM_FRICTION",
+   "address": "0x102d9838",
+   "width": "f64",
+   "bytes_hex": "000000403333e33f",
+   "value": 0.6000000238418579,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "rim (n_y != 0)",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_FAST",
+   "address": "0x102d9840",
+   "width": "f64",
+   "bytes_hex": "0000000000000e40",
+   "value": 3.75,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "path length*k < 3.75 -> rim normal from contact height",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_LIP_HEIGHT",
+   "address": "0x102d9848",
+   "width": "f64",
+   "bytes_hex": "000000a09999e93f",
+   "value": 0.800000011920929,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "lip normal horizontal part 0.8 for fast balls",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_SPIN_KEEP",
+   "address": "0x102d98c0",
+   "width": "f64",
+   "bytes_hex": "000000a09999b93f",
+   "value": 0.10000000149011612,
+   "used_in": "CupDynamics 0x101f9966",
+   "use": "spin x0.1 after cup collision",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_NORMAL_FUDGE_RADIUS",
+   "address": "0x102d9990",
+   "width": "f32",
+   "bytes_hex": "cdcc1440",
+   "value": 2.325000047683716,
+   "used_in": "TerrainData::CupNormalFudge 0x101fe0b6",
+   "use": "within 2.325 in of pin: normal = (pin.x-x, pin.y+4-h, pin.z-z)",
+   "confidence": "high"
+  },
+  {
+   "name": "CUP_NORMAL_FUDGE_HEIGHT",
+   "address": "0x102d6304",
+   "width": "f32",
+   "bytes_hex": "00008040",
+   "value": 4.0,
+   "used_in": "TerrainData::CupNormalFudge",
+   "use": "4.0",
+   "confidence": "high"
+  },
+  {
+   "name": "HOOK_SLICE_EXPONENT",
+   "address": "0x102d6c2c",
+   "width": "f32",
+   "bytes_hex": "9a99193f",
+   "value": 0.6000000238418579,
+   "used_in": "swing/player",
+   "use": "CPlayer::GetHookSliceExponent 0x1013c25c; path = sign(x)|x|^0.6*maxSlice",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAX_SLICE_NOVICE_DEG",
+   "address": "0x102d59c8",
+   "width": "f32",
+   "bytes_hex": "0000c03f",
+   "value": 1.5,
+   "used_in": "swing/player",
+   "use": "GetMaxSliceAngle 0x1013c0ab (deg*2pi/360)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAX_SLICE_INTERMEDIATE_DEG",
+   "address": "0x102d811c",
+   "width": "f32",
+   "bytes_hex": "00006040",
+   "value": 3.5,
+   "used_in": "swing/player",
+   "use": "GetMaxSliceAngle",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAX_SLICE_ADVANCED_DEG",
+   "address": "0x102d56ac",
+   "width": "f32",
+   "bytes_hex": "0000a040",
+   "value": 5.0,
+   "used_in": "swing/player",
+   "use": "GetMaxSliceAngle; also 5.0 in several places",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAX_SLICE_EXPERT_DEG",
+   "address": "0x102d5cd8",
+   "width": "f32",
+   "bytes_hex": "0000c040",
+   "value": 6.0,
+   "used_in": "swing/player",
+   "use": "GetMaxSliceAngle",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MISHIT_ROT_NOVICE_DEG",
+   "address": "0x102d8124",
+   "width": "f32",
+   "bytes_hex": "0000a03f",
+   "value": 1.25,
+   "used_in": "swing/player",
+   "use": "GetMaxMissHitClubRotation 0x1013c129",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MISHIT_ROT_INTERMEDIATE_DEG",
+   "address": "0x102d8120",
+   "width": "f32",
+   "bytes_hex": "00002040",
+   "value": 2.5,
+   "used_in": "swing/player",
+   "use": "GetMaxMissHitClubRotation",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MISHIT_ROT_ADVANCED_DEG",
+   "address": "0x102d6304",
+   "width": "f32",
+   "bytes_hex": "00008040",
+   "value": 4.0,
+   "used_in": "swing/player",
+   "use": "GetMaxMissHitClubRotation",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAGNET_NOVICE",
+   "address": "0x102d8108",
+   "width": "f32",
+   "bytes_hex": "cdcc4c3f",
+   "value": 0.800000011920929,
+   "used_in": "swing/player",
+   "use": "GetMagnetEffect 0x1013c1a7",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAGNET_INTERMEDIATE",
+   "address": "0x102d810c",
+   "width": "f32",
+   "bytes_hex": "6666e63e",
+   "value": 0.44999998807907104,
+   "used_in": "swing/player",
+   "use": "GetMagnetEffect",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAGNET_ADVANCED",
+   "address": "0x102d8110",
+   "width": "f32",
+   "bytes_hex": "cdcc4c3d",
+   "value": 0.05000000074505806,
+   "used_in": "swing/player",
+   "use": "GetMagnetEffect (Expert 0.0)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "AVG_DISTANCE_NOVICE",
+   "address": "0x102d8114",
+   "width": "f32",
+   "bytes_hex": "00301646",
+   "value": 9612.0,
+   "used_in": "swing/player",
+   "use": "CPlayer::GetAverageDistance 0x1013bf67 (in)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "AVG_DISTANCE_INTERMEDIATE",
+   "address": "0x102d8118",
+   "width": "f32",
+   "bytes_hex": "00101e46",
+   "value": 10116.0,
+   "used_in": "swing/player",
+   "use": "GetAverageDistance",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "AVG_DISTANCE_ADVANCED_EXPERT",
+   "address": "0x102d7880",
+   "width": "f32",
+   "bytes_hex": "00c02846",
+   "value": 10800.0,
+   "used_in": "swing/player",
+   "use": "GetAverageDistance",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAX_CLUB_POWER",
+   "address": "0x102d77e4",
+   "width": "f32",
+   "bytes_hex": "00006041",
+   "value": 14.0,
+   "used_in": "swing/player",
+   "use": "Caddy::GetMaxClubPower 0x10113537 (non-putter)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAX_PUTTER_POWER",
+   "address": "0x102d60dc",
+   "width": "f32",
+   "bytes_hex": "00000041",
+   "value": 8.0,
+   "used_in": "swing/player",
+   "use": "Caddy::GetMaxClubPower (club 20)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "MAX_PRO_DISTANCE",
+   "address": "0x1037fb48",
+   "width": "f32",
+   "bytes_hex": "00e01746",
+   "value": 9720.0,
+   "used_in": "swing/player",
+   "use": "Caddy::GetMaxProDistance 0x101149c0 (in)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "CLICK_PUTTER_FACTOR",
+   "address": "0x102d6c30",
+   "width": "f32",
+   "bytes_hex": "cdcc4c3f",
+   "value": 0.800000011920929,
+   "used_in": "swing/player",
+   "use": "ClickSwingControlC power 0x10164344: putter x0.8; GreenCond 2",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "HIT_FACTOR_PICK",
+   "address": "0x102d6b50",
+   "width": "f32",
+   "bytes_hex": "cdcccc3e",
+   "value": 0.4000000059604645,
+   "used_in": "swing/player",
+   "use": "CPlayer::GetShotHitFactor 0x1013c2dd (Punch 0.6, Pick 0.4, Blast 0.7)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "HIT_FACTOR_BLAST",
+   "address": "0x102d70fc",
+   "width": "f32",
+   "bytes_hex": "3333333f",
+   "value": 0.699999988079071,
+   "used_in": "swing/player",
+   "use": "GetShotHitFactor; RoughLength Heavy 0.7",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "ROUGH_LIGHT",
+   "address": "0x102d8cd4",
+   "width": "f32",
+   "bytes_hex": "6666a63f",
+   "value": 1.2999999523162842,
+   "used_in": "swing/player",
+   "use": "CCourse::GetRoughLength 0x1017abcc (Light)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "WET_FAST",
+   "address": "0x102d70b0",
+   "width": "f32",
+   "bytes_hex": "9a99993f",
+   "value": 1.2000000476837158,
+   "used_in": "swing/player",
+   "use": "CCourse::GetWetScale 0x1017ac0e (Fast)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "WET_VERY_FAST",
+   "address": "0x102d8cd8",
+   "width": "f32",
+   "bytes_hex": "3333b33f",
+   "value": 1.399999976158142,
+   "used_in": "swing/player",
+   "use": "GetWetScale (Very Fast)",
+   "confidence": "medium-high"
+  },
+  {
+   "name": "LOFT_FROM_PATH_FACE",
+   "address": "0x102d3d9c",
+   "width": "f32",
+   "bytes_hex": "0000003f",
+   "value": 0.5,
+   "used_in": "swing/player",
+   "use": "0x101623d4: club<11 loft += -(path-face)*0.5",
+   "confidence": "medium-high"
+  }
+ ],
+ "club_tables": {
+  "speed": {
+   "address": "0x1038b540",
+   "width": "f64[45]",
+   "bytes_hex": "6b46b5718c10dd3f6b46b5718c10dd3f49d546da6516dc3fa7b97aed502fdb3f9c3197170a5fd93f16fd8fb66bced63f736cc37c07acd53f80ce4e4d1c75d43f48d1a7aeacefd93f79cb422c7c6cd83fa7b470ece89ed63f5fc27df100e7d53f07afb1d9fe66d53fcc53a46266b6d43f5f143ff15cf2d33f4e2ad395f338d33f50ed5070586ad23f2edf5ddb9931d33f2c683e0d36face3fc8b10ca956eaca3fcc7f48bf7d1da83f1e6c05b11d63cc3f32584c5eb458ca3fd75565e0e8b4c83fc476220c59dec73f470f1d8d711ac73f55ca6e38d797c63f6385c0e33c15c63fd173ee0e9faec53f25b702655c19c53f9efa16bb1984c43fbfa1af1316f7c13fc5d2a415476fc03fc6dcb5847cd0d33ffcdea63ffb91d23f1ee1b4e0455fd13f04e275fd82ddd03febe2361ac05bd03f4bc8073d9b55cf3f6dca15dee522ce3fb8cce9b298d8cc3fddcd531d7233cc3f07ce1951da1bcc3fb6d617096d39c73fcfda6d179aebc43f",
+   "values": [
+    0.454135047,
+    0.454135047,
+    0.438867057,
+    0.424762947,
+    0.396425746,
+    0.356348923,
+    0.338624832,
+    0.319647861,
+    0.405253573,
+    0.381621402,
+    0.353449088,
+    0.342224346,
+    0.334411347,
+    0.323632809,
+    0.311667667,
+    0.300351044,
+    0.287740812,
+    0.299902405,
+    0.242010838,
+    0.210276444,
+    0.0471,
+    0.221774779735683,
+    0.20583204845815,
+    0.193020925110132,
+    0.186473017621145,
+    0.18049449339207,
+    0.176508810572687,
+    0.172523127753304,
+    0.169391519823789,
+    0.164836453744493,
+    0.160281387665198,
+    0.140352973568282,
+    0.128395925110132,
+    0.3096,
+    0.29016,
+    0.27144,
+    0.26352,
+    0.2556,
+    0.2448,
+    0.23544,
+    0.22536,
+    0.22032,
+    0.2196,
+    0.18144,
+    0.16344
+   ],
+   "sand_variant": "same array at index club+25 (address 0x1038b608)"
+  },
+  "launch_angle_rad": {
+   "address": "0x1038b6a8",
+   "width": "f64[45]",
+   "bytes_hex": "034ccfaa8508c03f6c76283373fbc23fbbeb110fcd61c33f4b8824406e3bc43ffea8fa53b275c63f3f5d386b4bb8c83f5469d5f89603cc3f4d3a803452a5cc3f53944be3175ec13fc8258e3c1059c33fa01518b2ba55c53fbd1b0b0a8332c93fbf9a03047374cd3f9961a3acdf4cd13f8847e2e5e9dcd33f105839b4c876d63f3d0ad7a3703dda3f5c8fc2f5285cdf3f3d0ad7a3703de23f1878ee3d5c72e43f0000000000000000e49c52a246dfb13f56eb7bf3e9ceba3fe49c52a246dfc13f1d44e74a1857c63f56eb7bf3e9ceca3f8f92109cbb46cf3fe49c52a246dfd13f80f09c762f1bd43feb6d0cb50c75d73f56eb7bf3e9ceda3fc068eb31c728de3ffd07406d4c50e13f1d386744696fc43fa4198ba6b393c93f2bfbae08feb7ce3f596e693524eed13f1c5f7b664980d43fde76a1b94e23d73f82734694f606db3f8351499d8026e03f44696ff085c9e23f05a8a9656b7de53fcefc6a0e10cce73f9f8ec70c54c6e93f",
+   "values": [
+    0.125260075,
+    0.148298645,
+    0.15142215,
+    0.15806368,
+    0.175466815,
+    0.193124225,
+    0.21885955,
+    0.2237952,
+    0.135684,
+    0.1511555,
+    0.16667875,
+    0.196854,
+    0.23011625,
+    0.270317,
+    0.3103585,
+    0.351,
+    0.41,
+    0.49,
+    0.57,
+    0.63896,
+    0.0,
+    0.069813170079772,
+    0.104719755119658,
+    0.139626340159544,
+    0.17453292519943,
+    0.209439510239316,
+    0.244346095279202,
+    0.279252680319088,
+    0.314159265358974,
+    0.366519142918803,
+    0.418879020478632,
+    0.471238898038461,
+    0.541052068118233,
+    0.15965,
+    0.19982,
+    0.23999,
+    0.28016,
+    0.32033,
+    0.36153,
+    0.4223,
+    0.5047,
+    0.5871,
+    0.67156,
+    0.74366,
+    0.80546
+   ],
+   "sand_variant": "same array at index club+25 (address 0x1038b770)"
+  },
+  "pitch_offset_rad": {
+   "address": "0x1038b810",
+   "width": "f64[45]",
+   "bytes_hex": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f9a9999999999b93f",
+   "values": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.1
+   ],
+   "sand_variant": "same array at index club+25 (address 0x1038b8d8)"
+  },
+  "spin": {
+   "address": "0x1038b978",
+   "width": "f64[45]",
+   "bytes_hex": "c3f5285c8fc2eb3fddb5847cd0b3e93fd9cef753e3a5eb3ff2d24d621058ed3f10e9b7af03e7ee3fca32c4b12e6eef3f4694f6065f98f03fc05b2041f163f13f8a1f63ee5a42f43fcd3b4ed1915cf53fda1b7c613255f63f27a089b0e1e9f43fc286a757ca32f43ff0a7c64b3789f33f0bb5a679c729f33f5f07ce1951daf23fc217265305a3f23f7b14ae47e17af03fcdccccccccccf03f0ad7a3703d0aef3f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f000000000000f03f8a1f63ee5a42f43fcd3b4ed1915cf53fda1b7c613255f63f27a089b0e1e9f43fc286a757ca32f43ff0a7c64b3789f33f0bb5a679c729f33f5f07ce1951daf23fc217265305a3f23fb1bfec9e3c2cf23f933a014d840df23f166a4df38e53f23f",
+   "values": [
+    0.8675,
+    0.8032,
+    0.864,
+    0.917,
+    0.9657,
+    0.9822,
+    1.0372,
+    1.0869,
+    1.2662,
+    1.3351,
+    1.3958,
+    1.3071,
+    1.2624,
+    1.221,
+    1.1977,
+    1.1783,
+    1.1648,
+    1.03,
+    1.05,
+    0.97,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.2662,
+    1.3351,
+    1.3958,
+    1.3071,
+    1.2624,
+    1.221,
+    1.1977,
+    1.1783,
+    1.1648,
+    1.1358,
+    1.1283,
+    1.1454
+   ],
+   "sand_variant": "same array at index club+25 (address 0x1038ba40)"
+  }
+ },
+ "club_index": {
+  "0": "9 Degree Driver",
+  "1": "12 Degree Driver",
+  "2-7": "2,3,4,5,6,7 Wood",
+  "8-16": "1-9 Iron",
+  "17": "Pitching Wedge",
+  "18": "Sand Wedge",
+  "19": "Lob Wedge",
+  "20": "Putter",
+  "21-32": "inferred chip variants (no sand adjustment, max power 14 unscaled)",
+  "33-44": "bunker variants of clubs 8-19 (= index club+25)",
+  "names_source": "Language.dll club strings in this order; mapping inferred from order and table monotonicity",
+  "confidence": "medium"
+ },
+ "caddy_max_distance": {
+  "function": "Caddy::GetMaxClubDistance 0x101132c9",
+  "unit": "inches",
+  "values": [
+   10800,
+   10800,
+   10368,
+   10044,
+   9432,
+   8604,
+   8028,
+   7632,
+   9360,
+   8784,
+   8136,
+   7776,
+   7416,
+   6912,
+   6408,
+   5940,
+   5292,
+   4752,
+   3708,
+   2952,
+   1260,
+   4536,
+   4320,
+   4068,
+   3888,
+   3744,
+   3600,
+   3420,
+   3276,
+   3024,
+   2736,
+   2160,
+   1692,
+   2268,
+   2160,
+   2016,
+   1944,
+   1872,
+   1800,
+   1692,
+   1620,
+   1512,
+   1368,
+   1080,
+   828
+  ],
+  "default": 5400
+ },
+ "ball_coeffs": {
+  "function": "CPlayer::GetBallCoeffs 0x10141fb6 (player +0x12ed); stored at CBallFlight +0x3ad/+0x3b1/+0x3b5",
+  "names": "MultiplayerGameSettings::BallSetDescription 0x10231ba9",
+  "types": [
+   {
+    "type": 0,
+    "name": "Two-Piece",
+    "spin_decay": 1.0,
+    "spin": 0.9700000286102295,
+    "speed": 1.0199999809265137,
+    "dwords": [
+     "0x3f800000",
+     "0x3f7851ec",
+     "0x3f828f5c"
+    ]
+   },
+   {
+    "type": 1,
+    "name": "Solid Core",
+    "spin_decay": 0.949999988079071,
+    "spin": 1.0499999523162842,
+    "speed": 1.0,
+    "dwords": [
+     "0x3f733333",
+     "0x3f866666",
+     "0x3f800000"
+    ]
+   },
+   {
+    "type": 2,
+    "name": "Wound Balata",
+    "spin_decay": 0.8999999761581421,
+    "spin": 1.1299999952316284,
+    "speed": 0.9900000095367432,
+    "dwords": [
+     "0x3f666666",
+     "0x3f90a3d7",
+     "0x3f7d70a4"
+    ]
+   }
+  ]
+ },
+ "difficulty": {
+  "enum": {
+   "0": "Novice",
+   "1": "Intermediate",
+   "2": "Advanced",
+   "3": "Expert"
+  },
+  "source": "DifficultyDescription 0x10231ca9; level = GameSettings+0x162 unless -1, else traits+0x112d",
+  "max_slice_deg": [
+   1.5,
+   3.5,
+   5.0,
+   6.0
+  ],
+  "max_mishit_rotation_deg": [
+   1.25,
+   2.5,
+   4.0,
+   5.0
+  ],
+  "magnet_effect": [
+   0.8,
+   0.45,
+   0.05,
+   0.0
+  ],
+  "average_distance_in": [
+   9612,
+   10116,
+   10800,
+   10800
+  ],
+  "ability_factor": [
+   0.25,
+   0.6,
+   0.9,
+   1.0
+  ],
+  "power_shot_penalty": [
+   5.0,
+   3.0,
+   2.0,
+   2.0
+  ],
+  "mouse_ranges": {
+   "0": [
+    100,
+    220,
+    2000
+   ],
+   "1": [
+    30,
+    170,
+    230
+   ],
+   "2": [
+    25,
+    140,
+    180
+   ],
+   "3": [
+    15,
+    120,
+    160
+   ]
+  },
+  "up_side_hill_reduction": {
+   "0": [
+    0.0075,
+    0.05
+   ],
+   "1": [
+    0.05,
+    0.15
+   ],
+   "2": [
+    0.1,
+    0.25
+   ],
+   "3": [
+    0.133,
+    0.35
+   ]
+  },
+  "confidence": "high for values, medium for gameplay meaning"
+ },
+ "conditions": {
+  "GREENCOND": {
+   "1": [
+    "Very Slow",
+    0.6
+   ],
+   "2": [
+    "Slow",
+    0.8
+   ],
+   "3": [
+    "Normal",
+    1.0
+   ],
+   "4": [
+    "Fast",
+    1.2
+   ],
+   "5": [
+    "Very Fast",
+    1.4
+   ],
+   "accessor": "CCourse::GetWetScale 0x1017ac0e (GameSettings byte +0x10)"
+  },
+  "ROUGHLENGTH": {
+   "1": [
+    "Light",
+    1.3
+   ],
+   "2": [
+    "Average",
+    1.0
+   ],
+   "3": [
+    "Heavy",
+    0.7
+   ],
+   "accessor": "CCourse::GetRoughLength 0x1017abcc (GameSettings byte +0xe)"
+  },
+  "WINDSPEED": {
+   "1": "Still",
+   "2": "Calm",
+   "3": "Breezy",
+   "4": "Gusty",
+   "5": "Strong",
+   "note": "mph -> in/tick: CGolfBall::SetupBall multiplies CCourse::GetWindXZ by 0.293333; magnitudes per enum not recovered"
+  },
+  "sand_difficulty": "CCourse::GetSandDifficulty 0x1017ac7f returns 1.0; composite holes 1.3-0.6*setting",
+  "pbl_ini_defaults": {
+   "GreenCond": 3,
+   "RoughLength": 2,
+   "WindSpeed": 1
+  },
+  "shot_type_enum": {
+   "0": "Full",
+   "1": "Chip",
+   "2": "Putt",
+   "3": "Punch",
+   "4": "Flop",
+   "5": "Pitch",
+   "6": "Pick",
+   "7": "Blast"
+  }
+ },
+ "cballflight_fields": {
+  "+0x4/+0x8/+0xc": "wet, rough, sand (f32; CGolfBall+0x2ad.. with CBallFlight base at CGolfBall+0x2a9)",
+  "+0x10/+0x14": "wind x/z in/tick@60 (f32)",
+  "+0x18": "aim + club+0x30 (f32)",
+  "+0x1c/+0x20/+0x24": "pin x/y/z (f32)",
+  "+0x28/+0x2c/+0x30": "start position (f32)",
+  "+0x40": "1/power",
+  "+0x44..+0x4c": "face normal",
+  "+0x50..+0x58": "club path direction",
+  "+0x6c": "loft adjust",
+  "+0x70": "club index",
+  "+0x74": "sand blend",
+  "+0x78": "spin multiplier",
+  "+0x7f": "fps",
+  "+0x8c": "launch (uphill) adjust",
+  "+0x90": "lie compensation",
+  "+0x99": "lie sub-terrain index",
+  "+0x285..+0x295": "effective contact normal",
+  "+0x29d": "speed at impact",
+  "+0x2a5": "(v.n)^2 at impact",
+  "+0x2ad": "ground height under ball (start height at launch, -1e10 after cup handling)",
+  "+0x2d5/+0x2dd/+0x325": "inv, gravity, k",
+  "+0x2f5..+0x305": "spin (rad/tick)",
+  "+0x30d..+0x31d": "velocity (in/tick)",
+  "+0x32d..+0x33d": "position",
+  "+0x345..+0x355": "previous position",
+  "+0x35d/+0x365/+0x36d": "heading, sin, cos",
+  "+0x375": "bunker entry recorded",
+  "+0x376": "touched cup",
+  "+0x378": "state 0 done/1 stopped/2 flying/4 slipping/8 rolling",
+  "+0x3a9": "bounce count",
+  "+0x3ad/+0x3b1/+0x3b5": "ball spin decay, spin, speed",
+  "+0x3bd": "club distance test mode"
+ },
+ "confidence": {
+  "launch_impact_formula": "high",
+  "flight_drag_lift_wind_spin_decay": "high",
+  "collide_bounce": "high (control flow), medium (physical naming)",
+  "rolling_and_slipping": "high",
+  "pure_rolling": "high",
+  "cup_dynamics": "medium (LineIntersectsSquare not decompiled)",
+  "swing_control_to_club_at_impact": "medium-low (UI-coupled; summarised, not reimplemented)",
+  "player_file_fields": "low (descrambler recovered, tagGolferBody length inferred)"
+ },
+ "limitations": [
+  "Decompiler output is not original source; widths were checked against x87 instructions for the formulas used.",
+  "No runtime observation; the reference simulator has not been compared with the running game.",
+  "Python doubles stand in for x87 80-bit intermediates; results are not bit-identical.",
+  "Tree, object and steep-wall collisions are described only at the interface level."
+ ]
+}
