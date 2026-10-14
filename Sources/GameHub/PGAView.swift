@@ -8,15 +8,14 @@ private let pgaInk = Color(hex: "102223")
 struct PGAGameView: View {
     @StateObject private var session: PGAGameSession
     @State private var showHelp = true
-    @State private var showOriginalCourse = false
     init(choice: PGACourseChoice = .practice, onExit: @escaping () -> Void) {
         _session = StateObject(wrappedValue: PGAGameSession(choice: choice, onExit: onExit))
     }
     private var game: PGASimulation { session.simulation }
 
     var body: some View {
-        if showOriginalCourse {
-            PGAOriginalCourseView(onExit: { showOriginalCourse = false; session.setPaused(false) }, onHub: { session.exit() })
+        if session.showingLab {
+            PGAOriginalCourseView(onExit: { [weak session] in session?.closeLab() }, onHub: { [weak session] in session?.exit() })
         } else { gameContent }
     }
     private var gameContent: some View {
@@ -44,7 +43,6 @@ struct PGAGameView: View {
                 else if game.phase == .holed || game.phase == .roundComplete { scoreOverlay }
             }
         }.background(.black).onAppear {
-            session.onOriginalCourse = { session.setPaused(true); showOriginalCourse = true }
             session.start()
         }.onDisappear { session.stop() }
     }
@@ -57,7 +55,7 @@ struct PGAGameView: View {
                 Text(session.isOriginal ? "Original TCR terrain, textures, tees and pins · approximate native physics, not the original engine" : "Generated practice course · original game reconstruction in progress").font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
             }
             Spacer()
-            Button { session.onOriginalCourse?() } label: { Label("Original course lab", systemImage: "mountain.2") }
+            Button { session.openLab() } label: { Label("Original course lab", systemImage: "mountain.2") }
             Button { session.fullscreen() } label: { Label("Full screen", systemImage: "arrow.up.left.and.arrow.down.right") }
             Button { session.togglePause() } label: { Label("Pause", systemImage: "pause.fill") }
             Button { session.exit() } label: { Label("Hub", systemImage: "square.grid.2x2") }

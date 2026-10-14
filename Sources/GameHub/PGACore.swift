@@ -494,8 +494,9 @@ struct PGASimulation {
         if flags & 0x8 != 0 {
             guard let entry = bunkerEntry else { return 1 }
             let moved = max(abs(ball.x - entry.position.x), abs(ball.y - entry.position.y), abs(ball.z - entry.position.z))
-            let speed = entry.speed / PGACourseTransform.metersPerInch / 60
-            if moved >= 6 * PGACourseTransform.metersPerInch || speed < 10 { return 1 }
+            let inch = 0.0254
+            let speed = entry.speed / inch / 60
+            if moved >= 6 * inch || speed < 10 { return 1 }
             if speed < 12 || random.unit() <= 0.9 { return random.unit() < 0.1 ? 2 : 0 }
             if (speed >= 14 && random.unit() > 0.9) || random.unit() < 0.1 { return 3 }
             return 2

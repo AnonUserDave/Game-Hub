@@ -52,7 +52,9 @@ final class PGAGameSession: ObservableObject {
     private var loadTask: Task<Void, Never>?
     private var loadWork: Task<(PGAOriginalPlayableCourse, PGAOriginalHoleMesh, Double), Error>?
     private var prefetch: (index: Int, task: Task<PGAOriginalHoleMesh, Never>)?
-    var onOriginalCourse: (() -> Void)?
+    /// The view observes this instead of storing a closure on the session; a
+    /// closure capturing the view retained the session through its StateObject.
+    @Published private(set) var showingLab = false
     var isOriginal: Bool { if case .original = choice { return true }; return false }
 
     init(choice: PGACourseChoice = .practice, onExit: @escaping () -> Void) {
@@ -186,6 +188,8 @@ final class PGAGameSession: ObservableObject {
     }
 
     func exit() { stop(); onExit() }
+    func openLab() { setPaused(true); showingLab = true }
+    func closeLab() { showingLab = false; setPaused(false) }
     func togglePause() { setPaused(!paused) }
     func setPaused(_ value: Bool) {
         if value && !paused { saveRound() }
@@ -218,7 +222,7 @@ final class PGAGameSession: ObservableObject {
         switch pauseSelection {
         case 1: resetHole()
         case 2: restartRound()
-        case 3: onOriginalCourse?()
+        case 3: openLab()
         case 4: exit()
         default: setPaused(false)
         }

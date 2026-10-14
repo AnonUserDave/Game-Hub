@@ -27,7 +27,12 @@ final class PGAOriginalCollision: @unchecked Sendable {
     private let minimumZ: Double
     private let maximumX: Double
     private let maximumZ: Double
-    private let cells: [Int: [UInt32]]
+    /// Compressed sparse rows: triangles of cell i are
+    /// cellTriangles[cellStarts[i] ..< cellStarts[i + 1]]. One flat array per
+    /// hole instead of a dictionary of small arrays keeps the 18 Pebble Beach
+    /// indexes compact on an 8 GB Mac.
+    private let cellStarts: [UInt32]
+    private let cellTriangles: [UInt32]
     let triangleCount: Int
     let indexedReferences: Int
 
@@ -38,7 +43,7 @@ final class PGAOriginalCollision: @unchecked Sendable {
     init(data: Data, cellSize: Double = 512, selection: [UInt32]? = nil) throws {
         guard data.count >= 44, data.prefix(4).elementsEqual([0x47, 0x48, 0x50, 0x43]),
               cellSize.isFinite, cellSize >= 16 else { throw LoadError.invalid("Expected bounded GHPC v2 or v3 terrain.") }
-        let built = try data.withUnsafeBytes { bytes -> (Int, Int, Int, Int, Int, Double, Double, Double, Double, [Int: [UInt32]], Int) in
+        let built = try data.withUnsafeBytes { bytes -> (Int, Int, Int, Int, Int, Double, Double, Double, Double, [UInt32], [UInt32]) in
             func u32(_ offset: Int) -> UInt32 { UInt32(littleEndian: bytes.loadUnaligned(fromByteOffset: offset, as: UInt32.self)) }
             func f32(_ offset: Int) -> Double { Double(Float(bitPattern: u32(offset))) }
             let version = u32(4)
@@ -75,23 +80,24 @@ final class PGAOriginalCollision: @unchecked Sendable {
                 throw LoadError.invalid("Collision grid exceeds its resource bound.")
             }
             let cols = max(1, Int(colsDouble)), rows = max(1, Int(rowsDouble))
-            var cells: [Int: [UInt32]] = [:]
-            var references = 0
             let count = selection?.count ?? triangles
+            // Pass 1 validates every triangle and records its covered cell
+            // rectangle; pass 2 fills the flat index from prefix sums.
+            var spans = [UInt16](repeating: 0, count: count * 4)
+            var counts = [UInt32](repeating: 0, count: cols * rows + 1)
+            var references = 0
             for item in 0..<count {
                 if item % 65_536 == 0 { try Task.checkCancellation() }
                 let triangle = selection.map { Int($0[item]) } ?? item
                 let offset = start + triangle * 16
-                let indices = [u32(offset), u32(offset + 4), u32(offset + 8)]
-                guard indices.allSatisfy({ $0 < vertices }), Set(indices).count == 3 else {
+                let a = u32(offset), b = u32(offset + 4), c = u32(offset + 8)
+                guard a < vertices, b < vertices, c < vertices, a != b, b != c, a != c else {
                     throw LoadError.invalid("Invalid source triangle index.")
                 }
-                let points = indices.map(point)
-                guard points.allSatisfy({ $0.0.isFinite && $0.1.isFinite && $0.2.isFinite }) else {
-                    throw LoadError.invalid("Collision vertex is not finite.")
-                }
-                let xs = points.map(\.0), zs = points.map(\.2)
-                let lowX = xs.min()!, highX = xs.max()!, lowZ = zs.min()!, highZ = zs.max()!
+                let p = point(a), q = point(b), r = point(c)
+                guard p.0.isFinite, p.1.isFinite, p.2.isFinite, q.0.isFinite, q.1.isFinite, q.2.isFinite,
+                      r.0.isFinite, r.1.isFinite, r.2.isFinite else { throw LoadError.invalid("Collision vertex is not finite.") }
+                let lowX = min(p.0, q.0, r.0), highX = max(p.0, q.0, r.0), lowZ = min(p.2, q.2, r.2), highZ = max(p.2, q.2, r.2)
                 guard lowX >= minX - 1, highX <= maxX + 1, lowZ >= minZ - 1, highZ <= maxZ + 1 else {
                     throw LoadError.invalid("Collision vertex exceeds declared course bounds.")
                 }
@@ -101,18 +107,30 @@ final class PGAOriginalCollision: @unchecked Sendable {
                 let row1 = max(0, min(rows - 1, Int(floor((highZ - minZ) / cellSize))))
                 references += (col1 - col0 + 1) * (row1 - row0 + 1)
                 guard references <= 32_000_000 else { throw LoadError.invalid("Collision index exceeds 32 million references.") }
-                for row in row0...row1 {
-                    for column in col0...col1 { cells[row * cols + column, default: []].append(UInt32(triangle)) }
+                spans[item * 4] = UInt16(col0); spans[item * 4 + 1] = UInt16(col1)
+                spans[item * 4 + 2] = UInt16(row0); spans[item * 4 + 3] = UInt16(row1)
+                for row in row0...row1 { for column in col0...col1 { counts[row * cols + column + 1] += 1 } }
+            }
+            for cell in 0..<(cols * rows) { counts[cell + 1] += counts[cell] }
+            var cursor = counts
+            var flat = [UInt32](repeating: 0, count: references)
+            for item in 0..<count {
+                let triangle = UInt32(selection.map { Int($0[item]) } ?? item)
+                for row in Int(spans[item * 4 + 2])...Int(spans[item * 4 + 3]) {
+                    for column in Int(spans[item * 4])...Int(spans[item * 4 + 1]) {
+                        let cell = row * cols + column
+                        flat[Int(cursor[cell])] = triangle; cursor[cell] += 1
+                    }
                 }
             }
-            return (header, vertices, count, cols, rows, minX, minZ, maxX, maxZ, cells, references)
+            return (header, vertices, count, cols, rows, minX, minZ, maxX, maxZ, counts, flat)
         }
         self.data = data
         vertexOffset = built.0; vertexCount = built.1; triangleCount = built.2
         triangleOffset = built.0 + built.1 * 24
         columns = built.3; rows = built.4
         minimumX = built.5; minimumZ = built.6; maximumX = built.7; maximumZ = built.8
-        cells = built.9; indexedReferences = built.10
+        cellStarts = built.9; cellTriangles = built.10; indexedReferences = built.10.count
         self.cellSize = cellSize
     }
 
@@ -123,7 +141,9 @@ final class PGAOriginalCollision: @unchecked Sendable {
               x >= minimumX, x <= maximumX, z >= minimumZ, z <= maximumZ else { return nil }
         let column = min(columns - 1, max(0, Int(floor((x - minimumX) / cellSize))))
         let row = min(rows - 1, max(0, Int(floor((z - minimumZ) / cellSize))))
-        guard let candidates = cells[row * columns + column] else { return nil }
+        let cell = row * columns + column
+        let first = Int(cellStarts[cell]), end = Int(cellStarts[cell + 1])
+        guard first < end else { return nil }
         return data.withUnsafeBytes { bytes in
             func uint(_ offset: Int) -> UInt32 { UInt32(littleEndian: bytes.loadUnaligned(fromByteOffset: offset, as: UInt32.self)) }
             func point(_ index: UInt32) -> PGAVector {
@@ -131,7 +151,8 @@ final class PGAOriginalCollision: @unchecked Sendable {
                 return PGAVector(x: Double(Float(bitPattern: uint(offset))), y: Double(Float(bitPattern: uint(offset + 4))), z: Double(Float(bitPattern: uint(offset + 8))))
             }
             var best: Hit?
-            for triangle in candidates {
+            for slot in first..<end {
+                let triangle = cellTriangles[slot]
                 let offset = triangleOffset + Int(triangle) * 16
                 let a = point(uint(offset)), b = point(uint(offset + 4)), c = point(uint(offset + 8))
                 let denominator = (b.z - c.z) * (a.x - c.x) + (c.x - b.x) * (a.z - c.z)
