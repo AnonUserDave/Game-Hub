@@ -376,6 +376,50 @@ cup behavior, zero-vector edge cases, and floating-point rounding still need
 structured recovery and reference validation. Decompiled x87 arithmetic must
 not be assumed bit-identical to a new ARM64 double implementation.
 
+## Per-hole worlds, handedness and authored hole heights (data observations, 2026-10-13)
+
+These are static observations of the decoded PBL data on the son's M5, made
+before the code-level pass below and consistent with it. They correct earlier
+assumptions in this ledger and in the Original Course Lab.
+
+**Each hole is its own overlapping world.** Sampling the decoded triangles
+under every authored tee and pin finds 18–25 stacked floors at each point,
+one per hole group. Exactly one layer is the expected surface: 84 of 90 tees
+sit within 3 in of a tee box, and all 180 pins sit over a green. The matching
+patch index rises with hole number. The owning hole is the low five bits of
+`tagPatch::PatchLayerInfoS` (descriptor `+0x61`); patches 0–6285 run
+contiguously through holes 1–18 and the tail holds condition variants.
+Drawing every patch, as the Lab did before this checkpoint, overlays 18
+worlds plus every condition variant. Variants fill gaps in the base
+geometry; for any one selector each gap is covered once.
+
+**Handedness.** With only each hole's own patches, ocean (material 10)
+appears near holes 4–10, 17 and 18 and nowhere within 120 yd of holes 1–3
+and 11–16, matching the real routing. Measured against each hole's TCR
+aim-point path, a left-handed (DirectX-style) reading puts the ocean right
+of holes 4–10 and left of 18, as at the real course. A right-handed reading
+mirrors that. The native transform therefore mirrors Z:
+`meters = ((x − ox)·0.0254, (y − oy)·0.0254, −(z − oz)·0.0254)`, with the
+origin at the horizontal center and lowest point of the course bounds.
+`PGAOriginalPlayableTests.testOceanSidesMatchRealPebbleCoast` checks this.
+
+**Authored heights are not floor heights.** Hole 8's five TCR tees store
+Y ≈ −296 to −694 in (INI −24.7 to −57.8 ft), below the course, and many pins
+sit about 42.2 in above their green. Native play keeps the authored XZ and
+snaps each tee and pin to the floor of its own hole, preferring a tee-box or
+green layer. The original selection or snapping code has not been located.
+
+**Tee index.** INI `yardage=` lists match tee index 3 to the real
+championship card (1: 376, 7: 106, 14: 572, 18: 543). Index 4 values in the
+INI are inconsistent (for example 463 on par-3 hole 5). Development play uses
+tee 3 and pin 0. The original tee/pin choice rules remain unknown.
+
+**Other observations.** Materials `hazard texture` and `ob texture` (flags 0)
+are mostly vertical: stakes, not ground. `pbl_bunker_rough` and
+`pbl_teebox_rough1` are blend strips (section flags `0x8c1`) whose textures
+run from sand or tee grass to rough. The INI also carries per-hole OB polygons
+(`[Hole N OB k]`, `type=1/2`, XZ in feet); their semantics are not decoded.
+
 ## Per-hole patch layers, course-condition masks and surface coefficients (2026-10-13)
 
 This pass answers how the original selects terrain patches for a hole and how

@@ -17,7 +17,7 @@
   "fidelity": "prototype",
   "notes": [
     "This is an original native development prototype. It is not Tiger Woods PGA Tour 2005, a verified port, or a byte-identical recreation.",
-    "Original course geometry and selected original textures are available in the course lab. Playable practice uses generated test holes. Original characters, animation, sound, modes, and exact game rules remain unreconstructed.",
+    "Original course geometry and textures are available in the course lab, one hole world at a time. Playable practice uses generated test holes; original Pebble Beach play has its own hub entry. Original characters, animation, sound, modes, and exact game rules remain unreconstructed.",
     "Fullscreen targets a 2560 × 1600 Metal render surface. The HUD reports the actual render dimensions; windowed play follows the Retina drawable.",
     "Keyboard and trackpad are available. Standard gamepads use macOS extended profiles. The XB1 Fusion Pro has no macOS profile, so an in-app native USB adapter now receives its input reports; physical bindings still need validation."
   ],
@@ -26,13 +26,13 @@
     "Space / Return or click: start swing, set power, set accuracy. Drag horizontally: aim. Scroll: zoom.",
     "C: switch camera. Escape: cancel swing, then pause. R: restart hole while stationary or paused. F: fullscreen.",
     "Use Return to Library in the HUD or pause screen to leave the prototype.",
-    "Pause menu: open Original course lab to inspect imported source meshes and textures; its HUD shows viewer controls."
+    "Pause menu: open Original course lab to inspect one original hole world at a time ([ and ] change hole); its HUD shows viewer controls."
   ],
   "controller": [
     "Standard macOS extended gamepad profiles and the native XB1 Fusion Pro USB adapter are supported paths. Physical bindings still need validation.",
     "A: swing / resume / advance. Left stick or D-pad left/right: aim. LB / RB or D-pad up/down: choose club.",
     "Y: aim at pin (when paused: restart hole). X: switch camera. Right stick up/down: zoom. B: cancel / pause. Menu: pause.",
     "Menu / B opens pause. D-pad or left stick up/down selects Resume, Restart hole, Restart round, Original course lab, or Return hub; A confirms.",
-    "Course lab: sticks orbit / pan, LT / RT zoom, LB / RB change course, X switches palette, Y resets view, B returns to practice, Menu returns to hub."
+    "Course lab: sticks orbit / pan, LT / RT zoom, D-pad left/right change hole, LB / RB change course, X switches palette, Y resets view, B returns to golf, Menu returns to hub."
   ]
 }

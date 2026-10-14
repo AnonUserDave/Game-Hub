@@ -60,7 +60,7 @@ Executable games receive `GAMEHUB_LIBRARY_ROOT` and `GAMEHUB_GAME_ID` environmen
 | `native` | An available native build, without a claim of original-game fidelity. |
 | `verified` | A port whose original behavior, graphics, audio, input, saves, and modes have documented comparison evidence. |
 
-Changing the string to `verified` is not a verification procedure. Record concrete comparison results and unresolved differences in the project documentation before using that status. Importing a Mac binary checks architecture, not gameplay correctness or graphics fidelity. The current PGA development module is a prototype, while the original PGA 2005 entry remains in the port queue.
+Changing the string to `verified` is not a verification procedure. Record concrete comparison results and unresolved differences in the project documentation before using that status. Importing a Mac binary checks architecture, not gameplay correctness or graphics fidelity. The PGA practice and Pebble Beach modules are prototypes, while the original PGA 2005 entry remains in the port queue.
 
 ## Retina and controls
 
@@ -78,7 +78,7 @@ The controls sheet shows actual controller recognition, live buttons and sticks,
 4. Create a `prototype` manifest using `{"kind":"builtin","builtin":"your-id"}`.
 5. Add meaningful rules/physics/input tests, build, and validate real hardware before changing its status.
 
-Current built-in identifier: `pga2005-native-development`.
+Current built-in identifiers: `pga2005-native-development` (generated practice holes and the Original Course Lab) and `pga2005-pebble-beach-development` (18 original Pebble Beach holes from locally prepared data).
 
 ## Build
 

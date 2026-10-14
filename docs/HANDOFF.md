@@ -2,81 +2,96 @@
 
 ## Objective and non-negotiable scope
 
-Build one native macOS game hub and faithfully rewrite all supplied games. Start with Tiger Woods PGA Tour 2005. Preserve the original visual style while rendering at this Mac's native 2560 × 1600 resolution with good performance. Support keyboard/trackpad and the user's wired Xbox-style controller, and make future native games easy to integrate. Do not use emulation or compatibility layers. The user explicitly requested sub-agents and authorized useful Ghidra/Hopper installation and pushing work to `AnonUserDave/Game-Hub`.
+Build one native macOS game hub and faithfully rewrite all supplied games. Start with Tiger Woods PGA Tour 2005. Preserve the original visual style while rendering at the M1's native 2560 × 1600 resolution with good performance. Support keyboard/trackpad and the owner's wired Xbox-style controller, and make future native games easy to integrate. Do not use emulation or compatibility layers. The owner requested sub-agents and authorized useful Ghidra/Hopper installation and pushing work to `AnonUserDave/Game-Hub`.
 
 Executable byte identity across x86 Windows and ARM64 macOS is impossible. Track specific asset, behavior, visual, and performance equivalence instead. A prototype must never be labeled a completed port.
 
 ## Handoff state and required target
 
-Work on the owner's laptop is paused at his request so he can use it for other tasks. His son continues on an M5 MacBook Pro with 24 GB RAM. The mandatory runtime target remains the owner's M1 Air, 8 GB, 2560 × 1600. Read [the binding hardware constraint](M1_TARGET_CONSTRAINT.md) and use [the continuation prompt](SON_HANDOFF_PROMPT.md). All original ZIPs have already been AirDropped to the son; see [media setup](MEDIA_SETUP.md). Do not start background work on the owner's laptop.
+Work on the owner's laptop is paused at his request. His son continues on an M5 MacBook Pro with 24 GB RAM. The mandatory runtime target remains the owner's M1 Air, 8 GB, 2560 × 1600. Read [the binding hardware constraint](M1_TARGET_CONSTRAINT.md) and [status](STATUS.md). Do not start background work on the owner's laptop.
 
-## Original development environment
+The 2026-10-13 son's checkpoint added playable original Pebble Beach development gameplay (18 holes), corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and confirmed the practice forest fix visually. All of it was checked on the M5 only.
 
-- Apple M1 MacBook Air, 8 GB RAM, macOS 15.6.
-- Xcode is installed at `/Applications/Xcode.app`. `/usr/bin/swift`, `/usr/bin/git`, `/usr/bin/python3`, and `xcrun` are blocked by an unaccepted Xcode license. Do not accept agreements for the user.
-- Direct Swift: `/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc`.
-- SDK: `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk`.
-- Codex bundled Git: `/Users/alexrogers/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/git`.
-- Codex bundled Python: `/Users/alexrogers/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3`.
-- Codex bundled Node: `/Users/alexrogers/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node`.
+## Development environments
 
-Scripts select direct toolchain paths to make this project buildable without globally changing Xcode configuration.
+**Son's M5 (current).** macOS 26.3, Xcode at `/Applications/Xcode.app` (Swift 6.3.1), Homebrew Python 3 with Pillow, Homebrew `unshield` 1.6.2 and OpenJDK 21/26. REA 6.4.0 is the global MCP server (`/opt/homebrew/bin/rea`), with a working Ghidra provider at `~/Desktop/Tools/ghidra_12.1.2`. REA's Ghidra session timed out during Engine.dll auto-analysis; direct `Tools/analyze_pga2005_ghidra.py` headless runs worked (88 s auto-analysis). Extracted DLLs are in the ignored `Library/SourceMedia/pga2005/engine/Executable`; the Ghidra database is in `Library/Research/ghidra-projects/pga2005-physics`. Git identity: the son's own.
+
+**Owner's M1 (paused).** Apple M1 MacBook Air, 8 GB RAM, macOS 15.6. Xcode is installed, but `/usr/bin/swift`, `git`, `python3` and `xcrun` are blocked by an unaccepted Xcode license; do not accept agreements for the user. The build scripts call `/Applications/Xcode.app/.../XcodeDefault.xctoolchain/usr/bin/swiftc` and the SDK directly, and `DEVELOPER_DIR` overrides them. Older notes mention Codex-bundled tools under `/Users/alexrogers/.cache/codex-runtimes/`; they exist only on that laptop.
 
 ## Code map
 
 | Area | Files |
 | --- | --- |
 | Hub UI, library and native launch | `Sources/GameHub/HubView.swift`, `GameModel.swift`, `DetailSheets.swift` |
-| Controller discovery/navigation | `Sources/GameHub/ControllerManager.swift` |
-| Built-in module registry | `Sources/GameHub/NativeGame.swift` |
-| Native golf simulation and renderer | `Sources/GameHub/PGA*.swift` |
+| Controller discovery/navigation | `Sources/GameHub/ControllerManager.swift`, `FusionController.swift`, `Sources/FusionUSB/` |
+| Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-pebble-beach-development`) |
+| Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, snapshots), `PGATerrain.swift` (terrain protocol, original surface properties) |
+| Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round store), `PGAOriginalCollision.swift` (CSR floor index) |
+| Golf rendering and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAView.swift`, `PGAMetalView.swift` |
+| Original Course Lab | `PGAOriginalCourse.swift` |
 | Game metadata | `Library/Manifests/*.json` |
-| Media inventory/extraction | `Tools/inspect_pga2005.py` |
-| Course metadata and image conversion | `Tools/import_pga2005.py` |
-| REA provider analysis | `Tools/analyze_pga2005_rea.py`, `docs/research/PGA2005-REA.md` |
+| Media and decoders | `Tools/inspect_pga2005.py`, `import_pga2005.py`, `decode_pga2005_{terrain,library,holes}.py`, `prepare_pga2005.py` |
+| Research | `Tools/analyze_pga2005_{rea,ghidra}.py`, `ExportGameFunctions.java`, `docs/research/PGA2005-REA.md`, `docs/research/evidence/` |
 
 ## Original data and evidence
 
-Archives are in the workspace root and intentionally untracked. Extracted images are in `Library/SourceMedia/pga2005`. Versioned inventory `docs/research/evidence/pga2005-assets.json` (also generated locally as `Library/Research/pga2005-assets.json`) records source/archive/disc hashes, file offsets, and headers. `Library/Imported/pga2005/import-report.json` records 11 courses, 198 holes, 236 image conversions, hashes, and limitations.
+Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` regenerates `Library/Imported/pga2005/{PBL,TUR}` in about 15 s on the M5.
 
-The original Windows main executable is on the courses disc. The actual engine is split into DLLs stored in InstallShield cabinets on the install/media discs. `Library/SourceMedia/pga2005/engine/Executable` contains the extracted DLLs. `Engine.dll` has thousands of named exports, including `CBallFlight::Flying`, `RollingAndSlipping`, `PureRolling`, `Impact`, and `BallLoop`. `CourseData.dll` has named terrain vertex decompression and course/header loading routines. These are concrete reconstruction entry points; filenames alone are not implementation evidence.
+- **GHPC v3** (`terrain.ghpc`) keeps v2's vertex and triangle records, adds a 48-byte header with a patch count, and ends with one 20-byte record per source patch: layer field, first vertex, vertex count, first triangle, triangle count.
+- **Patch layers.** The layer field is `tagPatch::PatchLayerInfoS`. Its low five bits are the owning hole; the higher bits are course-condition variants. Holes are separate overlapping worlds, so play and the Lab show one hole at a time. The standard selector is `0x420` (CHole::Load). See the ledger.
+- **Transform.** Source units are inches in a left-handed world. The native transform is `((x − ox)·0.0254, (y − oy)·0.0254, −(z − oz)·0.0254)`, with the origin at the bounds' horizontal center and lowest point. It is tested for round trip and handedness.
+- **`materials.json`** now records the 20-byte label, the signed sound id (`+0x2c`), the lie graphic (byte `+0x42`) and `section_flags` (`+0xa`) per material.
+- **`holes.json`.** Tee and pin XZ come from TCR. Heights are not authoritative (hole 8 tees lie below the course), so play snaps them to the hole's floor. Tee index 3 matches the championship card.
 
-Ghidra/JDK/unshield are task-local under `.tools` and untracked. REA's global MCP server may not inherit task-local environment values; the companion client script launches a scoped server with explicit provider paths. Reuse saved reports and Evidence IDs instead of repeating broad analyses. Keep pseudocode distinct from original source and static evidence distinct from runtime observation.
+The static analysis for patch selection, flag bits, lie-record rules and coefficient uses is in the ledger section "Per-hole patch layers, course-condition masks and surface coefficients", with curated evidence in `docs/research/evidence/pga2005-patch-layers-surfaces.json`. Those results come from direct Ghidra and LLVM runs, **not REA Evidence**. Keep pseudocode distinct from original source and static evidence distinct from runtime observation.
 
 ## Next work, in order
 
-1. Reproduce the checkpoint on the son's Mac and visually confirm the final camera fix. The forest transform bug is fixed in source and covered by scene/camera regression tests across all three generated holes; the final GUI check remains pending. Original Course Lab and practice now render at a measured 2560 × 1600 fullscreen target. The user reported Fusion Pro buttons/triggers/sticks working; remaining game mappings and hot plug need checking.
-2. Integrate original PBL 18-hole gameplay using original TCR tees/pins/par, decoded geometry and exact triangle floor queries. Native world units are inches, corroborated by original TotalYards distance/36 assembly. Use native TCR arrays directly; INI coordinates have a different origin. Keep ball physics and generated golfer explicitly provisional.
-3. Reconstruct original flight/impact/rolling/cup rules from the named functions with numeric fixtures and reference observations. Existing practice physics is new code. Exact floor heights do not implement wall/object collision or original rules.
-4. Recover original shader behavior, material-specific UV adjustments, alpha/water, lighting/fog, sky, alternate LODs and vegetation/object placement. Primary terrain decoding already validates all 11 courses; PBL/TUR material links and textures are ready. Some textures contain several terrain surface records; do not assume the first surface record applies everywhere.
-5. Recover golfer/ball meshes, animation, audio, UI flow, rules, saves, career and other game modes. Record unsupported systems explicitly.
-6. Compare original gameplay/captures in a reference environment. The delivered Mac application must remain native. Static decompilation alone does not establish runtime behavior or whole-game equivalence.
-7. Profile real-course gameplay at 2560 × 1600 on the M1 over a sustained session, recording average/p95 frame time and memory. Current 55–60 FPS snapshots are not a sustained benchmark.
-8. Validate every controller action, focus loss, held-button transitions and unplug/replug. The backend supports only this exact 24c6:591a model; external native applications supply their own support.
-9. Rewrite remaining titles individually. PGA 2004 has only disc 1. The user wants the classic Space Invaders shooter, while the supplied archive contains Bally pinball firmware. User-reported archive source is OldGamesDownload; labels require content verification.
+1. **Publish the checkpoint.** The son's GitHub account has read-only access, so local commits are not on GitHub yet. Either the owner adds `Pablo-Rogers` as a collaborator, or the son pushes to a fork and opens a pull request. Then `git push origin main`.
+2. **M1 acceptance of this checkpoint**, when the owner makes the laptop available:
+   - Pebble Beach at fullscreen 2560 × 1600 for a 30-minute run.
+   - Record FPS, p95/p99 frame time, footprint, swap, thermals and load time.
+   - Visually confirm the sRGB change and the Lab's per-hole view.
+3. **Reconstruct `CBallFlight`.** Cover flight drag and lift, `Collide` (c2/c3/c8/c9, surface damping), `RollingAndSlipping` (c4/c5), `PureRolling` break (c6), cup capture and `StopBall`. Build numeric fixtures from the decompiled formulas and keep units in inches per 60 Hz tick. Then remove the provisional bounce tuning.
+4. **Rules.** Decode INI OB polygons (`[Hole N OB k]`, type 1/2), lateral water-hazard drops and the original tee/pin selection. Add hazard and drop placement from the original rules.
+5. **Visuals.** Original sky dome, fog and lighting (`render.ini`), shaders (vertex-shader resources), water, alternate LODs, vegetation and object placement (Pebble's cypresses are missing), and the golfer/ball meshes and animation.
+6. **Memory and performance.** Keep the 3 GB budget. Consider memoryless MSAA/depth attachments on Apple Silicon, compressed (BC1/BC2) original DDS textures instead of RGBA8 PNGs, and whole-course buffers in the Lab.
+7. **Controller.** Validate every Pebble Beach action, held buttons across pause and hole transitions, focus loss and unplug/replug on the Fusion Pro.
+8. **More content.** Turnberry gameplay reuses the same code path once its tees and pins validate. Then the other modes, saves and audio.
+9. **Remaining titles**, individually. PGA 2004 has only disc 1. The intended Space Invaders is the Taito shooter, but the archive holds Bally pinball firmware.
 
-## New assets and code to reuse
+## Verification commands
 
-`Tools/prepare_pga2005.py` prepares local PBL/TUR meshes, materials and holes in one command. Individual readers are `decode_pga2005_terrain.py`, `decode_pga2005_library.py` and `decode_pga2005_holes.py`. GHPC v2 records contain original positions/RGBA/UVs and globally indexed triangles with original material IDs. Source/converted data remain ignored.
+```sh
+./Tools/build.sh
+./Tools/test.sh
+python3 -m unittest discover -s Tests -p 'test_*.py'
+python3 Tools/prepare_pga2005.py
+GAMEHUB_SNAPSHOT_DIR=/tmp/pga-snaps ./Tools/test.sh -XCTest GameHubTests.PGASnapshotTests
+```
 
-`PGAOriginalCourse.swift` implements the source course viewer. `PGAMetalView.swift` controls the actual render target. `PGAOriginalCollision.swift` supplies immutable spatially indexed barycentric floor queries over original triangles. `Tools/verify_original_course.swift` checks original triangle centroids and query timing. `Sources/FusionUSB/` and `FusionController.swift` contain the shared native USB input backend.
+The snapshot test writes original-course images; keep its output outside Git. `Tools/verify_original_course.swift` compiles with `PGACore.swift`, `PGATerrain.swift` and `PGAOriginalCollision.swift`.
 
-Current validation: 23 Swift tests and 18 Python tests. All11 original course meshes pass decoder bounds/index checks. PBL/TUR floor queries pass 9,110/7,128 nonvertical original triangle centroids with zero missing intersections; vertical wall triangles are excluded from this floor-height fixture. Eight original TCL DDS textures match an independent Pillow decoder across 10,754,048 RGBA values.
+## Original-course gameplay adapter plan (implemented 2026-10-13)
+
+1. **Done.** `PGATerrainSampling` is injected into `PGASimulation`. `PGAProceduralTerrain` keeps the practice course and its tests unchanged.
+2. **Done.** `PGAOriginalPlayableCourse` assembles one immutable package: mapped GHPC v3, per-hole CSR floor indexes, materials and 18 TCR holes. It uses one tested transform, and tee/pin floor validation is part of loading and tests.
+3. **Done, differently than planned.** The mapped course file is shared across holes. Each hole gets compact render buffers of only its own vertices (about 40–65k), built on a worker, with the next hole prefetched. The 18 hole worlds overlap, so a single combined mesh could not be drawn anyway. Textures are cached per session (all 181 PBL images are about 60 MB as RGBA8 with mipmaps).
+4. **Done.** Loading is asynchronous with a distinct hub entry. The minimap is rasterized from the hole's triangles. HUD and docs keep physics labeled approximate, and original material IDs and flags are preserved.
+5. **Done.** Tests cover the predicate, transform, flags and records, all-hole tees and pins, coast handedness, deterministic play through 18 holes and snapshot restore by course identity.
 
 ## Completion gates
 
-A title can be marked `verified` only after a complete native ARM64 game is present, original content/modes and controls are covered, saves work, launch/return is reliable, meaningful behavior/visual comparisons are recorded, and performance/input testing has passed on this Mac. A development demo or imported assets alone is not a completed rewrite.
+A title can be marked `verified` only after all of the following hold:
+
+- A complete native ARM64 game is present.
+- Original content, modes and controls are covered, and saves work.
+- Launch and return are reliable.
+- Meaningful behavior and visual comparisons are recorded.
+- Performance and input testing has passed on the M1.
+
+A development demo or imported assets alone is not a completed rewrite.
 
 ## Git workflow
 
-The remote was initially empty. The project uses `main`, with local commit author `Game Hub Contributors <game-hub@users.noreply.github.com>` until contributors configure their own identity. Use normal small commits, preserve user changes, and push checkpoints. Never commit original media, extracted DLLs, generated original textures, credentials, portable engine installs, or built `.app` bundles. Before each push, inspect the staged file list and sizes.
-
-Update this document and `docs/STATUS.md` whenever a milestone is verified or a blocker changes. The long-term objective is unfinished; work on the owner's laptop is paused for this handoff. Continue in the son's clone. Do not mark the project complete until all requested rewrites are genuinely complete.
-
-## Original-course gameplay adapter plan
-
-1. Introduce a Foundation-only terrain sampling protocol injected into `PGASimulation`; retain a procedural provider for the existing practice course and tests. Keep course metadata value-based and serializable.
-2. Assemble an immutable original playable-course package containing decoded terrain, collider, materials and all 18 TCR holes. Use one explicit transform: original inches × 0.0254 to meters, with an origin derived from course bounds and a tested reverse transform for queries. Validate tee/pin floor intersections before enabling the option.
-3. Reuse the original mesh builder from the lab, preserving UVs/material batches and the same origin transform. Keep one course mesh/index in memory across holes instead of reloading hundreds of thousands of vertices for each hole. Bound resources for the 8 GB M1.
-4. Load asynchronously and expose a distinct original Pebble Beach development option. Use actual course geometry for views/minimap. Keep the ball/golfer and physics limitations visible; preserve source material IDs rather than pretending approximate categories are original rules.
-5. Add meaningful unit/round-trip, all-hole tee/pin, deterministic simulation and save/restore checks. Save course/source identity and reattach assets after restore. The floor collider excludes vertical walls and is not swept-ball collision. Multiple surface records per material need original selection rules before faithful physics claims.
+Use `main`, small commits, preserve user changes, and push checkpoints when access allows. Never commit original media, extracted DLLs, generated original textures or snapshots, credentials, portable engine installs, Ghidra databases, or built `.app` bundles. Before each push, inspect the staged file list and sizes. Update this document and `STATUS.md` whenever a milestone is verified or a blocker changes. Do not mark the project complete until all requested rewrites are genuinely complete.

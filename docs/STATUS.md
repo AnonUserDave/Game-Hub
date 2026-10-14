@@ -1,22 +1,26 @@
 # Project status
 
-Updated 2026-10-13. Work on the owner's laptop is paused at his request for handoff to his son. The long-term objective remains unfinished. No game is certified as a fully faithful rewrite.
+Updated 2026-10-13 (son's checkpoint). The long-term objective remains unfinished. No game is certified as a fully faithful rewrite. Every measurement below that names the M5 was taken on the son's M5 MacBook Pro (24 GB, macOS 26.3) and is **not** M1 acceptance. Work on the owner's M1 remains paused.
 
 | Workstream | Verified progress | Remaining |
 | --- | --- | --- |
-| Hub | Optimized ARM64 build, 18 catalog entries, async startup and folder selection verified in native UI | Broader native import/launch QA |
-| Native golf practice | Three generated playable holes, swing/flight/rolling/putting, penalties, scorecard, pause/hub return | Final GUI confirmation of fixed forest transforms; original gameplay/content parity |
-| Original geometry | Decoder passes all 11 courses; PBL 925,930 vertices / 843,279 faces; TUR 727,939 / 655,692 | Alternate LODs, vegetation and animation |
-| Original materials | PBL 181 and TUR 81 used materials resolve to original TCL textures; eight decoded DDS samples independently match pixels | Original shader effects, alpha, water, lighting and subterrain rules |
-| Original holes | PBL 18 holes, 90 tees, 180 pins recovered directly from TCR; inch units corroborated in assembly | Native gameplay integration and original selection rules |
-| Original Course Lab | Original faces/UVs/textures render; palette and navigation work | Further visual parity and sustained performance profiling |
-| Retina | Actual 2560 × 1600 Metal attachments verified in fullscreen practice and original viewer, 4× MSAA | Snapshots reach 55–60 FPS; sustained session statistics remain |
-| Exact floor index | PBL 9,110 and TUR 7,128 source centroid queries pass, zero missing; index builds about 0.6 s | Integrate with rules/ball; wall/object collision semantics |
-| Wired controller | Native USB backend active; user reported buttons, triggers and sticks working; RT release observed | Other buttons, game actions, focus and hot unplug/replug |
-| Tests | 23 Swift XCTest and 18 Python tests pass | Expand as original behavior is reconstructed |
+| Hub | 19 catalog entries; the new Pebble Beach module has its own built-in entry; launch and return verified in the native UI on the M5 | Broader native import/launch QA on the M1 |
+| Original Pebble Beach play | New "Pebble Beach · Original Data" module plays all 18 holes. It uses each hole's own original terrain, materials and textures, the standard condition layers (`0x420`), TCR tee 3 and pin 0 (both floor-snapped), card yardage, and original lie labels. Round save/restore works by course identity. Loads in a few seconds on the M5. | Original physics (flight, Collide, slip), cup rules, OB polygons, tee/pin choice rules, vegetation, golfer, audio, modes. M1 load and frame time. |
+| Per-hole worlds | Each TCR hole is a separate overlapping world, selected by `PatchLayerInfoS` (`+0x61`). GHPC v3 keeps the per-patch layer table. The `0x420` selector loads 6,609 of 6,943 PBL patches, matching static analysis of `CHole::Load`. | Purpose of `0x8000` and composite (Tiger-Proofing) levels |
+| Handedness | Source is left-handed; the native transform mirrors Z. The ocean lies right of holes 9–10 and left of 18, as at the real course (tested). | — |
+| Surfaces and lies | Original flag bits (water, hazard, free drop, …), `StopBall` lie records (rough ⅔ Md / ⅙ Lt / ⅙ Dp, bunker entry rules), c0 launch power and `PureRolling` c7 deceleration are applied. The RNG is seeded and saved. Free drops happen only on 0x400 surfaces; other unplayable rests cost a stroke. | Collide/slip coefficients (c1–c5, c8, c9), runtime validation of thresholds and the random draw order |
+| Provisional physics | Native flight, bounce and slip are labeled approximate. Bounce was retuned so drives roll out roughly 10–15% of carry. A development caddie aims along the authored TCR aim points. | Reconstruct the `CBallFlight` flight/impact/slip model with numeric fixtures |
+| Original Course Lab | Shows one mirrored hole world at a time (`[`/`]`, D-pad), with the same standard condition selection; 59–60 FPS windowed on the M5 after load | Whole-course buffers still use about 200 MB in the Lab |
+| Rendering | MTKView now uses an sRGB attachment. The previous linear-to-unorm output was far too dark in all golf views; fixed and compared with offscreen snapshots on the M5. Opt-in `PGASnapshotTests` renders 2560 × 1600 4× MSAA tee views. | Visual check on the M1 at fullscreen; original sky, fog, lighting, shaders, water and vegetation |
+| Retina | 2560 × 1600 fullscreen attachments verified on the M1 earlier. Windowed on the M5, the HUD reported a 2720 × 1782 Metal target, 4× MSAA, 59–60 FPS. | Sustained 30-minute M1 run at fullscreen |
+| Memory (M5) | Hub idle 54 MB. Pebble loaded: 563 MB footprint (≈330 MB GPU, mostly 4× MSAA targets and drawables). Lab over golf: 776 MB. Back at the hub: 208 MB, 0 leaks (a session retain cycle was fixed). | Same measurements on the 8 GB M1 against the 3 GB budget; consider memoryless MSAA attachments |
+| Exact floor index | Compact CSR index. PBL 9,110 and TUR 7,128 centroid queries, zero missing. Whole-course build 0.03 s, per-hole indexes for all 18 holes during load. | Wall/object and swept-ball collision |
+| Practice course | Forest/camera fix visually confirmed in the native UI on the M5. Practice now renders with correct brightness. | Practice remains generated scaffolding |
+| Wired controller | Native USB backend unchanged; earlier user report: buttons, triggers and sticks working | Other buttons, game actions, focus and hot unplug/replug, in the Pebble module too |
+| Tests | 32 Swift XCTest (one opt-in snapshot test skipped by default) and 19 Python tests pass on the M5 | Expand with reconstructed physics fixtures |
 | Other games | All supplied archives cataloged; Space Invaders source mismatch recorded | Full native rewrites; PGA 2004 needs discs 2/3 |
-| GitHub | Integrated app source, tools, tests and handoff documents in this checkpoint | Continue small checkpoints in the son's clone |
+| GitHub | Checkpoint commits exist locally in the son's clone | **Not pushed.** The son's GitHub account `Pablo-Rogers` has read-only access to `AnonUserDave/Game-Hub` (push returns 403). |
 
-See [HANDOFF.md](HANDOFF.md) for the next work and completion gates.
+See [HANDOFF.md](HANDOFF.md) for the next work and completion gates, [QA.md](QA.md) for the check log, and [the REA ledger](research/PGA2005-REA.md) for the static evidence.
 
-The son's M5 MacBook Pro (24 GB) is for development only. [M1_TARGET_CONSTRAINT.md](M1_TARGET_CONSTRAINT.md) requires M1 Air / 8 GB / 2560 × 1600 acceptance. Original ZIPs are already AirDropped; [continuation prompt](SON_HANDOFF_PROMPT.md) and [media setup](MEDIA_SETUP.md) are ready.
+The son's M5 MacBook Pro (24 GB) is for development only. [M1_TARGET_CONSTRAINT.md](M1_TARGET_CONSTRAINT.md) requires M1 Air / 8 GB / 2560 × 1600 acceptance, and nothing above is that acceptance.

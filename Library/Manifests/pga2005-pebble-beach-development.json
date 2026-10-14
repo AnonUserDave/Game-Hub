@@ -18,8 +18,8 @@
   "notes": [
     "This is a native development prototype, not Tiger Woods PGA Tour 2005 or a verified port.",
     "Original per-hole terrain, materials, championship tees (index 3) and first pin positions come from the local PBL course files. Run python3 Tools/prepare_pga2005.py once to prepare them.",
-    "Lies come from original surface flags. Ball flight, bounce, rolling, penalties and drops are approximate native rules until the original physics are reconstructed. Original vegetation, golfer, audio and modes are not included yet.",
-    "Course-condition variant layers use a development default; the original selection rule is still being recovered.",
+    "Lies, lie records, launch power and rolling resistance follow statically recovered original surface rules. Ball flight, bounces, slipping, cup capture and drop placement are approximate native rules until the original physics are reconstructed. Original vegetation, golfer, audio and modes are not included yet.",
+    "Each hole loads its own original world with the standard condition layers (0x420) that the original CHole::Load selects, from static analysis.",
     "Rounds save when paused, between holes and on exit, and resume only onto identical course data.",
     "Performance on the required M1 MacBook Air at 2560 × 1600 has not been measured for this module yet."
   ],
