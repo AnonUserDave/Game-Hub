@@ -1,69 +1,70 @@
 import AppKit
 import SwiftUI
 
-private let sheetGreen = Color(hex: "C2EF93")
-private let sheetMuted = Color(hex: "9199A7")
-
 struct ControlsSheet: View {
     @ObservedObject var controller: ControllerManager
     @Environment(\.dismiss) private var dismiss
     @State private var keyboardInput = "Press a key, click, or scroll here to test"
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 23) {
-            sheetHeader("Controls & devices", subtitle: "Input diagnostics for this Mac", dismiss: { dismiss() })
+        VStack(alignment: .leading, spacing: 20) {
+            sheetHeader("Controls & devices", subtitle: "Check that this Mac sees your controller, keyboard and trackpad.") { dismiss() }
             HStack(spacing: 14) {
-                Image(systemName: "gamecontroller").font(.system(size: 31)).foregroundStyle(sheetGreen)
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(controller.controllerName ?? "No controller detected").font(.system(size: 16, weight: .semibold))
-                    Text(controller.controllerName == nil ? "Plug in your Xbox controller, then approve the accessory if macOS asks." : controller.controllerName?.contains("· USB") == true ? "Native user-space USB input · physical bindings need validation." : "macOS is exposing an extended gamepad profile.")
-                        .font(.system(size: 11)).foregroundStyle(sheetMuted)
+                Image(systemName: controller.controllerName == nil ? "gamecontroller" : "gamecontroller.fill").font(.system(size: 28)).foregroundStyle(controller.controllerName == nil ? Hub.dust : Hub.amber)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(controller.controllerName ?? "No controller found").font(.system(size: 16, weight: .semibold))
+                    Text(controller.controllerName == nil ? "Plug in your Xbox controller, then approve the accessory if macOS asks." : controller.controllerName?.contains("· USB") == true ? "Using Game Hub's own USB input. Physical bindings still need testing." : "macOS reports a standard extended gamepad.")
+                        .font(.system(size: 12)).foregroundStyle(Hub.dust).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
-                Button("Refresh") { controller.refreshControllers() }.buttonStyle(.bordered)
+                Button("Look Again") { controller.refreshControllers() }.buttonStyle(HubSecondaryButtonStyle(compact: true))
             }
             if controller.controllerName == nil, !controller.usbCandidates.isEmpty {
-                Label("USB seen: \(controller.usbCandidates.joined(separator: ", ")). macOS has not provided a usable gamepad profile.", systemImage: "cable.connector")
-                    .font(.system(size: 11)).foregroundStyle(Color(hex: "E5B97A")).fixedSize(horizontal: false, vertical: true)
+                Label("USB sees \(controller.usbCandidates.joined(separator: ", ")), but macOS has not offered a usable gamepad profile.", systemImage: "cable.connector")
+                    .font(.system(size: 12)).foregroundStyle(Hub.amber).fixedSize(horizontal: false, vertical: true)
             }
             if !controller.usbStatus.isEmpty, controller.controllerName == nil {
-                Text(controller.usbStatus).font(.system(size: 10, design: .monospaced)).foregroundStyle(sheetMuted)
+                Text(controller.usbStatus).font(.system(size: 11)).foregroundStyle(Hub.dust)
             }
-            HStack(spacing: 18) {
-                stick("LEFT STICK", x: controller.axes[0], y: controller.axes[1])
-                stick("RIGHT STICK", x: controller.axes[2], y: controller.axes[3])
-                VStack(alignment: .leading, spacing: 11) {
+            HStack(spacing: 22) {
+                stick("Left stick", x: controller.axes[0], y: controller.axes[1])
+                stick("Right stick", x: controller.axes[2], y: controller.axes[3])
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(["A", "B", "X", "Y", "LB", "RB", "LT", "RT", "Menu", "View", "L3", "R3", "Up", "Down", "Left", "Right"].chunked(into: 4), id: \.self) { row in
-                        HStack(spacing: 7) {
+                        HStack(spacing: 6) {
                             ForEach(row, id: \.self) { name in
-                                Text(name).font(.system(size: 10, weight: .semibold, design: .monospaced))
-                                    .frame(width: 41, height: 26)
-                                    .foregroundStyle(controller.buttons[name] == true ? Color.black : sheetMuted)
-                                    .background(controller.buttons[name] == true ? sheetGreen : Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 5))
+                                let down = controller.buttons[name] == true
+                                Text(name).font(.system(size: 11, weight: .semibold))
+                                    .frame(width: 44, height: 26)
+                                    .foregroundStyle(down ? Hub.onAmber : Hub.dust)
+                                    .background(down ? Hub.amber : Hub.raised, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                             }
                         }
                     }
-                }
-            }.padding(18).background(.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 12))
-            HStack(spacing: 20) {
-                ForEach(0..<2, id: \.self) { index in
-                    HStack(spacing: 8) {
-                        Text(index == 0 ? "LT" : "RT").font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(sheetMuted)
-                        ProgressView(value: Double(controller.triggers[index])).tint(sheetGreen)
+                    HStack(spacing: 12) {
+                        ForEach(0..<2, id: \.self) { index in
+                            HStack(spacing: 6) {
+                                Text(index == 0 ? "LT" : "RT").font(.system(size: 11, weight: .medium)).foregroundStyle(Hub.dust)
+                                ProgressView(value: Double(controller.triggers[index])).tint(Hub.amber)
+                            }
+                        }
                     }
+                    .padding(.top, 4)
                 }
             }
-            Text(controller.lastInput).font(.system(size: 11, design: .monospaced)).foregroundStyle(sheetGreen).frame(height: 30, alignment: .leading)
-            VStack(alignment: .leading, spacing: 9) {
-                Label("Keyboard + trackpad", systemImage: "keyboard").font(.system(size: 14, weight: .semibold))
-                Text(keyboardInput).font(.system(size: 11, design: .monospaced)).foregroundStyle(sheetGreen)
-                Text("In the hub: arrow keys or left stick / D-pad select games; Return or A opens a game; Escape or B clears filters. Each native game defines its own bindings, shown in its details.")
-                    .font(.system(size: 11)).foregroundStyle(sheetMuted).lineSpacing(4)
-            }.padding(18).frame(maxWidth: .infinity, alignment: .leading).background(.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 12))
-            Text("Supported macOS controllers use extended gamepad profiles. The XB1 Fusion Pro can use this app’s native USB adapter. Physical bindings and future ports still need testing with your controller.")
-                .font(.system(size: 10)).foregroundStyle(sheetMuted).lineSpacing(3)
+            .padding(18).background(Hub.raised.opacity(0.5), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            Text(controller.lastInput).font(.system(size: 12, weight: .medium)).foregroundStyle(Hub.amber).frame(height: 18, alignment: .leading)
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Keyboard & trackpad", systemImage: "keyboard").font(.system(size: 14, weight: .semibold))
+                Text(keyboardInput).font(.system(size: 12, weight: .medium)).foregroundStyle(Hub.amber)
+                Text("In the library, arrow keys or the left stick move between games. Return or A plays, Space or X shows details, Y marks a favorite, LB and RB switch lists, and Escape or B goes back. Each game lists its own controls in its details.")
+                    .font(.system(size: 12)).foregroundStyle(Hub.dust).lineSpacing(3).fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(18).frame(maxWidth: .infinity, alignment: .leading).background(Hub.raised.opacity(0.5), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            Text("Controllers with a macOS extended gamepad profile work here. The XB1 Fusion Pro can also use Game Hub's own USB adapter. Each game's bindings still need testing with your controller.")
+                .font(.system(size: 11)).foregroundStyle(Hub.dust).lineSpacing(3).fixedSize(horizontal: false, vertical: true)
         }
-        .padding(30).frame(width: 610).background(Color(hex: "14181F"))
+        .padding(28).frame(width: 620).background(Hub.panel).foregroundStyle(Hub.label)
         .background(InputDiagnostics(message: $keyboardInput))
         .onAppear { controller.refreshControllers() }
     }
@@ -71,71 +72,140 @@ struct ControlsSheet: View {
     private func stick(_ title: String, x: Float, y: Float) -> some View {
         VStack(spacing: 10) {
             ZStack {
-                Circle().fill(.white.opacity(0.025)).frame(width: 88, height: 88)
-                Circle().stroke(.white.opacity(0.14)).frame(width: 88, height: 88)
-                Rectangle().fill(.white.opacity(0.08)).frame(width: 88, height: 1)
-                Rectangle().fill(.white.opacity(0.08)).frame(width: 1, height: 88)
-                Circle().fill(sheetGreen).frame(width: 14, height: 14).offset(x: CGFloat(x) * 35, y: -CGFloat(y) * 35)
+                Circle().fill(Hub.walnut).frame(width: 88, height: 88)
+                Circle().strokeBorder(.white.opacity(0.12)).frame(width: 88, height: 88)
+                Rectangle().fill(.white.opacity(0.07)).frame(width: 88, height: 1)
+                Rectangle().fill(.white.opacity(0.07)).frame(width: 1, height: 88)
+                Circle().fill(Hub.amber).frame(width: 14, height: 14).offset(x: CGFloat(x) * 35, y: -CGFloat(y) * 35)
             }
-            Text(title).font(.system(size: 8, weight: .bold, design: .monospaced)).tracking(0.7).foregroundStyle(sheetMuted)
+            Text(title).font(.system(size: 11, weight: .medium)).foregroundStyle(Hub.dust)
         }
     }
 }
 
-struct PortSheet: View {
-    let game: GameManifest
+/// Everything about one game: each native build with its own status, notes
+/// and controls, and the original copy kept for reference.
+struct TitleSheet: View {
+    let title: GameTitle
     @ObservedObject var store: GameStore
     @Environment(\.dismiss) private var dismiss
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            sheetHeader(game.title, subtitle: "\(game.edition) · \(game.platform)", dismiss: { dismiss() })
-            HStack(spacing: 9) {
-                Circle().fill(game.tint).frame(width: 6, height: 6)
-                Text(game.statusLabel.uppercased()).font(.system(size: 10, weight: .bold, design: .monospaced)).tracking(1)
-                Spacer()
-            }.foregroundStyle(game.tint)
+        let primary = store.primaryBuild(title)
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .center, spacing: 16) {
+                MediaObject(game: title.display).frame(width: 72, height: 64)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title.name).font(Hub.display(30)).lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                    Text("\(title.display.genre), \(title.platform), \(String(title.display.year))").font(.system(size: 12)).foregroundStyle(Hub.dust)
+                }
+                Spacer(minLength: 12)
+                SheetCloseButton { dismiss() }
+            }
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text(game.summary).font(.system(size: 13)).lineSpacing(5)
-                    VStack(alignment: .leading, spacing: 11) {
-                        ForEach(game.notes, id: \.self) { note in
-                            HStack(alignment: .top, spacing: 9) {
-                                Image(systemName: "circle.fill").font(.system(size: 4)).padding(.top, 6).foregroundStyle(game.tint)
-                                Text(note).font(.system(size: 11)).foregroundStyle(sheetMuted).lineSpacing(4)
-                            }
+                VStack(alignment: .leading, spacing: 14) {
+                    if title.builds.isEmpty {
+                        section {
+                            Text("Not playable yet").font(.system(size: 15, weight: .semibold))
+                            Text("This game is waiting for its native Mac version. Having the original copy in the library never makes it playable on its own.").font(.system(size: 12)).foregroundStyle(Hub.dust).lineSpacing(3)
                         }
                     }
-                    if let source = game.sourceArchive {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("ORIGINAL MEDIA").font(.system(size: 9, weight: .bold, design: .monospaced)).tracking(1).foregroundStyle(game.tint)
-                            Text(source).font(.system(size: 10, design: .monospaced)).textSelection(.enabled).foregroundStyle(sheetMuted)
-                            Text(FileManager.default.fileExists(atPath: store.resolve(source).path) ? "Archive present on this Mac. This is reference material for the rewrite." : "Archive is not at the configured library location. Restore it from your own copy.")
-                                .font(.system(size: 11)).foregroundStyle(sheetMuted)
-                        }.padding(15).frame(maxWidth: .infinity, alignment: .leading).background(.white.opacity(0.035), in: RoundedRectangle(cornerRadius: 9))
-                    }
-                    controlList("KEYBOARD & TRACKPAD", lines: game.keyboard)
-                    controlList("XBOX / EXTENDED GAMEPAD", lines: game.controller)
-                }.frame(maxWidth: .infinity, alignment: .leading)
-            }.frame(maxHeight: 390)
+                    ForEach(title.builds) { build in buildSection(build) }
+                    if let original = title.original { originalSection(original) }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxHeight: 470)
             HStack {
-                if let source = game.sourceArchive {
-                    Button("Reveal original archive") { NSWorkspace.shared.activateFileViewerSelecting([store.resolve(source)]) }
+                if let source = title.display.sourceArchive {
+                    Button("Show Original in Finder") { NSWorkspace.shared.activateFileViewerSelecting([store.resolve(source)]) }
+                        .buttonStyle(HubSecondaryButtonStyle(compact: true))
                         .disabled(!FileManager.default.fileExists(atPath: store.resolve(source).path))
                 }
                 Spacer()
-                if store.readiness(game) == nil {
-                    Button(game.isPrototype ? "Open prototype" : "Play game") { dismiss(); store.launch(game) }.buttonStyle(.borderedProminent).tint(game.tint).foregroundStyle(.black)
+                if let primary {
+                    Button { dismiss(); store.launch(primary) } label: { Label(title.builds.count > 1 ? "Play \(primary.buildName)" : primary.isPrototype ? "Play prototype" : "Play", systemImage: "play.fill") }
+                        .buttonStyle(HubPrimaryButtonStyle(compact: true)).keyboardShortcut(.defaultAction)
                 } else {
-                    Button("Done") { dismiss() }.buttonStyle(.borderedProminent).tint(game.tint).foregroundStyle(.black)
+                    Button("Done") { dismiss() }.buttonStyle(HubPrimaryButtonStyle(compact: true)).keyboardShortcut(.defaultAction)
                 }
-            }.font(.system(size: 11))
-        }.padding(30).frame(width: 620).background(Color(hex: "14181F"))
+            }
+        }
+        .padding(28).frame(width: 640).background(Hub.panel).foregroundStyle(Hub.label)
     }
 
-    private func controlList(_ title: String, lines: [String]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.system(size: 9, weight: .bold, design: .monospaced)).tracking(1).foregroundStyle(game.tint)
-            ForEach(lines, id: \.self) { Text($0).font(.system(size: 11)).foregroundStyle(sheetMuted).lineSpacing(3) }
+    private func buildSection(_ build: GameManifest) -> some View {
+        let reason = store.readiness(build)
+        return section {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(build.buildName).font(.system(size: 15, weight: .semibold))
+                    Text("\(build.statusLabel). \(build.edition)").font(.system(size: 12)).foregroundStyle(Hub.dust)
+                }
+                Spacer(minLength: 8)
+                if let reason {
+                    Label(reason, systemImage: "exclamationmark.circle").font(.system(size: 12)).foregroundStyle(Hub.amber)
+                } else if title.builds.count > 1 {
+                    Button("Play") { dismiss(); store.launch(build) }.buttonStyle(HubSecondaryButtonStyle(compact: true))
+                }
+            }
+            Text(build.summary).font(.system(size: 13)).lineSpacing(4).fixedSize(horizontal: false, vertical: true)
+            notes(build.notes)
+            controlList("Keyboard & trackpad", icon: "keyboard", lines: build.keyboard)
+            controlList("Controller", icon: "gamecontroller", lines: build.controller)
+        }
+    }
+
+    private func originalSection(_ original: GameManifest) -> some View {
+        let present = original.sourceArchive.map { FileManager.default.fileExists(atPath: store.resolve($0).path) } ?? false
+        return section {
+            Text("Original copy").font(.system(size: 15, weight: .semibold))
+            Text("Kept for reference while the native version is built. Game Hub never runs the original files.").font(.system(size: 12)).foregroundStyle(Hub.dust).lineSpacing(3)
+            if original.summary != title.builds.first?.summary { Text(original.summary).font(.system(size: 13)).lineSpacing(4).fixedSize(horizontal: false, vertical: true) }
+            if let source = original.sourceArchive {
+                HStack(spacing: 8) {
+                    Image(systemName: present ? "checkmark.circle.fill" : "questionmark.circle").foregroundStyle(present ? Hub.amber : Hub.dust)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(source).font(.system(size: 12, weight: .medium)).textSelection(.enabled)
+                        Text(present ? "On this Mac" : "Not in the library folder. Restore it from your own copy.").font(.system(size: 11)).foregroundStyle(Hub.dust)
+                    }
+                }
+            }
+            notes(original.notes)
+        }
+    }
+
+    private func section<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10, content: content)
+            .padding(16).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Hub.raised.opacity(0.5), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Hub.rule))
+    }
+
+    @ViewBuilder
+    private func notes(_ lines: [String]) -> some View {
+        if !lines.isEmpty {
+            VStack(alignment: .leading, spacing: 7) {
+                ForEach(lines, id: \.self) { note in
+                    HStack(alignment: .top, spacing: 8) {
+                        Circle().fill(title.display.tint).frame(width: 4, height: 4).padding(.top, 6)
+                        Text(note).font(.system(size: 12)).foregroundStyle(Hub.dust).lineSpacing(3).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func controlList(_ heading: String, icon: String, lines: [String]) -> some View {
+        if !lines.isEmpty {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: icon).font(.system(size: 12)).foregroundStyle(Hub.dust).frame(width: 18).padding(.top, 1)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(heading).font(.system(size: 12, weight: .semibold))
+                    ForEach(lines, id: \.self) { Text($0).font(.system(size: 12)).foregroundStyle(Hub.label.opacity(0.8)).fixedSize(horizontal: false, vertical: true) }
+                }
+            }
         }
     }
 }
@@ -144,51 +214,47 @@ struct IntegrationSheet: View {
     @ObservedObject var store: GameStore
     @Environment(\.dismiss) private var dismiss
     var body: some View {
-        VStack(alignment: .leading, spacing: 23) {
-            sheetHeader("A library that grows with you", subtitle: "Add future native games without rebuilding the hub", dismiss: { dismiss() })
+        VStack(alignment: .leading, spacing: 20) {
+            sheetHeader("Adding your own games", subtitle: "Native Mac games join the library without rebuilding Game Hub.") { dismiss() }
             ForEach(Array([
-                ("1", "Build your native game", "Use an Apple Silicon or Universal Mac .app or executable. Games keep their own assets, saves, and settings."),
-                ("2", "Add a game manifest", "Use Add game to select the build, or place a game.json in Library/NativeGames/<game-id>/. The hub discovers it on Refresh."),
-                ("3", "Document and test the controls", "Record keyboard, trackpad, and Xbox bindings in the manifest. Test the real game at 2560 × 1600 and with the physical controller before calling it verified.")
-            ].enumerated()), id: \.offset) { _, step in
-                HStack(alignment: .top, spacing: 15) {
-                    Text(step.0).font(.system(size: 13, weight: .bold, design: .monospaced)).foregroundStyle(sheetGreen).frame(width: 30, height: 30).background(sheetGreen.opacity(0.1), in: RoundedRectangle(cornerRadius: 7))
-                    VStack(alignment: .leading, spacing: 7) {
-                        Text(step.1).font(.system(size: 14, weight: .semibold))
-                        Text(step.2).font(.system(size: 11)).foregroundStyle(sheetMuted).lineSpacing(4)
+                ("Build the game for this Mac", "Use an Apple Silicon or Universal .app or executable. Games keep their own assets, saves and settings."),
+                ("Add it to the library", "Choose Add a game and select the build, or place a game.json in Library/NativeGames/<game-id>/. Refresh the library to see it."),
+                ("Write down and test the controls", "List the keyboard, trackpad and controller bindings in the manifest. Test the real game at 2560 × 1600 with the physical controller before calling it verified.")
+            ].enumerated()), id: \.offset) { index, step in
+                HStack(alignment: .top, spacing: 14) {
+                    Text("\(index + 1)").font(Hub.display(18)).foregroundStyle(Hub.onAmber).frame(width: 30, height: 30).background(Hub.amber, in: Circle())
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(step.0).font(.system(size: 14, weight: .semibold))
+                        Text(step.1).font(.system(size: 12)).foregroundStyle(Hub.dust).lineSpacing(3).fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
-            Text("Original media, development prototypes, native builds, and verified ports have distinct statuses. A catalog entry by itself does not make a game playable.")
-                .font(.system(size: 11)).foregroundStyle(sheetMuted).lineSpacing(4).padding(15).background(.white.opacity(0.03), in: RoundedRectangle(cornerRadius: 9))
+            Text("Original copies, development builds, native games and verified ports each keep their own status. A library entry on its own never makes a game playable.")
+                .font(.system(size: 12)).foregroundStyle(Hub.dust).lineSpacing(3).padding(14).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Hub.raised.opacity(0.5), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             HStack {
-                Button("Open integration guide") {
+                Button("Open Integration Guide") {
                     let local = store.root.appendingPathComponent("docs/INTEGRATION.md")
                     if FileManager.default.fileExists(atPath: local.path) { NSWorkspace.shared.open(local) }
                     else if let resource = Bundle.main.resourceURL { NSWorkspace.shared.open(resource.appendingPathComponent("INTEGRATION.md")) }
                 }
+                .buttonStyle(HubSecondaryButtonStyle(compact: true))
                 Spacer()
-                Button("Add native game…") { dismiss(); store.importNativeApp() }.buttonStyle(.borderedProminent).tint(sheetGreen).foregroundStyle(.black)
-            }.font(.system(size: 11))
-        }.padding(30).frame(width: 590).background(Color(hex: "14181F"))
+                Button("Add a Game…") { dismiss(); store.importNativeApp() }.buttonStyle(HubPrimaryButtonStyle(compact: true)).keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(28).frame(width: 580).background(Hub.panel).foregroundStyle(Hub.label)
     }
 }
 
 private func sheetHeader(_ title: String, subtitle: String, dismiss: @escaping () -> Void) -> some View {
     HStack(alignment: .top) {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.system(size: 22, weight: .bold)).tracking(-0.4)
-            Text(subtitle).font(.system(size: 11)).foregroundStyle(sheetMuted)
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title).font(Hub.display(30))
+            Text(subtitle).font(.system(size: 12)).foregroundStyle(Hub.dust)
         }
         Spacer(minLength: 12)
-        Button(action: dismiss) { Image(systemName: "xmark").font(.system(size: 11, weight: .semibold)).foregroundStyle(sheetMuted).frame(width: 26, height: 26).background(.white.opacity(0.06), in: Circle()) }
-            .buttonStyle(.plain).keyboardShortcut(.escape, modifiers: []).help("Close")
-    }
-}
-
-private extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        stride(from: 0, to: count, by: size).map { Array(self[$0..<Swift.min($0 + size, count)]) }
+        SheetCloseButton(action: dismiss)
     }
 }
 

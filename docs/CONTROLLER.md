@@ -24,6 +24,8 @@ The adapter is specific to this app. Separately imported native applications pro
 
 The hub's **Controls & devices** sheet reports the active path, live buttons and sticks, and trigger levels. For the wired fallback, it reports **XB1 Fusion Pro · USB** only after a valid input report has arrived. USB enumeration alone is never considered usable input.
 
+In the library, the left stick or D-pad moves between games, A plays the selected game (or opens its details when nothing is ready), B dismisses an alert or closes the open sheet (except Controls & devices, where every button stays testable), or clears filters, X opens details, Y toggles a favorite, and LB/RB switch between All games, Playable builds, Favorites and In the works. The keyboard equivalents are the arrow keys, Return, Escape, Space and ⌘1–⌘4. These hub mappings are covered by unit tests; physical validation on the XB1 Fusion Pro is still required.
+
 `Tools/probe_controller.sh` builds a bounded descriptor diagnostic for this VID/PID. By default it reads descriptors only. `--configure` selects the advertised configuration only while the device is unconfigured. `--input` sends the three initialization messages and reads reports for at most three seconds. Interrupt APIs require timeout zero; the probe enforces its own 250 ms transfer deadline with an abort. Running the tool inside a restrictive executor sandbox can yield permission denial even when the ordinary native app can access the controller.
 
 The test suite validates malformed/truncated packet rejection, button bits, trigger normalization, signed stick limits, and release of held state on disconnect. Actual buttons, analog response, unplug/replug, app focus transitions, the hub, and gameplay still need physical validation.

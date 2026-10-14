@@ -1,12 +1,12 @@
 # Integrating a native game
 
-Game Hub is a native SwiftUI application for Apple Silicon, running on macOS 14 or later. Native games can be separate `.app` bundles or Mach-O executables; they do not need to be compiled into the hub. The launcher checks for an executable arm64 slice when the library loads and again immediately before launch, accepts Universal builds, passes arguments without a shell, and returns to the library after the game exits. If a build is moved or replaced, press **Refresh** to update its library status. It does not load ROMs, mount disc images, run Windows binaries, or provide an emulator.
+Game Hub is a native SwiftUI application for Apple Silicon, running on macOS 14 or later. Native games can be separate `.app` bundles or Mach-O executables; they do not need to be compiled into the hub. The launcher checks for an executable arm64 slice when the library loads and again immediately before launch, accepts Universal builds, passes arguments without a shell, and returns to the library after the game exits. If a build is moved or replaced, choose **Refresh Library** (⌘R) to update its library status. It does not load ROMs, mount disc images, run Windows binaries, or provide an emulator.
 
 ## Add an existing native game
 
 Choose **Add game** and select a native `.app`, executable, or a `game.json` manifest. The importer records a reference to the build in `Library/Manifests/`; it does not move the game or its assets. Moving the referenced build later requires updating its launch path. Paths in an imported standalone JSON manifest resolve relative to that JSON file before being stored as absolute paths.
 
-You can also create `Library/NativeGames/<stable-id>/game.json` and press **Refresh** in the hub. This folder is intended for your local native build and assets; keep large or proprietary files outside Git.
+You can also create `Library/NativeGames/<stable-id>/game.json` and choose **Refresh Library** (⌘R, or the **Library folder** menu in the sidebar). This folder is intended for your local native build and assets; keep large or proprietary files outside Git.
 
 ## Manifest schema 1
 
@@ -37,7 +37,9 @@ You can also create `Library/NativeGames/<stable-id>/game.json` and press **Refr
 
 All fields shown are required except `sourceArchive` and `launch`, which may be absent or `null`. Inside `launch`, only `kind` is always required; `path` is required for external games, and `builtin` is required for built-in games. `arguments` defaults to an empty list.
 
-The `id` is unique across the entire library and uses lowercase letters, digits, hyphens, dots, or underscores. The first character must be a letter or digit. The accent is a six-digit RGB hex color. Built-in procedural artwork identifiers are `golf`, `skate`, `asteroids`, `breakout`, and `native`; other values use abstract pixel artwork. The artwork is original hub art, not a screenshot of the source game.
+The `id` is unique across the entire library and uses lowercase letters, digits, hyphens, dots, or underscores. The first character must be a letter or digit. The accent is a six-digit RGB hex color; it lights the game's place on the library shelf. The shelf draws each game as the physical media of its `platform` (Atari, Commodore and Intellivision cartridges, an Apple II floppy, a Windows disc, an arcade cabinet, or a Mac app tile for anything else). Built-in label artwork identifiers are `golf`, `skate`, `asteroids`, and `breakout`; `pixel` and `native` pick a motif from the `genre` (Racing, Sports, Strategy, otherwise an abstract sprite). The artwork is original hub art, not a screenshot or box art of the source game.
+
+Manifests that share a `sourceArchive` appear as **one game** in the library: the `source` record is the preserved original copy, and every other record with that archive is listed as one of its native builds, each with its own status. Play opens the best ready build (verified, then native, then prototype). A manifest without `sourceArchive` stands alone.
 
 `path` is absolute or relative to the **library root**. The library root defaults to the folder containing `Game Hub.app`. `GAMEHUB_LIBRARY_ROOT` overrides it, and `Tools/run.sh` sets it to this checkout. If you move just the application, the starter catalog remains visible from its bundled resources, but original media and external native games still need their paths restored.
 

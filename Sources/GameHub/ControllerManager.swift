@@ -5,7 +5,7 @@ import GameController
 import IOKit
 
 enum HubNavigation {
-    case up, down, left, right, play, back
+    case up, down, left, right, play, back, details, favorite, previousSection, nextSection
 }
 
 /// Owns controller discovery and hub navigation. Native games can read the same
@@ -196,6 +196,12 @@ final class ControllerManager: ObservableObject {
             || (state["Menu"] == true && previousButtons["Menu"] != true) {
             heldDirection = nil
             onNavigate?(.back)
+            return
+        }
+        for (button, command) in [("X", HubNavigation.details), ("Y", .favorite), ("LB", .previousSection), ("RB", .nextSection)]
+        where state[button] == true && previousButtons[button] != true {
+            heldDirection = nil
+            onNavigate?(command)
             return
         }
 

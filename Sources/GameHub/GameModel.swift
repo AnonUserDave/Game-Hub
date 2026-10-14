@@ -40,15 +40,99 @@ struct GameManifest: Codable, Identifiable, Equatable {
 }
 
 enum LibrarySection: String, CaseIterable, Identifiable {
-    case all = "All games", favorites = "Favorites", ready = "Playable builds", queue = "Port queue"
+    case all = "All games", ready = "Playable builds", favorites = "Favorites", queue = "In the works"
     var id: String { rawValue }
     var icon: String {
         switch self {
         case .all: return "square.grid.2x2"
-        case .favorites: return "heart"
         case .ready: return "play.circle"
+        case .favorites: return "heart"
         case .queue: return "hammer"
         }
+    }
+}
+
+/// One game in the collection: the preserved original media record together
+/// with any native builds made from it. Each build keeps its own fidelity, so
+/// a development prototype never stands in for the finished game.
+struct GameTitle: Identifiable, Equatable {
+    let id: String
+    let original: GameManifest?
+    let builds: [GameManifest]
+
+    var display: GameManifest { original ?? builds[0] }
+    var name: String { display.title }
+    var platform: String { display.platform }
+    var members: [GameManifest] { (original.map { [$0] } ?? []) + builds }
+
+    /// Groups catalog records by original archive, keeping `games` order.
+    /// Records without an archive, such as imported Mac games, stand alone.
+    static func group(_ games: [GameManifest]) -> [GameTitle] {
+        var keys: [String] = []
+        var originals: [String: GameManifest] = [:]
+        var builds: [String: [GameManifest]] = [:]
+        for game in games {
+            var key = game.sourceArchive.map { "archive:" + $0 } ?? "id:" + game.id
+            if game.fidelity == "source", originals[key] != nil { key = "id:" + game.id }
+            if originals[key] == nil, builds[key] == nil { keys.append(key) }
+            if game.fidelity == "source" { originals[key] = game } else { builds[key, default: []].append(game) }
+        }
+        return keys.map { key in
+            let original = originals[key], members = builds[key] ?? []
+            return GameTitle(id: original?.id ?? members[0].id, original: original, builds: members)
+        }
+    }
+}
+
+/// Utility sheets opened from the sidebar or menus.
+enum HubSheet: String, Identifiable {
+    case controls, integration
+    var id: String { rawValue }
+}
+
+struct LibraryShelf: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let detail: String?
+    let titles: [GameTitle]
+}
+
+/// Moves focus through shelves laid out as rows of title IDs. Left and right
+/// follow reading order across rows; up and down keep the column.
+enum ShelfNavigator {
+    static func move(from id: String?, _ direction: HubNavigation, rows: [[String]]) -> String? {
+        let rows = rows.filter { !$0.isEmpty }
+        guard let first = rows.first?.first else { return nil }
+        guard let id, let row = rows.firstIndex(where: { $0.contains(id) }), let column = rows[row].firstIndex(of: id) else { return first }
+        let flat = rows.flatMap { $0 }
+        let index = flat.firstIndex(of: id) ?? 0
+        switch direction {
+        case .left: return flat[max(0, index - 1)]
+        case .right: return flat[min(flat.count - 1, index + 1)]
+        case .up: return row == 0 ? id : rows[row - 1][min(column, rows[row - 1].count - 1)]
+        case .down: return row == rows.count - 1 ? id : rows[row + 1][min(column, rows[row + 1].count - 1)]
+        default: return id
+        }
+    }
+}
+
+extension GameManifest {
+    /// Short name of a build within its title, e.g. "Original Courses".
+    var buildName: String { title.components(separatedBy: " · ").last ?? title }
+    /// Fidelity in a word or two, for the shelf.
+    var shortStatus: String {
+        switch fidelity {
+        case "prototype": return "Prototype"
+        case "verified": return "Verified port"
+        case "native": return "Native Mac game"
+        default: return "Original copy"
+        }
+    }
+}
+
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        stride(from: 0, to: count, by: Swift.max(1, size)).map { Array(self[$0..<Swift.min($0 + size, count)]) }
     }
 }
 
@@ -60,11 +144,21 @@ struct HubIssue: Identifiable {
 
 @MainActor
 final class GameStore: ObservableObject {
+    static let allPlatforms = "All platforms"
     @Published var games: [GameManifest] = []
+    @Published private(set) var titles: [GameTitle] = []
+    /// ID of the selected title (see `GameTitle.id`).
     @Published var selectedID: String?
+    /// Title whose details sheet is open.
+    @Published var presentedTitle: GameTitle?
+    @Published var utilitySheet: HubSheet?
+    /// Columns in the shelf grid, set by the library view for navigation.
+    @Published var gridColumns = 4
+    /// Incremented to ask the library view to focus its search field.
+    @Published var searchFocusRequest = 0
     @Published var section: LibrarySection = .all
     @Published var search = ""
-    @Published var platform = "All platforms"
+    @Published var platform = GameStore.allPlatforms
     @Published var favorites: Set<String> = []
     @Published var lastPlayed: [String: Double] = [:]
     @Published var issue: HubIssue?
@@ -129,22 +223,60 @@ final class GameStore: ObservableObject {
         return Bundle.main.bundleURL.deletingLastPathComponent()
     }
 
-    var selected: GameManifest? { filtered.first { $0.id == selectedID } ?? filtered.first }
-    var readyCount: Int { games.filter { readiness($0) == nil }.count }
-    var platforms: [String] { ["All platforms"] + Set(games.map(\.platform)).sorted() }
-    var filtered: [GameManifest] {
-        games.filter { game in
-            let sectionMatches: Bool
-            switch section {
-            case .all: sectionMatches = true
-            case .favorites: sectionMatches = favorites.contains(game.id)
-            case .ready: sectionMatches = readiness(game) == nil
-            case .queue: sectionMatches = readiness(game) != nil
-            }
-            return sectionMatches
-                && (platform == "All platforms" || platform == game.platform)
-                && (search.isEmpty || "\(game.title) \(game.edition) \(game.platform) \(game.genre)".localizedCaseInsensitiveContains(search))
+    var selected: GameTitle? {
+        let visible = shelves.flatMap(\.titles)
+        return visible.first { $0.id == selectedID } ?? visible.first
+    }
+
+    var systems: [(name: String, count: Int)] {
+        Dictionary(grouping: titles, by: \.platform).map { ($0.key, $0.value.count) }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    func count(_ section: LibrarySection) -> Int { titles.filter { matches($0, section) }.count }
+
+    var filtered: [GameTitle] {
+        titles.filter { title in
+            matches(title, section)
+                && (platform == Self.allPlatforms || platform == title.platform)
+                && (search.isEmpty || title.members.contains { "\($0.title) \($0.edition) \($0.platform) \($0.genre)".localizedCaseInsensitiveContains(search) })
         }
+    }
+
+    var sheetOpen: Bool { presentedTitle != nil || utilitySheet != nil }
+
+    /// Visible titles split into what can be played now and what cannot.
+    var shelves: [LibraryShelf] {
+        let visible = filtered
+        let ready = visible.filter { isPlayable($0) }
+        let prototypesOnly = ready.allSatisfy { primaryBuild($0)?.isPrototype == true }
+        return [
+            LibraryShelf(id: "ready", name: "Playable builds", detail: prototypesOnly ? "Prototypes, not finished ports" : nil, titles: ready),
+            LibraryShelf(id: "waiting", name: "In the works", detail: "Not playable on this Mac yet", titles: visible.filter { !isPlayable($0) })
+        ].filter { !$0.titles.isEmpty }
+    }
+
+    /// One line on what a title offers now: its playable build's status, or
+    /// why an existing build cannot open. Nil for an original copy alone.
+    func status(_ title: GameTitle) -> String? {
+        if let build = primaryBuild(title) { return build.shortStatus }
+        return title.builds.lazy.compactMap { self.readiness($0) }.first
+    }
+
+    private func matches(_ title: GameTitle, _ section: LibrarySection) -> Bool {
+        switch section {
+        case .all: return true
+        case .favorites: return isFavorite(title)
+        case .ready: return isPlayable(title)
+        case .queue: return !isPlayable(title)
+        }
+    }
+
+    func isPlayable(_ title: GameTitle) -> Bool { title.builds.contains { readiness($0) == nil } }
+    /// The build that Play opens: the best ready build of the title.
+    func primaryBuild(_ title: GameTitle) -> GameManifest? { title.builds.first { readiness($0) == nil } }
+    func isFavorite(_ title: GameTitle) -> Bool { title.members.contains { favorites.contains($0.id) } }
+    func lastPlayed(_ title: GameTitle) -> Date? {
+        title.members.compactMap { lastPlayed[$0.id] }.max().map { Date(timeIntervalSince1970: $0) }
     }
 
     func reload() {
@@ -167,13 +299,12 @@ final class GameStore: ObservableObject {
     private func apply(_ result: CatalogLoadResult) {
         nativeReadiness = result.readiness
         games = result.games.sorted {
-            let priorityA = $0.id == "pga2005-native-development" ? 0 : $0.id == "pga-2005" ? 1 : 2
-            let priorityB = $1.id == "pga2005-native-development" ? 0 : $1.id == "pga-2005" ? 1 : 2
+            let priorityA = Self.priority($0.id), priorityB = Self.priority($1.id)
             if priorityA != priorityB { return priorityA < priorityB }
             let a = readiness($0) == nil, b = readiness($1) == nil
             return a == b ? $0.title.localizedStandardCompare($1.title) == .orderedAscending : a
         }
-        if !games.contains(where: { $0.id == selectedID }) { selectedID = games.first?.id }
+        rebuildTitles()
         if !result.errors.isEmpty { issue = HubIssue(title: "Some manifests could not load", message: result.errors.joined(separator: "\n")) }
         // GAMEHUB_AUTOPLAY (PGAAutoplay) opens the original golf courses straight away.
         if !autoplayLaunched, ProcessInfo.processInfo.environment["GAMEHUB_AUTOPLAY"] != nil, activeGame == nil,
@@ -183,6 +314,43 @@ final class GameStore: ObservableObject {
         }
     }
     private var autoplayLaunched = false
+
+    /// The golf rewrite leads the library; its original-course build comes
+    /// before the generated practice build.
+    private static func priority(_ id: String) -> Int {
+        switch id {
+        case "pga2005-original-courses": return 0
+        case "pga2005-native-development": return 1
+        case "pga-2005": return 2
+        default: return 3
+        }
+    }
+
+    private func rebuildTitles() {
+        let order = Dictionary(games.enumerated().map { ($1.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let rank = ["verified": 0, "native": 1, "prototype": 2]
+        titles = GameTitle.group(games).map { title in
+            GameTitle(id: title.id, original: title.original, builds: title.builds.sorted { a, b in
+                let readyA = readiness(a) == nil, readyB = readiness(b) == nil
+                if readyA != readyB { return readyA }
+                let rankA = rank[a.fidelity, default: 3], rankB = rank[b.fidelity, default: 3]
+                if rankA != rankB { return rankA < rankB }
+                return order[a.id, default: 0] < order[b.id, default: 0]
+            })
+        }.sorted { a, b in
+            let priorityA = a.members.map { Self.priority($0.id) }.min() ?? 3, priorityB = b.members.map { Self.priority($0.id) }.min() ?? 3
+            if priorityA != priorityB { return priorityA < priorityB }
+            let readyA = isPlayable(a), readyB = isPlayable(b)
+            if readyA != readyB { return readyA }
+            let name = a.name.localizedStandardCompare(b.name)
+            return name == .orderedSame ? a.platform.localizedStandardCompare(b.platform) == .orderedAscending : name == .orderedAscending
+        }
+        if !titles.contains(where: { $0.id == selectedID }) {
+            // Start on the game played most recently, otherwise the first one.
+            selectedID = titles.filter { lastPlayed($0) != nil }.max { lastPlayed($0)! < lastPlayed($1)! }?.id ?? titles.first?.id
+        }
+        if let presented = presentedTitle { presentedTitle = titles.first { $0.id == presented.id } }
+    }
 
     nonisolated func validate(_ game: GameManifest) throws { try Self.validateManifest(game) }
 
@@ -283,9 +451,14 @@ final class GameStore: ObservableObject {
         return false
     }
 
-    func toggleFavorite(_ game: GameManifest) {
-        if favorites.contains(game.id) { favorites.remove(game.id) } else { favorites.insert(game.id) }
+    func toggleFavorite(_ title: GameTitle) {
+        if isFavorite(title) { favorites.subtract(title.members.map(\.id)) } else { favorites.insert(title.id) }
         UserDefaults.standard.set(Array(favorites), forKey: "favorites")
+    }
+
+    /// Plays the title's best ready build, or shows why it cannot be played.
+    func play(_ title: GameTitle) {
+        if let build = primaryBuild(title) { launch(build) } else { presentedTitle = title }
     }
 
     func recordPlay(_ game: GameManifest) {
@@ -315,6 +488,7 @@ final class GameStore: ObservableObject {
                 self.launchingGameID = nil
                 guard self.root == mediaRoot else { return }
                 self.nativeReadiness[game.id] = reason
+                self.rebuildTitles()
                 guard reason.isEmpty else { self.issue = HubIssue(title: "Original media changed", message: "\(game.title) needs its prepared original graphics. Run the title's preparation tool and refresh the library."); return }
                 self.recordPlay(game); self.activeGame = game
             }
@@ -323,6 +497,7 @@ final class GameStore: ObservableObject {
         let currentReadiness = Self.externalBuildReadiness(launch, root: root)
         guard currentReadiness.isEmpty else {
             nativeReadiness[game.id] = currentReadiness
+            rebuildTitles()
             issue = HubIssue(title: "Native build changed", message: "\(game.title): \(currentReadiness). Refresh the library after updating the build.")
             return
         }
@@ -368,18 +543,21 @@ final class GameStore: ObservableObject {
         else if let pid = process?.processIdentifier { NSRunningApplication(processIdentifier: pid)?.activate(options: [.activateAllWindows]) }
     }
 
+    /// Handles a library command from the keyboard or a controller.
     func navigate(_ direction: HubNavigation) {
-        guard activeGame == nil else { return }
-        let visible = filtered
-        guard !visible.isEmpty else { return }
-        let index = visible.firstIndex { $0.id == selectedID } ?? 0
+        guard activeGame == nil, !sheetOpen else { return }
         switch direction {
-        case .play: launch(visible[index])
-        case .back: search = ""; section = .all; platform = "All platforms"
-        case .left: selectedID = visible[max(0, index - 1)].id
-        case .right: selectedID = visible[min(visible.count - 1, index + 1)].id
-        case .up: selectedID = visible[max(0, index - 3)].id
-        case .down: selectedID = visible[min(visible.count - 1, index + 3)].id
+        case .play: if let title = selected { play(title) }
+        case .details: presentedTitle = selected
+        case .favorite: if let title = selected { toggleFavorite(title) }
+        case .back: search = ""; section = .all; platform = Self.allPlatforms
+        case .previousSection, .nextSection:
+            let all = LibrarySection.allCases, index = all.firstIndex(of: section) ?? 0
+            section = all[(index + (direction == .nextSection ? 1 : all.count - 1)) % all.count]
+            platform = Self.allPlatforms
+        case .left, .right, .up, .down:
+            let rows = shelves.flatMap { $0.titles.map(\.id).chunked(into: gridColumns) }
+            if let next = ShelfNavigator.move(from: selected?.id, direction, rows: rows) { selectedID = next }
         }
     }
 
@@ -414,7 +592,7 @@ final class GameStore: ObservableObject {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             try encoder.encode(game).write(to: directory.appendingPathComponent(game.id + ".json"), options: .atomic)
-            reload(); selectedID = game.id; section = .all; search = ""; platform = "All platforms"
+            reload(); selectedID = game.id; section = .all; search = ""; platform = Self.allPlatforms
             importMessage = "Added \(game.title)"
         } catch { issue = HubIssue(title: "Couldn't add native game", message: error.localizedDescription) }
     }

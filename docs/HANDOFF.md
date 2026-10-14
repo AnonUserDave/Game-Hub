@@ -34,6 +34,8 @@ Night Driver renders original40×25 characters, authored instructions, road/car/
 
 The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tests and optimized ARM64 compilation on the M5. Eleven integration regressions cover source controls, pending taps, both analog sticks across focus/pause/reconnect, source stop behavior, changed media at launch, HUD bounds and batched pixel continuity. These are native/static and M5 UI checks, never source-game comparison or M1 acceptance. Continue every unfinished row in [OTHER_REWRITES.md](OTHER_REWRITES.md); no title is complete.
 
+The 2026-10-14 hub redesign replaces the card grid with a three-pane library: sidebar (lists, systems, search, controller status, add game, library folder), lit shelves and an inspector for the selected game. Manifests sharing a `sourceArchive` now show as one game, so the original copy and its development builds no longer appear as separate cards; each build keeps its own fidelity label and readiness, and a title is only on the Playable builds shelf when a build is actually ready; each shelf item and Play button names the build's status ("Development prototype", "Play prototype"). Original courses lead the golf builds. The controller can now open details (X), favorite (Y), switch lists (LB/RB) and dismiss alerts and close sheets (B); input is ignored while an open/save panel is up, and the Controls & devices sheet ignores controller commands so B and Menu remain testable. The window starts with focus on the shelves, not the search field. Captures come from `GAMEHUB_HUB_SNAPSHOT_DIR=… ./Tools/test.sh -XCTest GameHubTests.HubSnapshotTests` (offscreen, code-drawn art only). Checked on the M5 only; live-window, physical-controller and **M1 behavior are unverified**.
+
 ## Development environments
 
 2026-10-14 Preppie! source foundation: `Tools/decode_preppie.py` verifies the
@@ -143,7 +145,7 @@ and [the hash/count receipt](research/evidence/dig-dug-unpack.json).
 
 | Area | Files |
 | --- | --- |
-| Hub UI, library and native launch | `Sources/GameHub/HubView.swift`, `GameModel.swift`, `DetailSheets.swift` |
+| Hub UI, library and native launch | `Sources/GameHub/HubView.swift` (sidebar, shelves, inspector), `HubTheme.swift` (tokens, buttons), `Artwork.swift` (code-drawn media objects), `GameModel.swift` (`GameTitle` grouping, shelves, navigation), `DetailSheets.swift` |
 | Controller discovery/navigation | `Sources/GameHub/ControllerManager.swift`, `FusionController.swift`, `Sources/FusionUSB/` |
 | Built-in module registry | `Sources/GameHub/NativeGame.swift` (seven development modules, including `apple-panic-native-development`, `crossfire-native-development`, `night-driver-native-development`) |
 | Retro native development | `BreakoutCore.swift`, `ConflictCore.swift`, `ApplePanicCore.swift`, `CrossfireCore.swift`, `NightDriverCore.swift`, `RetroGameViews.swift`, `RetroReconstruction{Support,Sessions,Views}.swift`; per-title limits in `docs/research/` |

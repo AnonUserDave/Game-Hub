@@ -21,7 +21,7 @@ The release target is the owner's M1 MacBook Air with 8 GB RAM and a 2560 × 160
 
 ## What is being built
 
-- One SwiftUI hub: library, search, favorites, port status, and native launch/return.
+- One SwiftUI hub: a shelf library with one entry per game (original copy plus its native builds), search, systems, favorites, honest playability status, native launch/return, and full keyboard and controller navigation.
 - Built-in game modules and manifest-based `.app`/ARM64 executable integration, so future ports can be added without rewriting the hub.
 - Keyboard and trackpad controls, with native GameController support for devices macOS exposes.
 - A native golf development course to exercise rendering, swing, ball simulation, putting, penalties, and input while the original engine is reconstructed.
