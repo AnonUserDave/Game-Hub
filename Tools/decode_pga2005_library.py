@@ -105,7 +105,8 @@ def surface_records(library: CourseFile, texture_index: int):
                         "source_offset": offset})
     return records, {"source_offset": section_offset,
                      "raw_hex": section.hex(), "surface_count": surface_count,
-                     "flags": struct.unpack_from("<I", section, 0xa)[0]}
+                     "flags": struct.unpack_from("<I", section, 0xa)[0],
+                     "sound_id": struct.unpack_from("<h", section, 0x23)[0]}
 
 
 def decode_materials(course_data: bytes, library_data: list[bytes],
@@ -182,6 +183,9 @@ def decode_materials(course_data: bytes, library_data: list[bytes],
                           "width": entry["width"], "height": entry["height"],
                           "surface_types": surfaces,
                           "section_flags": section["flags"],
+                          # GetTerrainSound 0x10009a20 falls back to this word
+                          # when a surface record's sound id is -1.
+                          "section_sound_id": section["sound_id"],
                           "provenance": {"course_descriptor_offset": offset,
                                          "library_guid": library.guid,
                                          "library_sha256": library.digest,

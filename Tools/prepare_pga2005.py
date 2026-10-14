@@ -11,6 +11,7 @@ from pathlib import Path
 from inspect_pga2005 import ISO9660, extract_media
 from import_pga2005 import atomic_write, run_import
 from import_pga2005_hud import convert as convert_hud
+import import_pga2005_audio
 from installshield_cab import Cabinet
 
 # Install-cabinet groups the native module reads (HUD art, sky, ball and tee
@@ -79,6 +80,9 @@ def main():
         holes = decode_holes(tcr, (source / f"{code}.INI").read_bytes())
         save_json(output / "holes.json", holes)
         print(f"{code}: {report['point_count']:,} vertices, {report['triangle_count']:,} triangles, {len(materials['materials'])} original materials, {holes['hole_count']} holes")
+    # Original sounds and per-course ambience (needs the course materials above).
+    if import_pga2005_audio.main(["--courses", *args.courses]) != 0:
+        raise SystemExit("Audio import failed")
 
 
 if __name__ == "__main__":
