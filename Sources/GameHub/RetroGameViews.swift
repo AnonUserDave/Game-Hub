@@ -49,20 +49,26 @@ struct RetroControllerLatch {
     }
 }
 
-private struct RetroKeys: NSViewRepresentable {
+struct RetroKeys: NSViewRepresentable {
     let handler: (UInt16, Bool) -> Bool
-    func makeNSView(context: Context) -> KeyView { KeyView(handler: handler) }
-    func updateNSView(_ view: KeyView, context: Context) { view.handler = handler }
+    var modifiedHandler: ((UInt16, Bool, NSEvent.ModifierFlags) -> Bool)? = nil
+    func makeNSView(context: Context) -> KeyView { KeyView(handler: handler, modifiedHandler: modifiedHandler) }
+    func updateNSView(_ view: KeyView, context: Context) { view.handler = handler; view.modifiedHandler = modifiedHandler }
     final class KeyView: NSView {
         var handler: (UInt16, Bool) -> Bool
+        var modifiedHandler: ((UInt16, Bool, NSEvent.ModifierFlags) -> Bool)?
         private var monitor: Any?
-        init(handler: @escaping (UInt16, Bool) -> Bool) {
+        init(handler: @escaping (UInt16, Bool) -> Bool, modifiedHandler: ((UInt16, Bool, NSEvent.ModifierFlags) -> Bool)?) {
             self.handler = handler
+            self.modifiedHandler = modifiedHandler
             super.init(frame: .zero)
             monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { [weak self] event in
                 guard let self, NSApp.isActive, self.window?.isKeyWindow == true,
                       !(self.window?.firstResponder is NSTextView),
-                      event.modifierFlags.intersection([.command, .control, .option]).isEmpty else { return event }
+                      event.modifierFlags.intersection([.command, .option]).isEmpty else { return event }
+                if event.modifierFlags.contains(.control) {
+                    return self.modifiedHandler?(event.keyCode, event.type == .keyDown, event.modifierFlags) == true ? nil : event
+                }
                 if event.type == .keyDown && event.isARepeat { return nil }
                 return self.handler(event.keyCode, event.type == .keyDown) ? nil : event
             }
@@ -79,6 +85,7 @@ final class BreakoutSession: ObservableObject {
     @Published var paused = false
     @Published var configuration = BreakoutConfiguration()
     @Published var saveMessage = ""
+    let originalHUD = try? BreakoutMedia.load(from: GameStore.workspaceRoot().appendingPathComponent("Library/Imported/breakout2600/media.json"))
     var knobs = [0.5, 0.5, 0.5, 0.5]
     var keys = Set<UInt16>()
     var pendingServe = false
@@ -166,7 +173,7 @@ final class BreakoutSession: ObservableObject {
     }
 }
 
-private struct RetroWindow: NSViewRepresentable {
+struct RetroWindow: NSViewRepresentable {
     let attached: (NSWindow?) -> Void
     func makeNSView(context: Context) -> WindowView { WindowView(attached: attached) }
     func updateNSView(_ view: WindowView, context: Context) { view.attached = attached }
@@ -181,7 +188,13 @@ private struct RetroWindow: NSViewRepresentable {
 struct BreakoutGameView: View {
     let onExit: () -> Void
     @StateObject private var session = BreakoutSession()
-    private let colors = [Color(hex: "D34A3A"), Color(hex: "D34A3A"), Color(hex: "DFA63A"), Color(hex: "DFA63A"), Color(hex: "7ACD68"), Color(hex: "7ACD68")]
+    // Source COLU codes select these provisional RGB swatches; calibrated
+    // NTSC color conversion and original display comparison remain pending.
+    private func color(_ code: Int) -> Color {
+        let hues = [0x10: "DFA63A", 0x20: "DF833A", 0x30: "D6653A", 0x40: "D34A3A", 0x80: "678BDB", 0xC0: "7ACD68"]
+        if code < 16 { return Color(white: Double(code & 14) / 14) }
+        return Color(hex: hues[code & 0xf0] ?? "FFFFFF")
+    }
     var body: some View {
         VStack(spacing: 16) {
             HStack {
@@ -206,11 +219,11 @@ struct BreakoutGameView: View {
                         Text("\(session.configuration.playerCount) PLAYER\(session.configuration.playerCount == 1 ? "" : "S") · WALL \(session.simulation.state.wallNumber)")
                         ForEach(session.simulation.state.teams.indices, id: \.self) { index in
                             let team = session.simulation.state.teams[index]
-                            Text("TEAM \(index + 1)  \(team.score)" + (session.configuration.variation.isTimed ? "  TIME \(team.timerTicks)" : ""))
+                            Text("TEAM \(index + 1)  \(team.score)" + (session.configuration.variation.isTimed ? "  TIME \(team.timerTicks % 1000)" : ""))
                                 .foregroundStyle(index == session.simulation.state.activeTeam ? .white : .gray)
                         }
                         Text("\(session.simulation.state.ballsRemaining) balls remaining")
-                        Text(session.paused ? "PAUSED" : session.simulation.state.phase == .serve ? "Space / A to serve" : session.simulation.state.phase == .caught ? "Release Space / A" : session.simulation.state.phase == .ended ? "GAME OVER" : "Keep the ball in play")
+                        Text(session.paused ? "PAUSED" : session.simulation.state.phase == .selection ? "Returned to game selection" : session.simulation.state.phase == .serve ? "Space / A to serve" : session.simulation.state.phase == .caught ? "Release Space / A" : session.simulation.state.phase == .ended ? "GAME OVER" : "Keep the ball in play")
                             .foregroundStyle(Color(hex: "C2EF93"))
                         if session.simulation.state.phase == .serve {
                             Button("Serve") { session.pendingServe = true }.disabled(session.paused)
@@ -246,13 +259,14 @@ struct BreakoutGameView: View {
                     ForEach(BreakoutDifficulty.allCases, id: \.rawValue) { Text($0.rawValue.capitalized).tag($0) }
                 }
             }
+            Toggle("Original black-and-white switch", isOn: $session.configuration.monochrome)
             Text("The original 12 variations and 1–4 player selections. Two-player games alternate; 3–4 players share team paddles. One gamepad controls the first active paddle; keyboard pairs control the others.")
                 .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             HStack { Button("Start") { session.start() }.buttonStyle(.borderedProminent)
                 if session.hasSave { Button("Resume saved round") { session.resumeSave() } }
             }
             Text(session.saveMessage).foregroundStyle(.secondary)
-            Text("Native development gameplay. Original TIA collision, audio and visual comparison and M1 acceptance remain pending.").font(.caption).foregroundStyle(.secondary)
+            Text("Source-derived pixel contacts and delayed collision rules. Scanline edges, calibrated colors, sound, original comparison and M1 acceptance remain pending.").font(.caption).foregroundStyle(.secondary)
         }.padding(40).frame(maxWidth: 640).frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     private func draw(context: inout GraphicsContext, scale: Double) {
@@ -260,17 +274,25 @@ struct BreakoutGameView: View {
             context.fill(Path(CGRect(x: x * scale, y: y * scale, width: w * scale, height: h * scale)), with: .color(color))
         }
         let state = session.simulation.state
-        rect(5, 26, 3, 182, .white); rect(152, 26, 3, 182, .white); rect(5, 23, 150, 3, .white)
+        rect(0, 12, 8, 176, .white); rect(152, 12, 8, 176, .white); rect(0, 12, 160, 14, .white)
         if state.wallVisible {
             for index in state.bricks.indices where state.bricks[index] {
                 let row = index / 18, column = index % 18
-                rect(8 + Double(column) * 8, 50 + Double(row) * 6, 7.5, 5.5, colors[row])
+                rect(8 + Double(column) * 8, 50 + Double(row) * 6, 8, 6, color(state.rowColorCodes[row]))
             }
         }
-        for paddle in state.paddles { rect(paddle.x, paddle.y, paddle.width, paddle.height, .white) }
-        if let ball = state.ball { rect(ball.x, ball.y, 2, 4, .white) }
-        let score = Text(String(format: "%03d", state.score)).font(.system(size: 10 * scale, weight: .bold, design: .monospaced)).foregroundStyle(.white)
-        context.draw(score, at: CGPoint(x: 80 * scale, y: 12 * scale))
+        for (index, paddle) in state.paddles.enumerated() { rect(paddle.x, paddle.y, paddle.width, paddle.height, color(state.paddleColorCodes[index])) }
+        if let ball = state.ball, ball.rasterY < 188 { rect(Double(ball.rasterX), Double(ball.rasterY), 2, Double(min(4, 188 - ball.rasterY)), .white) }
+        let displayed = state.configuration.variation.isTimed ? state.teams[state.activeTeam].timerTicks % 1000 : state.score
+        if let hud = session.originalHUD {
+            let digits = String(format: "%03d", displayed).utf8.map { Int($0 - 48) }
+            for (index, digit) in digits.enumerated() { for row in 0..<5 { for column in 0..<3 where hud.digitRows[digit][row] & (4 >> column) != 0 {
+                rect(68 + Double(index * 8 + column * 2), Double(row * 2), 2, 2, .white)
+            } } }
+        } else {
+            let score = Text(String(format: "%03d", displayed)).font(.system(size: 10 * scale, weight: .bold, design: .monospaced)).foregroundStyle(.white)
+            context.draw(score, at: CGPoint(x: 80 * scale, y: 5 * scale))
+        }
     }
 }
 

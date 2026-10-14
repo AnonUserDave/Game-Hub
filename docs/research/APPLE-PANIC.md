@@ -68,3 +68,8 @@ Work still required before faithful completion:
 - Reproduce artifact colors, backgrounds/floor/ladder/hole tiles, pre-shift variants, title/status screens, font, speaker audio and all animation phases. Current bit masks preserve source silhouette only.
 - Validate running original behavior and visuals, hub launch/return, saves, focus and physical Fusion Pro input. Native session integration is tracked by the parent checkpoint.
 - Run the mandatory 30-minute fullscreen 2560×1600, memory, swap, thermals and input checks on the owner's M1 Air/8 GB when newly authorized. No remote or scheduled M1 work occurred.
+
+
+## Native development session checkpoint
+
+Native integration follow-up: a separate development hub entry now renders the original player/enemy silhouettes, exposes actual I/J/K/M/A/S and Ctrl-R controls with native arrow/stick adapters, pauses, saves and returns. Original media are required and source-validated; saves restore paused. Live M5 smoke preserved playerX82/Y160 and15 source half-dispatches through save/return/restore. Floor/ladder/hole art, HGR color/font/screens/audio, source clocks/randomness and visible fall/score phases remain unqualified. Integration evidence is in [QA](../QA.md); original comparisons/physical input/M1 acceptance remain open.

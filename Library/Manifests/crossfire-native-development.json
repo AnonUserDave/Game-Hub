@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "crossfire-native-development",
+  "title": "Crossfire \u00b7 Native Development",
+  "edition": "Apple II source rules reconstruction",
+  "platform": "Native Mac development",
+  "year": 1981,
+  "genre": "Arcade",
+  "summary": "Native source-derived corridors, actors, independent shooting, ammunition, bonuses, waves and score rules with original monochrome sprite masks. Original clock, colors, sound and loader transition remain unqualified.",
+  "sourceArchive": "Crossfire_Apple-II_ROM_EN.zip",
+  "accent": "E5A488",
+  "artwork": "pixel",
+  "launch": {
+    "kind": "builtin",
+    "builtin": "crossfire-native-development",
+    "arguments": []
+  },
+  "fidelity": "prototype",
+  "notes": [
+    "Native ARM64 development reconstruction; no source CPU executes. This is not a completed faithful rewrite.",
+    "Prepared original media are required. Run Tools/decode_crossfire.py after Tools/prepare_retro_media.py, then refresh the library. Original media stay local and are excluded from Git.",
+    "Native source/version-validated save/resume, pause and launch/return adapters. Behavior, visuals, audio, original modes and physical controller acceptance remain incomplete.",
+    "M5 Pro / 24 GB is development evidence only. Mandatory M1 Air / 8 GB sustained acceptance remains unverified."
+  ],
+  "keyboard": [
+    "I / J / K / L or arrows: move",
+    "E / S / D / F: fire up / left / down / right",
+    "Space: stop; Escape: pause; Ctrl-S: source audio toggle (audio output pending)"
+  ],
+  "controller": [
+    "Left stick / D-pad: move; right stick: fire",
+    "X left / Y up / A down / RB right: fire",
+    "B / Menu: pause"
+  ]
+}

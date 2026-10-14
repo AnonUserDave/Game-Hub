@@ -6,21 +6,26 @@
   "platform": "Commodore 64",
   "year": 1982,
   "genre": "Racing",
-  "summary": "Your original Commodore 64 edition, preserved for a future native Mac rewrite.",
+  "summary": "Original Commodore 64 source media, with a separate native development reconstruction in the library.",
   "sourceArchive": "Night_Driver_C64_ROM_EN.zip",
   "accent": "9EBAE2",
   "artwork": "pixel",
   "launch": null,
   "fidelity": "source",
   "notes": [
-    "Original archive preserved. No native implementation is available yet.",
+    "Original archive preserved. Source-derived native development gameplay is a separate prototype entry; this source record cannot launch.",
     "Contains a 4197-byte NIGHTDRI.T64 plus an NFO; no high-level game source is present.",
     "Verify the exact C64 edition and steering input curve before specifying native trackpad/stick behavior."
   ],
   "keyboard": [
-    "Planned: keyboard and trackpad bindings after original control behavior is documented."
+    "A or Up: accelerate",
+    "L / semicolon or Left / Right: steer",
+    "F1: keyboard / joystick; F3: paddle / trackpad",
+    "Drag: paddle; Escape: pause"
   ],
   "controller": [
-    "Planned: Xbox / extended gamepad mapping. Physical controller validation remains required."
+    "Left stick / D-pad: steer; A: accelerate / start",
+    "Left stick: paddle in paddle mode",
+    "B / Menu: pause"
   ]
 }

@@ -17,7 +17,7 @@ struct HubView: View {
     var body: some View {
         ZStack {
             if let game = store.activeGame {
-                NativeGameContainer(game: game) { store.activeGame = nil }
+                NativeGameContainer(game: game, root: store.root) { store.activeGame = nil }
             } else {
                 HStack(spacing: 0) {
                     sidebar

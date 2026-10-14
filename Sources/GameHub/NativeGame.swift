@@ -3,11 +3,12 @@ import SwiftUI
 /// Registry for future games compiled into the hub. External native .app and
 /// Mach-O games need only a manifest and do not require a hub rebuild.
 enum NativeGameFactory {
-    static let availableIDs: Set<String> = ["pga2005-native-development", "pga2005-original-courses", "breakout-native-development", "conflict2500-native-development"]
+    static let availableIDs: Set<String> = ["pga2005-native-development", "pga2005-original-courses", "breakout-native-development", "conflict2500-native-development", "apple-panic-native-development", "crossfire-native-development", "night-driver-native-development"]
 }
 
 struct NativeGameContainer: View {
     let game: GameManifest
+    let root: URL
     let onExit: () -> Void
     var body: some View {
         if game.launch?.builtin == "pga2005-native-development" {
@@ -19,6 +20,12 @@ struct NativeGameContainer: View {
             BreakoutGameView(onExit: onExit)
         } else if game.launch?.builtin == "conflict2500-native-development" {
             ConflictGameView(onExit: onExit)
+        } else if game.launch?.builtin == "apple-panic-native-development" {
+            ApplePanicGameView(root: root, onExit: onExit)
+        } else if game.launch?.builtin == "crossfire-native-development" {
+            CrossfireGameView(root: root, onExit: onExit)
+        } else if game.launch?.builtin == "night-driver-native-development" {
+            NightDriverGameView(root: root, onExit: onExit)
         } else {
         VStack(spacing: 20) {
             Image(systemName: "hammer").font(.system(size: 48)).foregroundStyle(game.tint)
