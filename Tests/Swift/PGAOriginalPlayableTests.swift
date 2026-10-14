@@ -182,8 +182,10 @@ final class PGAOriginalPlayableTests: XCTestCase {
         // Our right of travel for heading h is (−cos h, 0, sin h), i.e. heading h − π/2.
         XCTAssertEqual(PGAWind(mph: 10, direction: -.pi / 2).arrowIndex(heading: 0), 5, "left-to-right wind points right")
         XCTAssertEqual(PGAWind(mph: 10, direction: .pi / 2).arrowIndex(heading: 0), 13)
-        XCTAssertEqual(PGAConditions().windBand, 0...0, "Still by default, as in the engine")
-        XCTAssertEqual(PGAConditions(windSpeed: 2).windBand, 1...5)
+        // Original Wind1 rows: even "Still" moves the air a little.
+        XCTAssertEqual(PGAConditions().windRow.normal, 0.86...2.3)
+        XCTAssertEqual(PGAConditions(windSpeed: 5).windRow.gust, 18...34)
+        XCTAssertEqual(PGAConditions(windSpeed: 4).windRow.gustChance, 0.51)
     }
 
     func testConditionsReachTheReconstructedFlight() throws {
@@ -196,7 +198,7 @@ final class PGAOriginalPlayableTests: XCTestCase {
             game.conditions = conditions
             game.resetHole()
             game.alignToCup(); game.selectClub(.iron7)
-            if let wind { game.overrideWindForTest(PGAWind(mph: wind.mph, direction: game.heading + wind.direction)) }
+            game.overrideWindForTest(wind.map { PGAWind(mph: $0.mph, direction: game.heading + $0.direction) } ?? .still)
             XCTAssertEqual(game.wind.mph, wind?.mph ?? 0)
             game.strike(power: 1, accuracy: 0)
             for _ in 0..<3000 where game.phase.inMotion { game.update(deltaTime: 1.0 / 60) }
@@ -206,6 +208,34 @@ final class PGAOriginalPlayableTests: XCTestCase {
         let still = carry(nil), tail = carry(PGAWind(mph: 25, direction: 0)), head = carry(PGAWind(mph: 25, direction: .pi))
         XCTAssertGreaterThan(tail, still * 1.04, "tailwind carries further")
         XCTAssertLessThan(head, still * 0.96, "headwind holds the ball up")
+    }
+
+    func testWindFollowsTheOriginalTableBetweenShots() throws {
+        let course = try pebbleCourse()
+        let base = try course.course(for: PGARoundSetup())
+        var game = PGASimulation(course: base, terrains: course.terrains)
+        var conditions = PGAConditions(); conditions.windSpeed = 3; conditions.windSeed = 77
+        game.conditions = conditions
+        var directions: [Double] = [], speeds: Set<Double> = []
+        for hole in 0..<18 {
+            _ = hole
+            let row = conditions.windRow
+            XCTAssertTrue(row.normal.contains(game.wind.mph) || row.gust.contains(game.wind.mph) || game.wind.mph == row.normal.lowerBound.rounded(.towardZero))
+            XCTAssertEqual(game.wind.mph, game.wind.mph.rounded(.towardZero), "integer mph, as ForecastWind stores")
+            directions.append(game.wind.direction); speeds.insert(game.wind.mph)
+            game.restoreHoleForTest(strokes: 4)
+        }
+        // Directions swing about one fixed base: at most ±36° (Breezy gusts) apart from each other's centre.
+        let spread = directions.max()! - directions.min()!
+        XCTAssertLessThanOrEqual(spread, 2 * 36 * .pi / 180 + 1e-9)
+        XCTAssertGreaterThan(speeds.count, 1, "wind re-rolls between shots")
+        // Restoring a round reproduces the shot's wind.
+        var replay = PGASimulation(course: base, terrains: course.terrains)
+        replay.conditions = conditions
+        let first = replay.wind
+        var again = PGASimulation(course: base, terrains: course.terrains)
+        again.conditions = conditions
+        XCTAssertEqual(again.wind, first)
     }
 
     func testRoundSetupKeepsConditionsAcrossSaves() throws {
