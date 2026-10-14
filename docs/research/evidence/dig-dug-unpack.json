@@ -11,9 +11,9 @@
      "sha256": "6dacb993fa16ae61102a7d64aaf34e5b362a7a40b1aa4e963c83f81c4efb4891"},
     {"role": "known relocated second packed layer", "bytes": 19333, "load": 2049, "endExclusive": 21382,
      "sha256": "b96ff9ffcce59737777f9dc1c6228bf8150a8f2adcfeb4cb5281e6ab20e7430d"},
-    {"role": "decoded body including trainer and game", "bytes": 24490, "load": 24576, "endExclusive": 49066,
+    {"role": "decoded body including trainer and game", "bytes": 24576, "load": 24576, "endExclusive": 49152,
      "trainerEntry": 28816, "gameEntry": 32768,
-     "sha256": "e70f260d0f918da9dee2cdaa0c2a92900938a3877106f6d263307d73e40b73eb"}
+     "sha256": "90d52fc5c20d64d033d135d16146f5da01e369681373f74756cf33c562de0cda"}
   ],
   "formatChecks": {"firstLayerLiteralBytes": 6660, "firstLayerMatchBytes": 16384, "secondStreamBytes": 19204,
                    "unknownRAMGuessed": false, "optionalTrainerPatchesApplied": false},

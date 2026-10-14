@@ -38,7 +38,7 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 Dig Dug's supplied C64 `DIG DUG+` program now has a bounded first-party two-layer
 decoder, `Tools/decode_dig_dug.py`. It recovers a23,044-byte crack intro,19,333
-known relocated packed bytes and the24,490-byte body containing the trainer
+known relocated packed bytes and the24,576-byte body containing the trainer
 at `$7090` and game entry `$8000`. Every stage is size/hash fenced. Unknown
 intro RAM is excluded and the four optional trainer patches remain unapplied.
 Six Python tests and selected-media preparation pass on the M5. This is static

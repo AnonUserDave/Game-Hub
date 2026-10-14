@@ -2,7 +2,7 @@
 
 The selected T64 program is `DIG DUG+`, a packed release with a crack intro and
 the `JACK ALIEN/REMEMBER` four-option trainer. Static decoding now recovers its
-24,490-byte body. **There is no native Dig Dug gameplay module yet.** Content
+24,576-byte body. **There is no native Dig Dug gameplay module yet.** Content
 recovery, source-derived native gameplay and a completed faithful rewrite remain
 separate claims. All work here was performed on the son's M5 Pro / 24 GB /
 macOS26.3. Original-game comparison, physical-controller checks and sustained
@@ -17,7 +17,7 @@ M1 Air / 8 GB / 2560×1600 acceptance remain unverified.
 | `DIG DUG+` program | 16,551 | `cdac1a545475cc547f6b608cb14bc8b6fabd22c444b66fbc8a45ee4eb11f4333` | `$0801..$48A7` |
 | First decoded layer | 23,044 | `6dacb993fa16ae61102a7d64aaf34e5b362a7a40b1aa4e963c83f81c4efb4891` | `$0801..$6204`; crack intro entry `$0C40` |
 | Known second packed layer | 19,333 | `b96ff9ffcce59737777f9dc1c6228bf8150a8f2adcfeb4cb5281e6ab20e7430d` | Relocated to `$0801..$5385`; packed stream starts `$0882` |
-| Second decoded body | 24,490 | `e70f260d0f918da9dee2cdaa0c2a92900938a3877106f6d263307d73e40b73eb` | `$6000..$BFA9`; trainer `$7090`, game `$8000` |
+| Second decoded body | 24,576 | `90d52fc5c20d64d033d135d16146f5da01e369681373f74756cf33c562de0cda` | `$6000..$BFFF`; trainer `$7090`, game `$8000` |
 
 `Tools/decode_dig_dug.py` fences the supplied program and every decoded layer by
 size and hash. It implements two bounded byte formats and known range copies;
@@ -49,9 +49,13 @@ intro RAM is needed for the selected packed stream.
 
 The second `$00FD` reader advances that stream; `$0111..$0153` decodes five
 markers: `$E2` counted repeated bytes, `$E7` three repeated bytes, `$D6` counted
-zeroes, `$CB` one zero and `$C7` counted spaces. A count of0 means256. Two
+zeroes, `$CB` two zeroes and `$C7` counted spaces. A count of0 means256. Two
 overlapping `BIT` instructions skip the short-run/count-increment alternatives;
 the assembly, rather than misleading decompiler output, determines those paths.
+The short-zero path executes both `$0111` and `$0148` increments, giving two
+writes; a regression covers that distinction. Omitting the first increment
+loses86 zeroes and corrupts subsequent source addresses. The corrected body
+fills exactly24KiB and its trainer's fixed game entry remains `$8000`.
 All19,204 known stream bytes decode into the body above. The source's final
 pointer-wrap path jumps to the trainer before returning a value from `$FFFF`;
 the decoder needs no guessed byte at that address.

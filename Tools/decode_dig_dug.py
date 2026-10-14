@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE_SHA256 = "cdac1a545475cc547f6b608cb14bc8b6fabd22c444b66fbc8a45ee4eb11f4333"
 INTRO_SHA256 = "6dacb993fa16ae61102a7d64aaf34e5b362a7a40b1aa4e963c83f81c4efb4891"
 SECOND_STAGE_SHA256 = "b96ff9ffcce59737777f9dc1c6228bf8150a8f2adcfeb4cb5281e6ab20e7430d"
-GAME_SHA256 = "e70f260d0f918da9dee2cdaa0c2a92900938a3877106f6d263307d73e40b73eb"
+GAME_SHA256 = "90d52fc5c20d64d033d135d16146f5da01e369681373f74756cf33c562de0cda"
 
 
 class DecodeError(ValueError):
@@ -126,7 +126,7 @@ def decode_runs(data, max_output=40960):
     """Decode the second layer's five escape markers and 8-bit run counts.
 
     $E2 repeats its following value by the following count; $E7 repeats a value
-    three times; $D6 emits counted zeroes; $CB emits one zero; $C7 emits counted
+    three times; $D6 emits counted zeroes; $CB emits two zeroes; $C7 emits counted
     spaces. Zero counts represent 256, as in the source's decrement loop.
     """
     if not 0 < max_output <= 65536:
@@ -144,7 +144,9 @@ def decode_runs(data, max_output=40960):
 
     while cursor < len(data):
         marker = byte()
-        count = (byte() or 256) if marker in (0xE2, 0xD6, 0xC7) else (3 if marker == 0xE7 else 1)
+        # Each group begins with X=0 and INX at $0111. The $CB path adds
+        # another INX at $0148, whereas $D6's BIT skips that increment.
+        count = (byte() or 256) if marker in (0xE2, 0xD6, 0xC7) else (3 if marker == 0xE7 else 2 if marker == 0xCB else 1)
         if marker in (0xE2, 0xE7):
             value = byte()
         elif marker in (0xD6, 0xCB):
@@ -181,7 +183,7 @@ def decode_program(program):
     if len(second) != 19333 or sha256(second) != SECOND_STAGE_SHA256:
         raise DecodeError("Relocated Dig Dug second-layer identity mismatch")
     game = decode_runs(second[0x0882 - base:])
-    if len(game) != 24490 or sha256(game) != GAME_SHA256:
+    if len(game) != 24576 or sha256(game) != GAME_SHA256:
         raise DecodeError("Decoded Dig Dug game identity mismatch")
     return intro, second, game, receipt
 
@@ -202,7 +204,7 @@ def prepare(root=ROOT):
                         "role": "known relocated packed bytes; unknown intro RAM excluded",
                         "streamAddress": 0x0882, "streamBytes": 19204},
         "game": {"sha256": GAME_SHA256, "bytes": len(game), "loadAddress": 0x6000,
-                 "endExclusive": 0xBFAA, "trainerEntryAddress": 0x7090,
+                 "endExclusive": 0xC000, "trainerEntryAddress": 0x7090,
                  "entryAddress": 0x8000},
         "trainer": {"credit": "JACK ALIEN/REMEMBER", "optionalPatchesApplied": False,
                     "options": ["unlimited lives for both players", "monsters cannot hit you",

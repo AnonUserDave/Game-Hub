@@ -20,7 +20,10 @@ class DigDugDecodeTests(unittest.TestCase):
     def test_run_markers_and_escaped_marker_values(self):
         stream = bytes([65, 0xE2, 4, 0xCB, 0xE7, 0xC7, 0xD6, 2, 0xCB, 0xC7, 3, 66])
         self.assertEqual(dig.decode_runs(stream), b"A" + bytes([0xCB]) * 4 + bytes([0xC7]) * 3
-                         + bytes(3) + b"   B")
+                         + bytes(4) + b"   B")
+        # $0111 and $0148 both increment the short-zero count. This is two
+        # zeroes, unlike a default literal's single write or D6's explicit count.
+        self.assertEqual(dig.decode_runs(bytes([0xCB])), bytes(2))
 
     def test_zero_counts_are_full_byte_runs_and_bounds_hold(self):
         self.assertEqual(dig.decode_runs(bytes([0xE2, 0, 90])), b"Z" * 256)
@@ -72,13 +75,13 @@ class DigDugDecodeTests(unittest.TestCase):
         if not path.exists():
             self.skipTest("Original media intentionally omitted from clean clones")
         intro, second, game, receipt = dig.decode_program(path.read_bytes())
-        self.assertEqual((len(intro), len(second), len(game)), (23044, 19333, 24490))
+        self.assertEqual((len(intro), len(second), len(game)), (23044, 19333, 24576))
         self.assertEqual([dig.sha256(data) for data in (intro, second, game)],
                          [dig.INTRO_SHA256, dig.SECOND_STAGE_SHA256, dig.GAME_SHA256])
         self.assertEqual((receipt.literal_bytes, receipt.match_bytes), (6660, 16384))
-        # The final body has a bounded $6000..$BFA9 range, trainer at $7090
+        # The final body has a bounded $6000..$BFFF range, trainer at $7090
         # and game at $8000. Recovery does not prove gameplay or timing.
-        self.assertEqual(0x6000 + len(game), 0xBFAA)
+        self.assertEqual(0x6000 + len(game), 0xC000)
 
 
 if __name__ == "__main__":
