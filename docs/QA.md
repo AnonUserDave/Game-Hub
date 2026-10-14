@@ -58,3 +58,7 @@ Not checked here: fullscreen 2560 × 1600 on the M1, sustained 30-minute statist
 | Tests | 45 Swift (2 opt-in snapshot tests skipped) and 140 Python tests pass |
 
 Not checked in this wave: live play with sound in the native UI, M1 anything.
+
+## Son's M5 camera integration checkpoint (development checks, not M1 acceptance)
+
+2026-10-13, M5 Pro MacBook Pro / 24 GB. `./Tools/build.sh` compiled a native arm64 app. `./Tools/test.sh -XCTest GameHubTests.PGACameraDirectorTests` passed all five tests, including loading the prepared original camera scripts on this machine. Fixtures check fixed-camera offsets, source zoom, the unusual "lacks any bit" operator, tee-impact rule matching, attachment reset and changing modes during flight. No rendered camera view or 30-minute M1 session was checked. Predicted landing, flight progress and unsupported camera commands remain approximations or missing features.

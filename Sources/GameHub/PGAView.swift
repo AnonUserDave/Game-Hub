@@ -116,7 +116,7 @@ struct PGAGameView: View {
     private var performanceCard: some View {
         VStack(alignment: .trailing, spacing: 5) {
             Text(session.drawableDescription).font(.system(size: 9, weight: .medium, design: .monospaced))
-            Text("\(session.frameRate > 0 ? "\(session.frameRate) FPS · " : "")\(["Player camera", "Approach camera", "Course overview"][session.cameraMode])")
+            Text("\(session.frameRate > 0 ? "\(session.frameRate) FPS · " : "")\((session.isOriginal ? ["Auto camera", "Snap camera", "Fixed camera", "Ball camera"] : ["Player camera", "Approach camera", "Course overview"])[session.cameraMode])")
                 .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
             Text(session.controllerName ?? "Keyboard + trackpad").font(.system(size: 9)).foregroundStyle(pgaGold)
         }.foregroundStyle(.white).padding(.horizontal, 12).padding(.vertical, 9).background(panel)

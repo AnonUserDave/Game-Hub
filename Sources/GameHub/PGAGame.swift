@@ -276,7 +276,7 @@ final class PGAGameSession: ObservableObject {
     func aim(_ delta: Double) { guard !paused else { return }; simulation.aim(delta) }
     func autoAim() { guard !paused else { return }; simulation.alignToCup() }
     func cancelSwing() { simulation.cancelSwing() }
-    func cycleCamera() { cameraMode = (cameraMode + 1) % 3 }
+    func cycleCamera() { cameraMode = (cameraMode + 1) % (isOriginal ? 4 : 3) }
     func zoom(_ delta: Double) { cameraZoom = max(0.55, min(2.2, cameraZoom + delta)) }
     func fullscreen() { view?.window?.toggleFullScreen(nil) }
     func resetHole() { simulation.resetHole(); setPaused(false); renderer.resetCamera() }
@@ -559,6 +559,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     private var cameraPosition = PGAVector.zero
     private var cameraTarget = PGAVector.zero
     private var freshCamera = true
+    private var originalCameraDirector: PGACameraDirector?
     private var frameSamples: [Double] = []
     private let frameLock = NSLock()
     private var storedFPS = 0
@@ -573,6 +574,9 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         let rough = assetRoot.flatMap { NSImage(contentsOf: $0.appendingPathComponent("PBLROUGH.png")) }
         originalGrass = rough.map { Self.opaqueTexture($0, background: NSColor(calibratedRed: 0.43, green: 0.55, blue: 0.24, alpha: 1)) }
         originalRough = rough.map { Self.opaqueTexture($0, background: NSColor(calibratedRed: 0.30, green: 0.42, blue: 0.18, alpha: 1)) }
+        if let assetRoot {
+            originalCameraDirector = PGACameraDirector(root: assetRoot.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent())
+        }
         super.init()
         scene.background.contents = Self.skyImage()
         scene.fogStartDistance = 360
@@ -718,7 +722,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         freshCamera = true
     }
 
-    func resetCamera() { freshCamera = true }
+    func resetCamera() { freshCamera = true; originalCameraDirector?.reset() }
 
     func update(_ simulation: PGASimulation, cameraMode: Int, zoom: Double, delta: Double) {
         let position = simulation.ball
@@ -744,7 +748,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
             // SceneKit faces -Z at zero yaw; the simulation's heading is atan2(x, z).
             aimArrow.eulerAngles.y = CGFloat(simulation.heading + .pi)
         }
-        golfer.isHidden = simulation.phase.inMotion || simulation.phase == .holed || cameraMode == 2 || content.childNodes.isEmpty
+        golfer.isHidden = simulation.phase.inMotion || simulation.phase == .holed || (!simulation.course.isOriginal && cameraMode == 2) || content.childNodes.isEmpty
         let side = PGAVector(x: -direction.z, y: 0, z: direction.x)
         let golferPosition = position + side * 1.1 + direction * -0.15
         golfer.position = SCNVector3(golferPosition.x, simulation.groundHeight(x: golferPosition.x, z: golferPosition.z, near: position.y), golferPosition.z)
@@ -752,9 +756,13 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         if simulation.phase == .power { clubPivot.eulerAngles.z = CGFloat(-simulation.meter * 1.6) }
         else if simulation.phase == .aiming { clubPivot.eulerAngles.z = 0 }
 
+        let directedPose = simulation.course.isOriginal ? originalCameraDirector?.update(simulation, mode: cameraMode, delta: delta) : nil
         let desiredPosition: PGAVector
         let desiredTarget: PGAVector
-        if cameraMode == 2 {
+        if let directedPose {
+            desiredPosition = directedPose.position
+            desiredTarget = directedPose.target
+        } else if cameraMode == 2 {
             // Overview from behind the tee along this hole's own direction.
             let middle = (hole.tee + hole.cup) * 0.5
             let along = (hole.cup - hole.tee).horizontalUnit, right = PGAVector(x: -along.z, y: 0, z: along.x)
@@ -772,10 +780,11 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
                 + PGAVector(x: 0, y: (cameraMode == 0 ? 5.5 : 19) * zoom, z: 0)
             desiredTarget = position + direction * 75 + PGAVector(x: 0, y: 2, z: 0)
         }
-        let alpha = freshCamera ? 1 : 1 - exp(-delta * (simulation.phase.inMotion ? 3.5 : 5))
+        let alpha = directedPose != nil || freshCamera ? 1 : 1 - exp(-delta * (simulation.phase.inMotion ? 3.5 : 5))
         cameraPosition = cameraPosition + (desiredPosition - cameraPosition) * alpha
         cameraTarget = cameraTarget + (desiredTarget - cameraTarget) * alpha
-        cameraPosition.y = max(cameraPosition.y, simulation.groundHeight(x: cameraPosition.x, z: cameraPosition.z, near: cameraPosition.y) + 1.4)
+        cameraPosition.y = max(cameraPosition.y, simulation.groundHeight(x: cameraPosition.x, z: cameraPosition.z, near: cameraPosition.y) + (directedPose == nil ? 1.4 : 0.381))
+        if let directedPose { camera.camera?.fieldOfView = directedPose.fieldOfView / zoom }
         camera.position = Self.vector(cameraPosition)
         camera.look(at: Self.vector(cameraTarget))
         freshCamera = false
