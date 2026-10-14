@@ -131,3 +131,19 @@ Auto short-wedge shots now use chip/pitch flags and a power-scaled landing estim
 Static source checkpoints separately passed25 Apple Panic core/seven decoder checks;26 Breakout core/five media checks, including full2048-byte classification; and eight THPS2/six Python checks, with ten original scene constructions. THPS2's isolated probe had no Metal device, so no rendered pixels are claimed. Its original content/trigger/blockmap loading is not skating gameplay.
 
 No physical Fusion Pro, multi-controller, original behavior/visual/audio comparison, sustained performance/memory/thermal run or M1 acceptance was performed. Source-dependent titles remain development reconstructions; the all16-title goal is active and unfinished. Originals/prepared assets/builds stay out of Git.
+
+## Son's M5 conditions, rules and presets follow-up (development checks, not M1 acceptance)
+
+2026-10-13, M5 Pro MacBook Pro / 24 GB / macOS 26.3. Static research results were never checked against a running original game.
+
+| Check | Evidence and outcome |
+| --- | --- |
+| Club bag | All 14 clubs map onto original club indices; saved rounds from the 8-club bag keep their club (raw values 0–7 unchanged) |
+| Conditions | Setup conditions decode from saves made before they existed; tail and head wind of 25 mph change a Pebble 7-iron carry by more than 4 % each way; the original `Wind1` rows, integer mph and swing about a fixed base direction are checked across 18 holes, and a restored round reproduces the wind |
+| Rules | `IntersectLine` codes; every Pebble pin, aim point and selected tee is in play under the compiled lines; points 400 m off hole 1 are out of bounds; a 7-iron pulled into Carmel Bay on 18 costs one stroke and drops back along the line onto a playable lie |
+| Weather and time | Selector cases from the weather note (row boundaries, late-hole slot clamp); terrain light formula; offscreen 2560 × 1600 hole 18 renders under clear afternoon/sunset, clear sunrise, foggy noon and heavy-rain afternoon show the expected sky domes and fog |
+| Setup layout | Offscreen 1280 × 800 render with 11 courses, four players, weather/time/wind/greens/rough rows fits without scrolling |
+| Effects | Offscreen renders of sand blast, grass clippings, divot and water splash bursts from the original sprites |
+| Tests | 201 Swift XCTest (4 opt-in or environment skips) and the Python suite pass |
+
+Not checked: live play of these features in the native UI, M1 anything.
