@@ -276,7 +276,7 @@ final class PGAAudioEngine: @unchecked Sendable {
     private var book: PGAScriptBook?
     private var interpreter = PGAScriptInterpreter()
     private var waiting: [PGAScriptRequest] = []
-    private let speech = AVAudioPlayerNode()
+    private let speech: AVAudioPlayerNode
     private let speechFormat = AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 1)!
     private var speechEndsAt = 0.0
     private var speechGeneration = 0
@@ -287,7 +287,7 @@ final class PGAAudioEngine: @unchecked Sendable {
     private static let waitingLimit = 6
 
     /// music.stn (class 6): streamed from disk, never decoded into memory.
-    private let musicNode = AVAudioPlayerNode()
+    private let musicNode: AVAudioPlayerNode
     private var musicFormat: AVAudioFormat?
     private var musicEvent: String?
     private var musicGeneration = 0
@@ -327,6 +327,10 @@ final class PGAAudioEngine: @unchecked Sendable {
         scripted = FileManager.default.fileExists(atPath: directory.appendingPathComponent("commentary.json").path)
         engine = AVAudioEngine()
         environment = AVAudioEnvironmentNode()
+        // Player nodes create AudioUnits. Construct them only after the
+        // output-device guard; stored-property initializers run before it.
+        speech = AVAudioPlayerNode()
+        musicNode = AVAudioPlayerNode()
     }
 
     deinit {

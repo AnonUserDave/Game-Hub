@@ -36,6 +36,14 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+2026-10-14 combined-check follow-up: the added PGA speech/music player nodes had
+stored-property initializers that ran before the failable engine's no-output
+guard. This threw an AudioUnit exception even on the intended nil fallback.
+Their construction now follows the actual CoreAudio device check. Existing six
+audio tests pass (one expected output-device skip) on M5, including the nil
+engine assertion. This preserves silent gameplay when no output exists; it is
+not evidence of playback or M1 acceptance. No original media changed.
+
 Dig Dug original graphics/level preparation now extends its corrected two-layer
 unpack: `Tools/decode_dig_dug_graphics.py` recovers112 initialized sprite slots,
 16 death variants, eleven bonus sprites,340 logo bytes,16 tunnel layouts and15
