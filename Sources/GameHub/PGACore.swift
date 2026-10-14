@@ -198,6 +198,23 @@ struct PGARoundSnapshot: Codable, Equatable {
     var club: Int
     var lieIndex: Int? = nil
     var randomState: UInt64? = nil
+    /// Multiplayer rounds (absent in single-player saves from earlier builds).
+    var players: [PGAPlayer]? = nil
+    var currentPlayer: Int? = nil
+}
+
+/// One golfer in a hot-seat round. While it is a player's turn the
+/// simulation's active fields (ball, strokes, heading, club, lie) are theirs;
+/// they are written back here whenever the turn passes.
+struct PGAPlayer: Codable, Equatable {
+    var name: String
+    var scores: [Int] = []
+    var ball: PGAVector = .zero
+    var strokes = 0
+    var heading = 0.0
+    var club = PGAClub.driver.rawValue
+    var lieIndex = 0
+    var holed = false
 }
 
 /// Deterministic SplitMix64, so lies drawn at rest replay identically.
@@ -229,7 +246,8 @@ struct PGASimulation {
     private(set) var velocity: PGAVector = .zero
     private(set) var phase: PGAPhase = .aiming
     private(set) var strokes = 0
-    private(set) var scores: [Int] = []
+    private(set) var players: [PGAPlayer]
+    private(set) var currentPlayer = 0
     private(set) var heading: Double = 0
     private(set) var club: PGAClub = .driver
     private(set) var meter = 0.0
@@ -266,8 +284,15 @@ struct PGASimulation {
         return sample.properties?.lieRecord(lieIndex)?.power ?? sample.surface.launchFactor
     }
     var direction: PGAVector { PGAVector(x: sin(heading), y: 0, z: cos(heading)) }
+    /// The active player's completed hole scores.
+    var scores: [Int] { players[currentPlayer].scores }
+    var playerName: String { players[currentPlayer].name }
+    var isMultiplayer: Bool { players.count > 1 }
+    /// Every player has holed out (or picked up) on this hole.
+    var holeComplete: Bool { players.allSatisfy(\.holed) }
     var completedStrokes: Int { scores.reduce(0, +) }
-    var scoreToPar: Int { zip(scores, course.holes).reduce(0) { $0 + $1.0 - $1.1.par } }
+    var scoreToPar: Int { scoreToPar(player: currentPlayer) }
+    func scoreToPar(player: Int) -> Int { zip(players[player].scores, course.holes).reduce(0) { $0 + $1.0 - $1.1.par } }
     var targetDistance: Double {
         let factor = lieSample?.properties != nil || lie == .rough || lie == .sand ? launchFactor : 1
         if club == .putter, let sample = lieSample, let properties = sample.properties {
@@ -279,10 +304,12 @@ struct PGASimulation {
 
     /// `terrains` supplies one sampler per hole. Omitted, the generated holes'
     /// analytic height fields are used.
-    init(course: PGACourse = .development, terrains: [PGATerrainSampling]? = nil) {
+    init(course: PGACourse = .development, terrains: [PGATerrainSampling]? = nil, playerNames: [String] = ["Player"]) {
         precondition(!course.holes.isEmpty, "A native golf course needs at least one hole")
         precondition(terrains == nil || terrains!.count == course.holes.count, "One terrain sampler per hole")
+        precondition((1...4).contains(playerNames.count), "One to four players")
         self.course = course
+        players = playerNames.map { PGAPlayer(name: $0) }
         self.terrains = terrains ?? course.holes.map { PGAProceduralTerrain(hole: $0) }
         random = PGARandom(seed: course.identity)
         resetHole()
@@ -514,6 +541,7 @@ struct PGASimulation {
         if strokes >= 12 { finishHole(pickedUp: true); return }
         message = "\(hazard == .water ? "Water hazard" : "Out of bounds") · one penalty stroke · replay from your previous lie"
         alignToPlayLine()
+        passTurn()
     }
 
     private mutating func endShot() {
@@ -534,6 +562,46 @@ struct PGASimulation {
         lieIndex = restingLieIndex(lieSample)
         alignToPlayLine()
         message = "\(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd to the pin\(note)"
+        passTurn()
+    }
+
+    // MARK: Turns
+
+    private mutating func saveTurn() {
+        players[currentPlayer].ball = ball; players[currentPlayer].strokes = strokes
+        players[currentPlayer].heading = heading; players[currentPlayer].club = club.rawValue
+        players[currentPlayer].lieIndex = lieIndex
+    }
+
+    private mutating func loadTurn(_ index: Int) {
+        currentPlayer = index
+        let player = players[index]
+        ball = player.ball; strokes = player.strokes; heading = player.heading
+        club = PGAClub(rawValue: player.club) ?? .driver; lieIndex = player.lieIndex
+        shotOrigin = ball; originLieIndex = lieIndex; bunkerEntry = nil
+        velocity = .zero; phase = .aiming; meter = 0; shotPower = 0; shotAccuracy = 0; lastShotDistance = 0
+        accumulator = 0; lowSpeedTime = 0; flightTime = 0; missingFloorTime = 0
+    }
+
+    /// Who plays next: players yet to tee off go in honor order, then the
+    /// player farthest from the hole ("away"), lower list order on a tie.
+    private func nextPlayer() -> Int? {
+        let waiting = players.indices.filter { !players[$0].holed }
+        if let teeing = teeOrder.first(where: { waiting.contains($0) && players[$0].strokes == 0 }) { return teeing }
+        return waiting.max { a, b in
+            let da = players[a].ball.distance(to: hole.cup), db = players[b].ball.distance(to: hole.cup)
+            return da == db ? a > b : da < db
+        }
+    }
+
+    private mutating func passTurn() {
+        guard players.count > 1, phase == .aiming else { return }
+        let previous = currentPlayer
+        saveTurn()
+        guard let next = nextPlayer(), next != previous else { return }
+        let note = message
+        loadTurn(next)
+        message = "\(playerName) is away · \(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd · (\(players[previous].name): \(note))"
     }
 
     /// Nearest playable floor within 30 m that is not nearer the hole.
@@ -555,6 +623,7 @@ struct PGASimulation {
 
     private mutating func finishHole(pickedUp: Bool = false) {
         velocity = .zero
+        players[currentPlayer].holed = true
         if !pickedUp {
             ball = PGAVector(x: hole.cup.x, y: groundHeight(x: hole.cup.x, z: hole.cup.z, near: hole.cup.y) - 0.04, z: hole.cup.z)
         }
@@ -570,18 +639,42 @@ struct PGASimulation {
         case 2: scoreName = "Double bogey"
         default: scoreName = "+\(difference)"
         }
-        message = pickedUp ? "Picked up at the 12-stroke practice limit" : "\(scoreName) · \(strokes) \(strokes == 1 ? "stroke" : "strokes")"
+        message = (isMultiplayer ? "\(playerName): " : "") +
+            (pickedUp ? "Picked up at the 12-stroke limit" : "\(scoreName) · \(strokes) \(strokes == 1 ? "stroke" : "strokes")")
+        saveTurn()
     }
 
+    /// After a player holes out: the next player continues, or once everyone
+    /// is in, scores are recorded and the next hole begins.
     mutating func continueRound() {
         guard phase == .holed else { return }
-        scores.append(strokes)
+        if !holeComplete, let next = nextPlayer() {
+            let done = message
+            loadTurn(next)
+            message = "\(playerName) to play · \(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd (\(done))"
+            return
+        }
+        for index in players.indices { players[index].scores.append(players[index].strokes) }
         if holeIndex + 1 < course.holes.count { holeIndex += 1; resetHole() }
-        else { phase = .roundComplete; message = "\(course.isOriginal ? "Round" : "Practice round") complete · \(completedStrokes) strokes" }
+        else {
+            phase = .roundComplete
+            message = isMultiplayer ? "Round complete" : "\(course.isOriginal ? "Round" : "Practice round") complete · \(completedStrokes) strokes"
+        }
     }
 
     mutating func restartRound() {
-        holeIndex = 0; scores = []; resetHole()
+        holeIndex = 0
+        for index in players.indices { players[index].scores = [] }
+        resetHole()
+    }
+
+    /// Honors: lowest score on the previous hole tees off first.
+    private var teeOrder: [Int] {
+        guard holeIndex > 0 else { return Array(players.indices) }
+        return players.indices.sorted { a, b in
+            let sa = players[a].scores.last ?? 0, sb = players[b].scores.last ?? 0
+            return sa == sb ? a < b : sa < sb
+        }
     }
 
     mutating func resetHole() {
@@ -592,22 +685,40 @@ struct PGASimulation {
         lieIndex = 0; originLieIndex = 0; bunkerEntry = nil
         shotOrigin = ball
         alignToPlayLine()
-        message = "Aim, choose a club, then press Space, click, or A to swing."
+        for index in players.indices {
+            players[index].ball = ball; players[index].strokes = 0; players[index].holed = false
+            players[index].heading = heading; players[index].club = club.rawValue; players[index].lieIndex = 0
+        }
+        currentPlayer = teeOrder.first ?? 0
+        message = isMultiplayer ? "\(playerName) has the honor · Space, click or A to swing" : "Aim, choose a club, then press Space, click, or A to swing."
     }
 
     #if DEBUG
     /// Test helper: records a finished hole with the given strokes.
     mutating func restore(strokes: Int) {
         guard phase != .roundComplete else { return }
+        for index in players.indices { players[index].strokes = strokes; players[index].holed = true }
         self.strokes = strokes; phase = .holed; continueRound()
+    }
+    #endif
+
+    #if DEBUG
+    /// Test helper: the active player holes out in `strokes` and play moves on.
+    mutating func restoreHoleForTest(strokes: Int) {
+        self.strokes = strokes
+        finishHole(pickedUp: true)
+        continueRound()
     }
     #endif
 
     /// A snapshot is taken only while the ball is at rest.
     var snapshot: PGARoundSnapshot? {
         guard phase == .aiming else { return nil }
+        var copy = self
+        copy.saveTurn()
         return PGARoundSnapshot(courseIdentity: course.identity, holeIndex: holeIndex, scores: scores, strokes: strokes,
-                                ball: ball, heading: heading, club: club.rawValue, lieIndex: lieIndex, randomState: random.state)
+                                ball: ball, heading: heading, club: club.rawValue, lieIndex: lieIndex, randomState: random.state,
+                                players: copy.players, currentPlayer: currentPlayer)
     }
 
     enum RestoreError: LocalizedError, Equatable {
@@ -635,9 +746,24 @@ struct PGASimulation {
             throw RestoreError.invalid("The saved ball position is not on this hole's floor.")
         }
         resetHole()
-        scores = snapshot.scores; strokes = snapshot.strokes
-        ball = snapshot.ball; shotOrigin = ball; heading = snapshot.heading; club = restoredClub
-        lieIndex = max(0, min(8, snapshot.lieIndex ?? 0)); originLieIndex = lieIndex
+        if let saved = snapshot.players, let current = snapshot.currentPlayer {
+            guard saved.count == players.count, saved.indices.contains(current),
+                  zip(saved, players).allSatisfy({ $0.0.name == $0.1.name }),
+                  saved.allSatisfy({ $0.scores.count == snapshot.holeIndex && $0.scores.allSatisfy { (1...99).contains($0) }
+                                     && (0...99).contains($0.strokes) && $0.heading.isFinite && PGAClub(rawValue: $0.club) != nil
+                                     && [$0.ball.x, $0.ball.y, $0.ball.z].allSatisfy(\.isFinite) }) else {
+                throw RestoreError.invalid("The saved players do not match this round.")
+            }
+            players = saved
+            loadTurn(current)
+        } else {
+            guard players.count == 1 else { throw RestoreError.invalid("The saved round has no player list.") }
+            players[0].scores = snapshot.scores
+            strokes = snapshot.strokes
+            ball = snapshot.ball; shotOrigin = ball; heading = snapshot.heading; club = restoredClub
+            lieIndex = max(0, min(8, snapshot.lieIndex ?? 0)); originLieIndex = lieIndex
+            saveTurn()
+        }
         if let state = snapshot.randomState { random.state = state }
         message = "Round restored · \(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd to the pin"
     }

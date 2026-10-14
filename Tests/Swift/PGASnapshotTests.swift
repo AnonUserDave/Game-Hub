@@ -73,9 +73,9 @@ final class PGASnapshotTests: XCTestCase {
         }
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let course = try PGAOriginalPlayableCourse.load(code: "PBL", root: root)
-        var game = PGASimulation(course: course.course, terrains: course.terrains)
-        for strokes in [4, 5, 3] {
-            game.restore(strokes: strokes)
+        var game = PGASimulation(course: course.course, terrains: course.terrains, playerNames: ["Dad", "Pablo"])
+        for strokes in [[4, 5], [5, 4], [3, 3]] {
+            for _ in 0..<2 { game.restoreHoleForTest(strokes: strokes[game.currentPlayer]) }
         }
         var swinging = PGASimulation(course: course.course, terrains: course.terrains)
         swinging.swing()
@@ -87,9 +87,10 @@ final class PGASnapshotTests: XCTestCase {
             let game = scoredGame
             let art = PGAHUDImages(root: root)
             let views: [(String, AnyView, CGSize)] = [
-                ("hud-scorecard", AnyView(PGAOriginalScorecard(images: art, simulation: game, playerName: "Player").frame(width: 760)), CGSize(width: 760, height: 458)),
+                ("hud-scorecard", AnyView(PGAOriginalScorecard(images: art, simulation: game).frame(width: 760)), CGSize(width: 760, height: 458)),
                 ("hud-loading", AnyView(PGAOriginalLoadingScreen(images: art, message: "Loading original PBL terrain…")), CGSize(width: 1280, height: 800)),
-                ("hud-meter", AnyView(PGAOriginalSwingMeter(simulation: swingingGame, images: art)), CGSize(width: 256, height: 256))
+                ("hud-meter", AnyView(PGAOriginalSwingMeter(simulation: swingingGame, images: art)), CGSize(width: 256, height: 256)),
+                ("hud-setup", AnyView(PGARoundSetupView(session: { let s = PGAGameSession(choice: .original(code: "PBL"), onExit: {}); s.setup.players = ["Dad", "Pablo"]; return s }())), CGSize(width: 1280, height: 800))
             ]
             for (name, view, size) in views {
                 let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height).background(Color.black))

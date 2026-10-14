@@ -147,7 +147,6 @@ struct PGAOriginalLoadingScreen: View {
 struct PGAOriginalScorecard: View {
     let images: PGAHUDImages
     let simulation: PGASimulation
-    let playerName: String
 
     private static let columns: [CGFloat] = [19, 182, 262, 295, 327, 359, 391, 423, 454, 487, 519, 551, 600, 649, 681, 718]
     private static let rows: [CGFloat] = [147, 169, 191, 213, 235, 257, 279, 301, 323, 345, 367, 389]
@@ -156,12 +155,11 @@ struct PGAOriginalScorecard: View {
         let holes = simulation.course.holes
         let start = simulation.holeIndex >= 9 && holes.count > 9 ? 9 : 0
         let nine = Array(start..<min(start + 9, holes.count))
-        let score = { (index: Int) -> Int? in
-            index < simulation.scores.count ? simulation.scores[index] : (index == simulation.holeIndex && simulation.phase == .holed ? simulation.strokes : nil)
+        // A player's score on a hole: recorded, or just holed on the current one.
+        let score = { (player: Int, index: Int) -> Int? in
+            let p = simulation.players[player]
+            return index < p.scores.count ? p.scores[index] : (index == simulation.holeIndex && p.holed ? p.strokes : nil)
         }
-        let played = nine.compactMap(score)
-        let total = holes.indices.compactMap(score).reduce(0, +)
-        let toPar = zip(holes.indices.compactMap(score), holes.map(\.par)).reduce(0) { $0 + $1.0 - $1.1 }
         ZStack {
             if let card = images.image("scorecard") { Image(nsImage: card).resizable().interpolation(.high) }
             GeometryReader { geometry in
@@ -177,21 +175,130 @@ struct PGAOriginalScorecard: View {
                     .foregroundStyle(.white.opacity(0.7)).position(x: 369 * sx, y: 112 * sy)
                 cell(0, 0, "HOLE", true); cell(11, 0, start == 0 ? "OUT" : "IN", true); cell(12, 0, "TOT", true)
                 cell(0, 1, "YARDS", false); cell(0, 2, "PAR", true); cell(0, 3, "HCP", false)
-                cell(0, 4, playerName.uppercased(), true); cell(1, 4, toPar == 0 ? "E" : toPar > 0 ? "+\(toPar)" : "\(toPar)", true)
                 ForEach(Array(nine.enumerated()), id: \.offset) { offset, index in
                     let hole = holes[index]
                     cell(2 + offset, 0, "\(index + 1)", true)
                     cell(2 + offset, 1, hole.source?.scorecardYards.map { "\($0)" } ?? "", false)
                     cell(2 + offset, 2, "\(hole.par)", true)
                     cell(2 + offset, 3, hole.source.map { "\($0.handicap)" } ?? "", false)
-                    cell(2 + offset, 4, score(index).map { "\($0)" } ?? "", true)
                 }
                 cell(11, 1, "\(nine.compactMap { holes[$0].source?.scorecardYards }.reduce(0, +))", false)
                 cell(11, 2, "\(nine.map { holes[$0].par }.reduce(0, +))", true)
-                cell(11, 4, played.isEmpty ? "" : "\(played.reduce(0, +))", true)
                 cell(12, 2, "\(holes.map(\.par).reduce(0, +))", true)
-                cell(12, 4, total == 0 ? "" : "\(total)", true)
+                // Player rows: the first player sits in the original red row.
+                ForEach(simulation.players.indices, id: \.self) { player in
+                    let row = 4 + player
+                    let scored = holes.indices.compactMap { score(player, $0) }
+                    let toPar = zip(holes.indices.compactMap { score(player, $0) }, holes.map(\.par)).reduce(0) { $0 + $1.0 - $1.1 }
+                    let ninePlayed = nine.compactMap { score(player, $0) }
+                    let marker = simulation.isMultiplayer && player == simulation.currentPlayer ? "▸ " : ""
+                    cell(0, row, marker + simulation.players[player].name.uppercased(), true)
+                    cell(1, row, scored.isEmpty ? "" : toPar == 0 ? "E" : toPar > 0 ? "+\(toPar)" : "\(toPar)", true)
+                    ForEach(Array(nine.enumerated()), id: \.offset) { offset, index in
+                        cell(2 + offset, row, score(player, index).map { "\($0)" } ?? "", true)
+                    }
+                    cell(11, row, ninePlayed.isEmpty ? "" : "\(ninePlayed.reduce(0, +))", true)
+                    cell(12, row, scored.isEmpty ? "" : "\(scored.reduce(0, +))", true)
+                }
             }
         }.aspectRatio(738.0 / 444.0, contentMode: .fit)
+    }
+}
+
+/// Round setup over the original loading art: players, tee set and pins.
+/// Original tee/pin selection screens are not decoded; these choices map
+/// onto the authored TCR tees (index 3 matches the championship card) and pins.
+struct PGARoundSetupView: View {
+    @ObservedObject var session: PGAGameSession
+    private let gold = Color(hex: "EDD297"), ink = Color(hex: "102223")
+
+    var body: some View {
+        ZStack {
+            Color.black
+            if let back = session.hud.image("load-back") {
+                Image(nsImage: back).resizable().aspectRatio(contentMode: .fill).opacity(0.45).blur(radius: 2).clipped()
+            }
+            VStack(spacing: 18) {
+                HStack(spacing: 16) {
+                    if let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("PEBBLE BEACH GOLF LINKS").font(.system(size: 22, weight: .bold)).tracking(1.5)
+                        Text("Original course data · 18 holes · approximate native physics")
+                            .font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
+                    }
+                    Spacer()
+                }
+                section("PLAYERS") {
+                    VStack(spacing: 8) {
+                        ForEach(session.setup.players.indices, id: \.self) { index in
+                            HStack {
+                                Text("\(index + 1)").font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(gold).frame(width: 18)
+                                TextField("Player \(index + 1)", text: Binding(get: { session.setup.players[index] },
+                                                                                 set: { session.setup.players[index] = String($0.prefix(24)) }))
+                                    .textFieldStyle(.roundedBorder)
+                                if session.setup.players.count > 1 {
+                                    Button { session.setup.players.remove(at: index) } label: { Image(systemName: "minus.circle") }.buttonStyle(.plain)
+                                }
+                            }
+                        }
+                        if session.setup.players.count < 4 {
+                            Button { session.setup.players.append("Player \(session.setup.players.count + 1)") } label: {
+                                Label("Add player (hot-seat, up to 4)", systemImage: "plus.circle")
+                            }.buttonStyle(.plain).foregroundStyle(gold).frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+                section("TEES") {
+                    HStack(spacing: 6) {
+                        ForEach(0..<5, id: \.self) { index in
+                            Button { session.setup.teeIndex = index } label: {
+                                VStack(spacing: 3) {
+                                    Text(PGARoundSetup.teeNames[index]).font(.system(size: 11, weight: .semibold))
+                                    Text(session.teeYards(index).map { "\($0) yd" } ?? "").font(.system(size: 9, design: .monospaced)).opacity(0.75)
+                                }.frame(maxWidth: .infinity).padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.teeIndex == index ? gold : .white.opacity(0.08)))
+                                    .foregroundStyle(session.setup.teeIndex == index ? ink : .white)
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }
+                section("PIN POSITIONS") {
+                    HStack(spacing: 6) {
+                        ForEach(PGARoundSetup.Pins.allCases, id: \.self) { pins in
+                            Button { session.setup.pins = pins; if pins == .varied { session.setup.seed = UInt32.random(in: 1...999_999) } } label: {
+                                Text(pins == .standard ? "Standard" : "Varied (10 authored pins per hole)").font(.system(size: 11, weight: .semibold))
+                                    .frame(maxWidth: .infinity).padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.pins == pins ? gold : .white.opacity(0.08)))
+                                    .foregroundStyle(session.setup.pins == pins ? ink : .white)
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }
+                HStack(spacing: 12) {
+                    Button("Start round") { session.startRound() }
+                        .buttonStyle(.borderedProminent).tint(gold).foregroundStyle(ink).keyboardShortcut(.defaultAction)
+                        .disabled(!session.setup.valid)
+                    if let saved = session.savedRound {
+                        Button("Resume hole \(saved.snapshot.holeIndex + 1) · \(saved.setup.players.joined(separator: ", "))") { session.startRound(resume: true) }
+                            .buttonStyle(.bordered)
+                    }
+                    Spacer()
+                    Button("Return to hub") { session.exit() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.7))
+                }
+                Text("Return: start · Controller: A start · Y resume · LB/RB tees · X pins · B hub")
+                    .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
+            }
+            .padding(26).frame(width: 640)
+            .background(ink.opacity(0.94), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.12)))
+            .foregroundStyle(.white)
+        }.ignoresSafeArea()
+    }
+
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(.system(size: 9, weight: .bold, design: .monospaced)).tracking(1.4).foregroundStyle(gold)
+            content()
+        }
     }
 }

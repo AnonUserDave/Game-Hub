@@ -294,6 +294,48 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
 
     static let developmentTeeIndex = 3
 
+    /// A new course for a round setup, reusing the built floor indexes; only
+    /// the chosen tees and pins are snapped again (a few ms).
+    func course(for setup: PGARoundSetup) throws -> PGACourse {
+        let pins = setup.pinIndices(holeCount: data.holes.count, available: data.holes.map(\.pins.count))
+        var holes: [PGAHole] = []
+        for (index, source) in data.holes.enumerated() {
+            let teeIndex = min(max(0, setup.teeIndex), source.tees.count - 1)
+            guard let hole = Self.assemble(source, terrain: terrains[index], transform: transform, teeIndex: teeIndex, pinIndex: pins[index]) else {
+                throw PGAOriginalCourseData.LoadError.invalid("Hole \(source.number) tee or pin has no source floor.")
+            }
+            holes.append(hole.hole)
+        }
+        return PGACourse(name: data.title, provenance: course.provenance, holes: holes,
+                         identity: "pga2005-\(data.code)-\(data.sourceTCRSHA256.prefix(16))-ghpc3-l\(String(conditions.selector, radix: 16))-\(setup.identity)")
+    }
+
+    private static func assemble(_ source: PGAOriginalCourseData.SourceHole, terrain: PGAOriginalHoleTerrain, transform: PGACourseTransform,
+                                 teeIndex: Int, pinIndex: Int) -> (hole: PGAHole, tee: PGASurface, pin: PGASurface)? {
+        let rawTee = source.tees[min(teeIndex, source.tees.count - 1)]
+        let rawPin = source.pins[min(pinIndex, source.pins.count - 1)]
+        guard let tee = snap(rawTee, in: terrain, preferring: .tee, transform: transform),
+              let pin = snap(rawPin, in: terrain, preferring: .green, transform: transform) else { return nil }
+        let aims = source.aimPoints.map { transform.meters(raw: $0) }
+        let yards = source.yardagesByTee.flatMap { $0.indices.contains(teeIndex) ? $0[teeIndex] : nil }
+        let hole = PGAHole(name: "Hole \(source.number)", par: source.par, tee: tee.point, cup: pin.point,
+                           centerline: [tee.point] + aims + [pin.point], fairwayWidth: 0, greenRadius: 0, hazards: [],
+                           terrainSeed: 0, source: PGAHoleSource(number: source.number, teeIndex: teeIndex, pinIndex: pinIndex,
+                                                                 handicap: source.handicap, scorecardYards: yards))
+        return (hole, tee.surface, pin.surface)
+    }
+
+    /// Card yardage for each tee set: INI values where the INI lists them,
+    /// otherwise the straight tee-to-pin distance.
+    func totalYards(teeIndex: Int) -> Int {
+        data.holes.enumerated().reduce(0) { total, item in
+            let (index, source) = item
+            if let yards = source.yardagesByTee, yards.indices.contains(teeIndex), teeIndex < 4 { return total + yards[teeIndex] }
+            let tee = transform.meters(raw: source.tees[min(teeIndex, source.tees.count - 1)])
+            return total + Int((tee.distance(to: course.holes[index].cup) * 1.09361).rounded())
+        }
+    }
+
     /// Synchronous and CPU-bound: run on a worker. Builds one bounded floor
     /// index per hole over that hole's triangles only.
     init(data: PGAOriginalCourseData, conditions: PGACourseConditions = .standard,
@@ -311,20 +353,15 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
             let terrain = PGAOriginalHoleTerrain(collider: collider, transform: transform, classes: classes)
             let rawTee = source.tees[min(teeIndex, source.tees.count - 1)]
             let rawPin = source.pins[min(pinIndex, source.pins.count - 1)]
-            let tee = Self.snap(rawTee, in: terrain, preferring: .tee, transform: transform)
-            let pin = Self.snap(rawPin, in: terrain, preferring: .green, transform: transform)
-            guard let tee, let pin else { throw PGAOriginalCourseData.LoadError.invalid("Hole \(source.number) tee or pin has no source floor.") }
-            let aims = source.aimPoints.map { transform.meters(raw: $0) }
-            let yards = source.yardagesByTee.flatMap { $0.indices.contains(teeIndex) ? $0[teeIndex] : nil }
-            holes.append(PGAHole(name: "Hole \(source.number)", par: source.par, tee: tee.point, cup: pin.point,
-                                 centerline: [tee.point] + aims + [pin.point], fairwayWidth: 0, greenRadius: 0, hazards: [],
-                                 terrainSeed: 0, source: PGAHoleSource(number: source.number, teeIndex: teeIndex, pinIndex: pinIndex,
-                                                                       handicap: source.handicap, scorecardYards: yards)))
+            guard let built = Self.assemble(source, terrain: terrain, transform: transform, teeIndex: teeIndex, pinIndex: pinIndex) else {
+                throw PGAOriginalCourseData.LoadError.invalid("Hole \(source.number) tee or pin has no source floor.")
+            }
+            holes.append(built.hole)
             terrains.append(terrain); selections.append(selection)
-            checks.append(Validation(hole: source.number, teeSurface: tee.surface,
-                                     teeHeightErrorInches: (transform.meters(raw: rawTee).y - tee.point.y) / PGACourseTransform.metersPerInch,
-                                     pinSurface: pin.surface,
-                                     pinHeightOffsetInches: (transform.meters(raw: rawPin).y - pin.point.y) / PGACourseTransform.metersPerInch,
+            checks.append(Validation(hole: source.number, teeSurface: built.tee,
+                                     teeHeightErrorInches: (transform.meters(raw: rawTee).y - built.hole.tee.y) / PGACourseTransform.metersPerInch,
+                                     pinSurface: built.pin,
+                                     pinHeightOffsetInches: (transform.meters(raw: rawPin).y - built.hole.cup.y) / PGACourseTransform.metersPerInch,
                                      triangles: selection.count))
         }
         let identity = "pga2005-\(data.code)-\(data.sourceTCRSHA256.prefix(16))-ghpc3-l\(String(conditions.selector, radix: 16))-t\(teeIndex)p\(pinIndex)"
@@ -352,28 +389,54 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
     }
 }
 
-/// One in-progress round per original course, in Application Support. The
-/// file names the course identity, so changed source data or settings start a
-/// fresh round instead of restoring onto different geometry.
+/// Choices made before a round. Original tee/pin selection rules are not
+/// reconstructed; tee sets map to the TCR tee indices (3 matches the
+/// championship card) and pins are either the first authored pin or a
+/// seeded choice among each hole's ten authored pins.
+struct PGARoundSetup: Codable, Equatable {
+    enum Pins: String, Codable, CaseIterable { case standard, varied }
+    var players: [String] = ["Player"]
+    var teeIndex = PGAOriginalPlayableCourse.developmentTeeIndex
+    var pins: Pins = .standard
+    var seed: UInt32 = 1
+
+    static let teeNames = ["Forward", "Middle", "Back", "Championship", "Tips"]
+
+    func pinIndices(holeCount: Int, available: [Int]) -> [Int] {
+        guard pins == .varied else { return Array(repeating: 0, count: holeCount) }
+        var random = PGARandom(seed: "pins-\(seed)")
+        return (0..<holeCount).map { random.int(max(1, available[$0])) }
+    }
+    var identity: String { "t\(teeIndex)p\(pins == .standard ? "0" : "r\(seed)")-n\(players.count)" }
+    var valid: Bool {
+        (1...4).contains(players.count) && players.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty && $0.count <= 24 }
+            && (0...4).contains(teeIndex)
+    }
+}
+
+/// One in-progress round per original course in Application Support. The
+/// setup is stored with the snapshot, and restoring rebuilds the same course
+/// identity, so changed source data never restores onto other geometry.
 enum PGARoundStore {
+    struct Saved: Codable { var setup: PGARoundSetup; var snapshot: PGARoundSnapshot }
+
     static var directory: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory())
         return base.appendingPathComponent("Game Hub/PGA2005 Rounds", isDirectory: true)
     }
-    private static func url(identity: String) -> URL {
-        let safe = String(identity.unicodeScalars.map { CharacterSet.alphanumerics.contains($0) || $0 == "-" ? Character($0) : "_" })
-        return directory.appendingPathComponent("\(safe.prefix(120)).json")
+    private static func url(code: String) -> URL {
+        let safe = String(code.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) }.map(Character.init).prefix(8))
+        return directory.appendingPathComponent("pga2005-\(safe)-round.json")
     }
-    static func load(identity: String) -> PGARoundSnapshot? {
-        guard let data = try? Data(contentsOf: url(identity: identity)), data.count < 64_000,
-              let snapshot = try? JSONDecoder().decode(PGARoundSnapshot.self, from: data),
-              snapshot.courseIdentity == identity else { return nil }
-        return snapshot
+    static func load(code: String) -> Saved? {
+        guard let data = try? Data(contentsOf: url(code: code)), data.count < 256_000,
+              let saved = try? JSONDecoder().decode(Saved.self, from: data), saved.setup.valid else { return nil }
+        return saved
     }
-    static func save(_ snapshot: PGARoundSnapshot) {
+    static func save(code: String, setup: PGARoundSetup, snapshot: PGARoundSnapshot) {
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        if let data = try? JSONEncoder().encode(snapshot) { try? data.write(to: url(identity: snapshot.courseIdentity), options: .atomic) }
+        if let data = try? JSONEncoder().encode(Saved(setup: setup, snapshot: snapshot)) { try? data.write(to: url(code: code), options: .atomic) }
     }
-    static func clear(identity: String) { try? FileManager.default.removeItem(at: url(identity: identity)) }
+    static func clear(code: String) { try? FileManager.default.removeItem(at: url(code: code)) }
 }

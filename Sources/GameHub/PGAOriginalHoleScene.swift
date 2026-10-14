@@ -15,7 +15,9 @@ struct PGAOriginalHoleMesh {
     var batches: [Batch]
     var map: PGAHoleMap
 
-    static func build(course: PGAOriginalPlayableCourse, holeIndex: Int) -> PGAOriginalHoleMesh {
+    /// `hole` is the round's hole (its tee and pin set the minimap framing);
+    /// it defaults to the course's default tee/pin hole.
+    static func build(course: PGAOriginalPlayableCourse, holeIndex: Int, hole: PGAHole? = nil) -> PGAOriginalHoleMesh {
         let data = course.data, transform = course.transform
         let selection = course.selections[holeIndex]
         var remap = [Int32](repeating: -1, count: data.vertexCount)
@@ -79,7 +81,7 @@ struct PGAOriginalHoleMesh {
                 mapTriangles.append((indices[start], indices[start + 1], indices[start + 2])); mapSurfaces.append(surface)
             }
         }
-        let map = PGAHoleMap.render(hole: course.course.holes[holeIndex], positions: positions, triangles: mapTriangles, surfaces: mapSurfaces)
+        let map = PGAHoleMap.render(hole: hole ?? course.course.holes[holeIndex], positions: positions, triangles: mapTriangles, surfaces: mapSurfaces)
         return PGAOriginalHoleMesh(holeIndex: holeIndex, vertexCount: count, positions: pack(positions), normals: pack(normals),
                                    uvs: pack(uvs), colors: pack(colors), batches: batches, map: map)
     }

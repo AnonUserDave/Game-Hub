@@ -152,4 +152,56 @@ final class PGACoreTests: XCTestCase {
         settle(&rough); settle(&fairway)
         XCTAssertLessThan(rough.lastShotDistance, fairway.lastShotDistance)
     }
+
+    func testHotSeatTurnsFollowHonorsAndAwayRules() {
+        var game = PGASimulation(course: fixture(cupDistance: 60, width: 60), playerNames: ["Dad", "Pablo"])
+        XCTAssertEqual(game.playerName, "Dad", "First hole: list order has the honor")
+        game.selectClub(.wedge); game.strike(power: 0.5, accuracy: 0)
+        settle(&game)
+        XCTAssertEqual(game.playerName, "Pablo", "Everyone tees off before anyone plays a second shot")
+        XCTAssertEqual(game.strokes, 0)
+        game.selectClub(.wedge); game.strike(power: 0.25, accuracy: 0)
+        settle(&game)
+        // Pablo's shorter drive leaves him away, so he plays again.
+        let pabloAway = game.players[1].ball.distance(to: game.hole.cup) > game.players[0].ball.distance(to: game.hole.cup)
+        XCTAssertEqual(game.playerName, pabloAway ? "Pablo" : "Dad")
+        // Play both out with putts/chips until the hole completes.
+        var guardCount = 0
+        while game.phase != .roundComplete && game.holeIndex == 0 && guardCount < 80 {
+            if game.phase == .holed {
+                XCTAssertTrue(game.players[game.currentPlayer].holed)
+                game.continueRound()
+            } else {
+                game.selectClub(game.distanceToCup > 20 ? .wedge : .putter); game.alignToCup()
+                let power = game.club == .putter ? min(1, sqrt(2 * PGASurface.green.rollingFriction * game.distanceToCup) / PGAClub.putter.speed) : min(1, game.distanceToCup / 70)
+                game.strike(power: power, accuracy: 0); settle(&game)
+            }
+            guardCount += 1
+        }
+        XCTAssertEqual(game.phase, .roundComplete, "One-hole fixture completes after both players hole out")
+        XCTAssertEqual(game.players.map(\.scores.count), [1, 1])
+        XCTAssertTrue(game.players.allSatisfy { ($0.scores.first ?? 0) >= 1 })
+    }
+
+    func testNextTeeHonorAndMultiplayerSnapshot() throws {
+        var game = PGASimulation(course: PGACourse.development, playerNames: ["Dad", "Pablo", "Guest"])
+        // Record hole 1 as Dad 5, Pablo 3, Guest 4 through the public flow helper.
+        var strokes = [5, 3, 4]
+        for _ in 0..<3 {
+            game.selectClub(.putter)
+            let player = game.currentPlayer
+            game.restoreHoleForTest(strokes: strokes[player])
+            strokes[player] = 0
+        }
+        XCTAssertEqual(game.holeIndex, 1)
+        XCTAssertEqual(game.players.map(\.scores), [[5], [3], [4]])
+        XCTAssertEqual(game.playerName, "Pablo", "Lowest score on the previous hole has the honor")
+        let snapshot = try XCTUnwrap(game.snapshot)
+        var restored = PGASimulation(course: PGACourse.development, playerNames: ["Dad", "Pablo", "Guest"])
+        try restored.restore(try JSONDecoder().decode(PGARoundSnapshot.self, from: JSONEncoder().encode(snapshot)))
+        XCTAssertEqual(restored.players, game.players)
+        XCTAssertEqual(restored.playerName, "Pablo")
+        var wrong = PGASimulation(course: PGACourse.development, playerNames: ["Dad"])
+        XCTAssertThrowsError(try wrong.restore(snapshot))
+    }
 }

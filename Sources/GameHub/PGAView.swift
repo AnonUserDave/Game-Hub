@@ -26,7 +26,7 @@ struct PGAGameView: View {
                     topBar
                     // An original course shows no hole panels until its data
                     // is installed, so the placeholder state is never visible.
-                    if session.loadState == .ready {
+                    if session.loadState == .ready && !session.awaitingSetup {
                         HStack(alignment: .top) { holeCard; Spacer(); performanceCard }.padding(22)
                         Spacer(minLength: 12)
                         HStack(alignment: .bottom, spacing: 20) {
@@ -42,7 +42,9 @@ struct PGAGameView: View {
                     else { loadingOverlay(message) }
                 }
                 else if case let .failed(message) = session.loadState { failureOverlay(message) }
+                else if session.awaitingSetup { PGARoundSetupView(session: session) }
                 else if session.paused { pauseOverlay }
+                else if game.phase == .holed && !game.holeComplete { playerHoledBanner }
                 else if game.phase == .holed || game.phase == .roundComplete {
                     if session.isOriginal && session.hud.available { originalScoreOverlay } else { scoreOverlay }
                 }
@@ -70,7 +72,8 @@ struct PGAGameView: View {
 
     private var holeCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(game.course.name.uppercased()).font(.system(size: 9, weight: .semibold, design: .monospaced)).tracking(1.5).foregroundStyle(pgaGold)
+            Text(game.isMultiplayer ? "\(game.course.name.uppercased()) · \(game.playerName.uppercased())" : game.course.name.uppercased())
+                .font(.system(size: 9, weight: .semibold, design: .monospaced)).tracking(1.5).foregroundStyle(pgaGold)
             HStack(alignment: .firstTextBaseline, spacing: 13) {
                 Text(String(format: "%02d", game.holeIndex + 1)).font(.system(size: 39, weight: .light, design: .rounded))
                 VStack(alignment: .leading, spacing: 4) {
@@ -258,7 +261,7 @@ struct PGAGameView: View {
                 Image(systemName: "pause.circle").font(.system(size: 33, weight: .light)).foregroundStyle(pgaGold)
                 Text("Take your time").font(.system(size: 27, weight: .light))
                 Text("Hole \(game.holeIndex + 1) · \(game.hole.name)").font(.system(size: 12)).foregroundStyle(.white.opacity(0.6))
-                ForEach(Array(["Resume", "Restart hole", "Restart round", "Original course lab", "Return to hub"].enumerated()), id: \.offset) { index, label in
+                ForEach(Array(session.pauseItems.enumerated()), id: \.offset) { index, label in
                     Button {
                         session.selectPauseItem(index - session.pauseSelection)
                         session.activatePauseSelection()
@@ -310,13 +313,26 @@ struct PGAGameView: View {
         }.ignoresSafeArea()
     }
 
+    /// Multiplayer: one player is in, others still play the hole.
+    private var playerHoledBanner: some View {
+        VStack {
+            Spacer()
+            HStack(spacing: 14) {
+                Image(systemName: "flag.checkered").foregroundStyle(pgaGold)
+                Text(game.message).font(.system(size: 15, weight: .medium))
+                Button("Next player · Space / A") { session.nextHole() }.buttonStyle(.borderedProminent).tint(pgaGold).foregroundStyle(pgaInk)
+            }.padding(16).background(pgaInk.opacity(0.95), in: RoundedRectangle(cornerRadius: 12)).foregroundStyle(.white)
+                .padding(.bottom, 250)
+        }
+    }
+
     private var originalScoreOverlay: some View {
         ZStack {
             Color.black.opacity(0.4)
             VStack(spacing: 14) {
                 Text(game.phase == .roundComplete ? "Round complete · \(game.completedStrokes) strokes" : game.message)
                     .font(.system(size: 24, weight: .light)).foregroundStyle(.white)
-                PGAOriginalScorecard(images: session.hud, simulation: game, playerName: "Player").frame(width: 760)
+                PGAOriginalScorecard(images: session.hud, simulation: game).frame(width: 760)
                 HStack(spacing: 18) {
                     if game.phase == .roundComplete {
                         Button("Play again · Space / A") { session.restartRound() }.buttonStyle(.borderedProminent).tint(pgaGold).foregroundStyle(pgaInk)

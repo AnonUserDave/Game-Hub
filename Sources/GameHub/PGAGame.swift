@@ -51,7 +51,13 @@ final class PGAGameSession: ObservableObject {
     private var original: PGAOriginalPlayableCourse?
     private let textures = PGAOriginalTextureCache()
     private var loadTask: Task<Void, Never>?
-    private var loadWork: Task<(PGAOriginalPlayableCourse, PGAOriginalHoleMesh, Double), Error>?
+    private var loadWork: Task<(PGAOriginalPlayableCourse, Double), Error>?
+    /// Round setup shown after an original course loads.
+    @Published private(set) var awaitingSetup = false
+    @Published var setup = PGARoundSetup()
+    @Published private(set) var savedRound: PGARoundStore.Saved?
+    var courseCode: String { if case let .original(code) = choice { return code }; return "" }
+    func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
     private var prefetch: (index: Int, task: Task<PGAOriginalHoleMesh, Never>)?
     /// The view observes this instead of storing a closure on the session; a
     /// closure capturing the view retained the session through its StateObject.
@@ -77,20 +83,17 @@ final class PGAGameSession: ObservableObject {
         let root = GameStore.workspaceRoot()
         let started = ProcessInfo.processInfo.systemUptime
         loadState = .loading("Loading original \(code) terrain, materials, tees and pins…")
-        let work = Task.detached(priority: .userInitiated) { () throws -> (PGAOriginalPlayableCourse, PGAOriginalHoleMesh, Double) in
+        let work = Task.detached(priority: .userInitiated) { () throws -> (PGAOriginalPlayableCourse, Double) in
             let course = try PGAOriginalPlayableCourse.load(code: code, root: root)
-            let indexed = ProcessInfo.processInfo.systemUptime
-            let saved = PGARoundStore.load(identity: course.course.identity)
-            let mesh = PGAOriginalHoleMesh.build(course: course, holeIndex: saved?.holeIndex ?? 0)
-            return (course, mesh, indexed - started)
+            return (course, ProcessInfo.processInfo.systemUptime - started)
         }
         loadWork = work
         loadTask = Task { [weak self] in
             defer { self?.loadTask = nil; self?.loadWork = nil }
             do {
-                let (course, mesh, indexSeconds) = try await work.value
+                let (course, indexSeconds) = try await work.value
                 guard let self, !self.stopped else { return }
-                self.install(course, mesh: mesh, indexSeconds: indexSeconds, total: ProcessInfo.processInfo.systemUptime - started)
+                self.install(course, indexSeconds: indexSeconds)
             } catch is CancellationError {
             } catch {
                 self?.loadState = .failed("\(error.localizedDescription)\n\nPrepare original assets with `python3 Tools/prepare_pga2005.py`, then reopen.")
@@ -98,26 +101,49 @@ final class PGAGameSession: ObservableObject {
         }
     }
 
-    private func install(_ course: PGAOriginalPlayableCourse, mesh: PGAOriginalHoleMesh, indexSeconds: Double, total: Double) {
+    private func install(_ course: PGAOriginalPlayableCourse, indexSeconds: Double) {
         original = course
         renderer.useOriginalBallShadow(hud.image("ball-shadow"))
         renderer.useOriginalAimArrow(hud.image("aim-arrow"))
-        var game = PGASimulation(course: course.course, terrains: course.terrains)
-        var restored = false
-        if let saved = PGARoundStore.load(identity: course.course.identity) { restored = (try? game.restore(saved)) != nil }
-        simulation = game
-        showHole(mesh.holeIndex == game.holeIndex ? mesh : PGAOriginalHoleMesh.build(course: course, holeIndex: game.holeIndex))
         let checks = course.validation
         let tees = checks.filter { $0.teeSurface == .tee }.count, pins = checks.filter { $0.pinSurface == .green }.count
-        loadReport = String(format: "Loaded in %.2f s (indexes %.2f s) · %d/%d tees on tee boxes · %d/%d pins on greens · %@%@",
-                            total, indexSeconds, tees, checks.count, pins, checks.count, course.conditions.summary,
-                            restored ? " · saved round restored" : "")
+        loadReport = String(format: "Indexes built in %.2f s · %d/%d tees on tee boxes · %d/%d pins on greens · %@",
+                            indexSeconds, tees, checks.count, pins, checks.count, course.conditions.summary)
+        savedRound = PGARoundStore.load(code: course.data.code)
+        if let savedRound { setup = savedRound.setup }
+        awaitingSetup = true
         loadState = .ready
+    }
+
+    /// Starts a new round, or resumes the saved one, from the setup screen.
+    func startRound(resume: Bool = false) {
+        guard let original, awaitingSetup else { return }
+        let chosen = resume ? (savedRound?.setup ?? setup) : setup
+        guard chosen.valid, let course = try? original.course(for: chosen) else { return }
+        var game = PGASimulation(course: course, terrains: original.terrains,
+                                 playerNames: chosen.players.map { $0.trimmingCharacters(in: .whitespaces) })
+        if resume, let snapshot = savedRound?.snapshot { try? game.restore(snapshot) }
+        setup = chosen
+        simulation = game
+        awaitingSetup = false
+        lastHoleIndex = -1
+        showHole(PGAOriginalHoleMesh.build(course: original, holeIndex: game.holeIndex, hole: game.hole))
+        renderer.resetCamera()
+        saveRound()
+    }
+
+    /// Returns to the setup screen (pause menu "New round").
+    func newRound() {
+        guard original != nil else { return }
+        saveRound()
+        savedRound = PGARoundStore.load(code: courseCode)
+        setPaused(false)
+        awaitingSetup = true
     }
 
     private func showHole(_ mesh: PGAOriginalHoleMesh) {
         guard let original else { return }
-        renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: original, textures: textures), hole: original.course.holes[mesh.holeIndex],
+        renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: original, textures: textures), hole: simulation.course.holes[mesh.holeIndex],
                        flagImage: hud.courseImage("FLAG", course: original.data.code), holeImage: hud.image("hole-decal"))
         holeMap = mesh.map
         lastHoleIndex = mesh.holeIndex
@@ -126,15 +152,16 @@ final class PGAGameSession: ObservableObject {
         // after the scorecard does not stall a frame.
         let next = mesh.holeIndex + 1
         prefetch?.task.cancel(); prefetch = nil
-        if next < original.course.holes.count {
-            prefetch = (next, Task.detached(priority: .utility) { PGAOriginalHoleMesh.build(course: original, holeIndex: next) })
+        if next < simulation.course.holes.count {
+            let hole = simulation.course.holes[next]
+            prefetch = (next, Task.detached(priority: .utility) { PGAOriginalHoleMesh.build(course: original, holeIndex: next, hole: hole) })
         }
     }
 
     private func saveRound() {
-        guard isOriginal, original != nil else { return }
-        if simulation.phase == .roundComplete { PGARoundStore.clear(identity: simulation.course.identity); return }
-        if let snapshot = simulation.snapshot { PGARoundStore.save(snapshot) }
+        guard isOriginal, original != nil, !awaitingSetup, simulation.course.isOriginal else { return }
+        if simulation.phase == .roundComplete { PGARoundStore.clear(code: courseCode); return }
+        if let snapshot = simulation.snapshot { PGARoundStore.save(code: courseCode, setup: setup, snapshot: snapshot) }
     }
 
     func attach(_ view: PGAInputView) {
@@ -205,7 +232,7 @@ final class PGAGameSession: ObservableObject {
     }
 
     func swing() {
-        guard !paused, loadState == .ready else { return }
+        guard !paused, loadState == .ready, !awaitingSetup else { return }
         if simulation.phase == .holed { nextHole(); return }
         if simulation.phase == .roundComplete { restartRound(); return }
         simulation.swing()
@@ -221,13 +248,18 @@ final class PGAGameSession: ObservableObject {
     func resetHole() { simulation.resetHole(); setPaused(false); renderer.resetCamera() }
     func restartRound() { simulation.restartRound(); setPaused(false); syncHole(); renderer.resetCamera(); saveRound() }
     func nextHole() { simulation.continueRound(); syncHole(); renderer.resetCamera(); saveRound() }
-    func selectPauseItem(_ offset: Int) { pauseSelection = (pauseSelection + offset + 5) % 5 }
+    var pauseItems: [String] {
+        isOriginal ? ["Resume", "Restart hole", "Restart round", "New round setup", "Original course lab", "Return to hub"]
+                   : ["Resume", "Restart hole", "Restart round", "Original course lab", "Return to hub"]
+    }
+    func selectPauseItem(_ offset: Int) { pauseSelection = (pauseSelection + offset + pauseItems.count) % pauseItems.count }
     func activatePauseSelection() {
-        switch pauseSelection {
-        case 1: resetHole()
-        case 2: restartRound()
-        case 3: openLab()
-        case 4: exit()
+        switch pauseItems[pauseSelection] {
+        case "Restart hole": resetHole()
+        case "Restart round": restartRound()
+        case "New round setup": newRound()
+        case "Original course lab": openLab()
+        case "Return to hub": exit()
         default: setPaused(false)
         }
     }
@@ -255,6 +287,8 @@ final class PGAGameSession: ObservableObject {
     }
 
     private func handleKey(_ event: NSEvent) -> Bool {
+        // The setup screen has text fields; let AppKit deliver every key.
+        if awaitingSetup { return false }
         let key = event.keyCode
         let used: Set<UInt16> = [0, 1, 2, 6, 8, 13, 15, 17, 3, 4, 36, 49, 53, 123, 124, 125, 126]
         guard used.contains(key) else { return false }
@@ -293,7 +327,7 @@ final class PGAGameSession: ObservableObject {
         lastTick = now
         pollController(delta: delta)
         guard !stopped else { return }
-        if !paused && NSApp.isActive && loadState == .ready {
+        if !paused && NSApp.isActive && loadState == .ready && !awaitingSetup {
             let left = heldKeys.contains(123) || heldKeys.contains(0)
             let right = heldKeys.contains(124) || heldKeys.contains(2)
             if left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
@@ -330,6 +364,16 @@ final class PGAGameSession: ObservableObject {
         func pressed(_ name: String) -> Bool { buttons[name] == true && previousButtons[name] != true }
         defer { previousButtons = buttons }
         guard NSApp.isActive else { return }
+        if awaitingSetup {
+            // Setup: A start, Y resume, LB/RB tees, X pins, Menu/B hub.
+            if pressed("A") { startRound() }
+            else if pressed("Y"), savedRound != nil { startRound(resume: true) }
+            else if pressed("LB") { setup.teeIndex = max(0, setup.teeIndex - 1) }
+            else if pressed("RB") { setup.teeIndex = min(4, setup.teeIndex + 1) }
+            else if pressed("X") { setup.pins = setup.pins == .standard ? .varied : .standard }
+            else if pressed("Menu") || pressed("B") { exit() }
+            return
+        }
         if pressed("Menu") { togglePause(); return }
         if pressed("B") { if simulation.phase.swinging && !paused { cancelSwing() } else { togglePause() } }
         if paused {
@@ -522,6 +566,22 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     }
 
     private var aimArrow: SCNNode?
+    private var otherBalls: [SCNNode] = []
+
+    /// Balls of players waiting their turn (multiplayer), on their lies.
+    private func updateOtherBalls(_ simulation: PGASimulation) {
+        let waiting = simulation.players.indices.filter { $0 != simulation.currentPlayer && !simulation.players[$0].holed }
+        while otherBalls.count < waiting.count {
+            let node = SCNNode(geometry: ball.geometry); node.scale = SCNVector3(0.8, 0.8, 0.8)
+            scene.rootNode.addChildNode(node); otherBalls.append(node)
+        }
+        for (slot, node) in otherBalls.enumerated() {
+            guard slot < waiting.count else { node.isHidden = true; continue }
+            let position = simulation.players[waiting[slot]].ball
+            node.isHidden = false
+            node.position = Self.vector(position + PGAVector(x: 0, y: 0.08, z: 0))
+        }
+    }
 
     /// Original aim arrow (DataImages/Game/Interface/aim) laid on the ground
     /// in front of the ball along the aim line while the player is aiming.
@@ -587,6 +647,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         aimMarker.position = SCNVector3(target.x, simulation.groundHeight(x: target.x, z: target.z, near: position.y + 30) + 0.12, target.z)
         aimMarker.isHidden = simulation.phase.inMotion || simulation.phase == .holed || simulation.phase == .roundComplete
         aimMarker.scale = simulation.club == .putter ? SCNVector3(0.4, 1, 0.4) : SCNVector3(1, 1, 1)
+        updateOtherBalls(simulation)
         if let aimArrow {
             aimArrow.isHidden = simulation.phase != .aiming
             aimArrow.position = SCNVector3(position.x, ground + 0.03, position.z)
