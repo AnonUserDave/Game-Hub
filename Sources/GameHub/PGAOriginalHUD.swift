@@ -220,9 +220,9 @@ struct PGARoundSetupView: View {
             }
             VStack(spacing: 18) {
                 HStack(spacing: 16) {
-                    if let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
+                    if session.courseCode == "PBL", let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("PEBBLE BEACH GOLF LINKS").font(.system(size: 22, weight: .bold)).tracking(1.5)
+                        Text(session.courseTitle.uppercased()).font(.system(size: 22, weight: .bold)).tracking(1.5)
                         Text("Original course data · 18 holes · approximate native physics")
                             .font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
                     }

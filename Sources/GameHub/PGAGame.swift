@@ -57,6 +57,8 @@ final class PGAGameSession: ObservableObject {
     @Published var setup = PGARoundSetup()
     @Published private(set) var savedRound: PGARoundStore.Saved?
     var courseCode: String { if case let .original(code) = choice { return code }; return "" }
+    /// Original course title once loaded (e.g. "Pebble Beach Golf Links 2005").
+    var courseTitle: String { original?.data.title ?? (courseCode == "TUR" ? "Turnberry" : "Pebble Beach") }
     func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
     private var prefetch: (index: Int, task: Task<PGAOriginalHoleMesh, Never>)?
     /// The view observes this instead of storing a closure on the session; a

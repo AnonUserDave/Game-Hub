@@ -16,7 +16,8 @@ final class PGASnapshotTests: XCTestCase {
             throw XCTSkip("Set GAMEHUB_SNAPSHOT_DIR to capture original-course snapshots")
         }
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        let course = try PGAOriginalPlayableCourse.load(code: "PBL", root: root)
+        let code = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_COURSE"] ?? "PBL"
+        let course = try PGAOriginalPlayableCourse.load(code: code, root: root)
         let holes = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_HOLES"]?.split(separator: ",").compactMap { Int($0) } ?? Array(1...18)
         let directory = URL(fileURLWithPath: output, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -35,7 +36,7 @@ final class PGASnapshotTests: XCTestCase {
                 var game = PGASimulation(course: single, terrains: [course.terrains[index]])
                 let renderer = PGARenderer()
                 renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures), hole: single.holes[0],
-                               flagImage: art.courseImage("FLAG"), holeImage: art.image("hole-decal"))
+                               flagImage: art.courseImage("FLAG", course: code), holeImage: art.image("hole-decal"))
                 renderer.useOriginalBallShadow(art.image("ball-shadow"))
                 renderer.useOriginalAimArrow(art.image("aim-arrow"))
                 let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
@@ -56,10 +57,10 @@ final class PGASnapshotTests: XCTestCase {
                     renderer.update(game, cameraMode: camera == 9 ? 0 : camera, zoom: 1, delta: 1)
                     snapshot.pointOfView = renderer.camera
                     let image = snapshot.snapshot(atTime: 1.3, with: CGSize(width: 2560, height: 1600), antialiasingMode: .multisampling4X)
-                    try write(image, to: directory.appendingPathComponent(String(format: "pbl-hole%02d-camera%d.png", number, camera)))
+                    try write(image, to: directory.appendingPathComponent(String(format: "%@-hole%02d-camera%d.png", code.lowercased(), number, camera)))
                 }
                 if let map = mesh.map.image {
-                    try write(NSImage(cgImage: map, size: .zero), to: directory.appendingPathComponent(String(format: "pbl-hole%02d-map.png", number)))
+                    try write(NSImage(cgImage: map, size: .zero), to: directory.appendingPathComponent(String(format: "%@-hole%02d-map.png", code.lowercased(), number)))
                 }
                 print(String(format: "Hole %d: %d vertices, %d triangles, %d materials, mesh build %.3f s, lie %@",
                              number, mesh.vertexCount, mesh.batches.map(\.triangles).reduce(0, +), mesh.batches.count, built, game.lieLabel))

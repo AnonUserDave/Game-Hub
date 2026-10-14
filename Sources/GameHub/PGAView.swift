@@ -58,7 +58,7 @@ struct PGAGameView: View {
         HStack(spacing: 12) {
             Image(systemName: "figure.golf").font(.system(size: 19, weight: .medium)).foregroundStyle(pgaGold)
             VStack(alignment: .leading, spacing: 2) {
-                Text(session.isOriginal ? "PGA 2005 · ORIGINAL PEBBLE BEACH DATA · DEVELOPMENT" : "PGA 2005 · NATIVE DEVELOPMENT").font(.system(size: 11, weight: .bold, design: .monospaced)).tracking(1.3)
+                Text(session.isOriginal ? "PGA 2005 · ORIGINAL \(session.courseCode == "TUR" ? "TURNBERRY" : "PEBBLE BEACH") DATA · DEVELOPMENT" : "PGA 2005 · NATIVE DEVELOPMENT").font(.system(size: 11, weight: .bold, design: .monospaced)).tracking(1.3)
                 Text(session.isOriginal ? "Original TCR terrain, textures, tees and pins · approximate native physics, not the original engine" : "Generated practice course · original game reconstruction in progress").font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
             }
             Spacer()
