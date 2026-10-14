@@ -114,6 +114,8 @@ final class PGAGameSession: ObservableObject {
     private var audio: PGAAudioEngine?
     private var ambientClock = 0.0
     private var lastStrike: (club: PGAClub, flags: UInt32, fromTee: Bool, startDistance: Double, accuracy: Double, par: Int)?
+    /// Original commentary and scripted gallery reactions (original courses).
+    private var commentary = PGACommentaryDirector()
     var isOriginal: Bool { if case .original = choice { return true }; return false }
     private var ownsInputFocus: Bool { NSApp.isActive && view?.window?.isKeyWindow == true }
 
@@ -192,6 +194,10 @@ final class PGAGameSession: ObservableObject {
         game.conditions = chosen.conditions ?? original.defaultConditions
         setup = chosen
         simulation = game
+        commentary = PGACommentaryDirector(context: PGACommentaryContext(gameType: chosen.type, courseCode: original.data.code,
+                                                                          conditions: game.conditions ?? original.defaultConditions,
+                                                                          skyType: renderPresets?.state(weather: chosen.weatherRow, time: chosen.timeSlot, hole: 1).skyType ?? 2))
+        audio?.perform([.cancel])
         awaitingSetup = false
         lastHoleIndex = -1
         showHole(PGAOriginalHoleMesh.build(course: original, holeIndex: game.holeIndex, hole: game.hole))
@@ -430,11 +436,9 @@ final class PGAGameSession: ObservableObject {
             let right = heldKeys.contains(124) || heldKeys.contains(2)
             if ownsInputFocus && left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
             simulation.update(deltaTime: delta)
-            if !simulation.events.isEmpty {
-                let events = simulation.takeEvents()
-                renderer.playEffects(events, simulation: simulation)
-                playSounds(events)
-            }
+            let events = simulation.events.isEmpty ? [] : simulation.takeEvents()
+            if !events.isEmpty { renderer.playEffects(events, simulation: simulation); playSounds(events) }
+            if let audio, audio.scripted { audio.perform(commentary.update(simulation, events: events)) }
         }
         if previousPhase != simulation.phase {
             if !isOriginal && (simulation.phase == .airborne || simulation.phase == .rolling) { renderer.animateSwing() }
@@ -495,6 +499,8 @@ final class PGAGameSession: ObservableObject {
     }
 
     private func react(resultFlags: UInt32, resultDistance: Double, shotDistance: Double, holed: Bool, penalty: PGASurface?) {
+        // Original courses play gallery.stn's own shot rules (PGACommentaryDirector).
+        if audio?.scripted == true && simulation.course.isOriginal { lastStrike = nil; return }
         guard let strike = lastStrike else { return }
         let shot = PGAAudioRules.Shot(club: strike.club, fromTee: strike.fromTee, par: strike.par, startFlags: strike.flags,
                                       startDistance: strike.startDistance, accuracy: strike.accuracy, resultFlags: resultFlags,

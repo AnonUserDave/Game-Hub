@@ -38,7 +38,7 @@ is not a file index. Ids 801–919 are rule keys.
 | `Sounds_-_Interface` | 13 PCM WAV (6 stereo `TPCamTrans*`), **`scale.wav` is MS-ADPCM (tag 2)**, `KaChing.mp3` | MS-ADPCM uncertain | decode to PCM |
 | `Courses_-_Generic/Sounds` (360 WAV) | PCM s16 at 6/8/11.025/12/14/16/22.05 kHz; many carry `wsmp`/`LIST`/`smpl` or zero-filled junk after `data` | yes after cleanup | rewrite as canonical fmt+data |
 | `Sounds_-_Music` | MPEG-1/2 layer III, `music.stn`, `gameface.mus` | MP3 yes | copy MP3 (opt-in) |
-| `Sounds_-_Commentary` (3,288 MP3 + `announcer.stn`/`analyst.stn`) | MP3 | yes | not imported |
+| `Sounds_-_Commentary` (3,288 MP3 + `announcer.stn`/`analyst.stn`) | MP3 | yes | 3,216 referenced MP3s copied unchanged to `commentary/`; rules in `commentary.json` ([PGA2005-COMMENTARY.md](PGA2005-COMMENTARY.md)) |
 | `Sounds_-_Career` (37 MP3) | MP3 | yes | not imported |
 | `Miles_Sound_components` | Miles 6 providers (`mssmp3.asi`, `msseax.m3d`, …) | n/a | none |
 
@@ -93,7 +93,7 @@ value for the *n*-th set mask bit.
 | Class | Producer | Bits |
 | --- | --- | --- |
 | 1 swing (sub 3) | `ClubSwing` 0x1006e370, builder 0x1021424d | bit 0 club mask (0x1021038a: 1 driver, 2 wood, 4 iron/wedge, 0x10 putter); bit 1 swing flags (0x10 toe, 0x20 heel, 0x2000 flop); bit 2 lie flags (0x9000 = tee box \| on tee, 2 rough, 8 bunker, 0x80000000 weed/pine); bit 5 power % (= swing+0x305 / 14 × 100) |
-| 2 shot result (sub 1 in flight, sub 2 stopped) | gallery rules | inferred from 199 editor descriptions: bit 3 result distance to pin (inches), bit 4 shot length (inches), bit 7 par, bit 8 stroke, bit 10 miss side, bit 21 result terrain (0x4 green, 0x4000 in hole) |
+| 2 shot (sub 1 in flight, 2 stopped, 19 before the shot) | `ShotEvent` builder 0x102146cb (decoded in [PGA2005-COMMENTARY.md](PGA2005-COMMENTARY.md)) | compact values (mask 0x6fffffdf): bit 3 = bit 15 inches to pin, bit 4 = bit 22 shot length, bit 6 hole, bit 7 par, bit 8 strokes, bit 9 score code, bit 10 miss side, bit 12 **flight index**, bit 21 terrain at the (precalculated) end |
 | 3 ball collision (sub 4) | `CGolfBall::CheckForCollisionSound` 0x10136ed0, builder 0x102137ad | bit 2 sound id, bit 5 impact % (= magnitude / 0.5 × 100), bit 21 terrain flags at the impact |
 | 5 background (sub 6/7/8) | `SituationCommand::BackgroundNoise` 0x1006d5c3, builder 0x1021502f | bit 6 hole number, bit 13 wind speed, bit 14 rain state |
 | 6 music state | `CSoundCommand::StartMusic` 0x100707e5 | sub = state (9 menus/intro, 20 end of game) |
@@ -284,6 +284,7 @@ reads these keys:
 ```sh
 python3 Tools/import_pga2005_audio.py            # lean set: gameplay, crowd, interface, PBL+TUR ambience
 python3 Tools/import_pga2005_audio.py --music    # also menu/end-of-game MP3s (+22.6 MB)
+python3 Tools/import_pga2005_audio.py --no-commentary  # skip the 156 MB of TV commentary MP3s
 python3 Tools/import_pga2005_audio.py --dry-run --strict
 ```
 
@@ -310,6 +311,9 @@ Output in `Library/Imported/pga2005/audio/`:
   * `playback_model`, `missing_sources` and `warnings`.
 * `audio-rules.json` (0.3 MB): the complete decoded rule tables, for a faithful
   rule engine.
+* `commentary.json` (0.8 MB): announcer, analyst and gallery class-2 rules for
+  the native script interpreter; `commentary-files.json` lists the copied
+  commentary MP3s with hashes (see [PGA2005-COMMENTARY.md](PGA2005-COMMENTARY.md)).
 
 | Category | Files | MB |
 | --- | ---: | ---: |
@@ -353,7 +357,7 @@ file.
 | STN layout, operators, selection, least-played variant choice | High (decompiled loader + all three files parse with exact description counts 223/1,182/16) |
 | Collision event fields, sound-id rules, impact gating | High |
 | Swing event fields (club mask, lie flags, power %) | High for bits 0/1/2/5; others medium |
-| Gallery (class 2) field meanings | Medium: inferred from editor descriptions, builder not decompiled |
+| Gallery (class 2) field meanings | High: builder 0x102146cb decompiled ([PGA2005-COMMENTARY.md](PGA2005-COMMENTARY.md)); native play evaluates gallery.stn's class-2 rules on original courses |
 | SND.INI semantics, radius in inches, global 2D beds | High |
 | 3D constants and inverse rolloff | High for values; the exact Miles curve beyond max distance is medium |
 | Swing "power %" threshold meaning in play | Medium: the ">94 → 75 %" rule can never win, because ">90" has a better priority (97 < 98). This is faithful to the data |

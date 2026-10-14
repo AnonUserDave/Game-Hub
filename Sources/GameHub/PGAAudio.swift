@@ -197,9 +197,11 @@ struct PGAAudioRules {
         var penalty: PGASurface?
     }
 
-    /// gallery.stn reactions. The class 2 event builder was not decompiled, so
-    /// this maps finished shots onto the situations by their editor
-    /// descriptions and distance thresholds (inches converted to meters).
+    /// Fallback gallery reactions when commentary.json is absent or on the
+    /// generated practice course. Original courses evaluate gallery.stn's
+    /// class-2 rules exactly instead (PGACommentaryDirector, decoded builder
+    /// 0x102146cb); this hand mapping by editor descriptions and distance
+    /// thresholds (inches converted to meters) is an approximation.
     static func crowdReaction(_ shot: Shot) -> String? {
         let inch = PGACourseTransform.metersPerInch, putt = shot.club == .putter
         let teeShot = shot.fromTee && shot.startFlags & 0x9000 != 0
@@ -266,6 +268,24 @@ final class PGAAudioEngine: @unchecked Sendable {
     private var fired: [String: Int] = [:]
     private var random = SystemRandomNumberGenerator()
 
+    /// Commentary and the scripted gallery (commentary.json). Speech is read
+    /// from disk one line at a time and never preloaded: at most one line's
+    /// samples (≤ about 3.5 MB) are held, on one player node, so two lines
+    /// can never overlap.
+    let scripted: Bool
+    private var book: PGAScriptBook?
+    private var interpreter = PGAScriptInterpreter()
+    private var waiting: [PGAScriptRequest] = []
+    private let speech = AVAudioPlayerNode()
+    private let speechFormat = AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 1)!
+    private var speechEndsAt = 0.0
+    private var speechGeneration = 0
+    private var pausedAt = 0.0
+    /// CMachineSettings::SuggestSound 0x102314f7: TV-announce slider 35 %.
+    static let speechGain: Float = 0.35
+    private static let speechFileLimit = 2 * 1024 * 1024
+    private static let waitingLimit = 6
+
     private struct Placed { var folder: String; var position: PGAVector?; var radius: Double }
     private var emitters: [Int: [Placed]] = [:]
     private var folders: [String: PGAAudioRules.Folder] = [:]
@@ -296,6 +316,7 @@ final class PGAAudioEngine: @unchecked Sendable {
               device != kAudioObjectUnknown else { return nil }
         self.rules = rules
         self.directory = directory
+        scripted = FileManager.default.fileExists(atPath: directory.appendingPathComponent("commentary.json").path)
         engine = AVAudioEngine()
         environment = AVAudioEnvironmentNode()
     }
@@ -307,12 +328,13 @@ final class PGAAudioEngine: @unchecked Sendable {
 
     // MARK: Game-facing API (main actor → audio queue)
 
-    /// Diagnostics: whether the engine started, decoded buffers held, and
-    /// voices currently sounding (loops included).
-    var status: (running: Bool, buffers: Int, bytes: Int, sounding: Int) {
+    /// Diagnostics: whether the engine started, decoded buffers held, voices
+    /// currently sounding (loops included), whether a commentary line plays
+    /// and how many comments wait for silence.
+    var status: (running: Bool, buffers: Int, bytes: Int, sounding: Int, speaking: Bool, waiting: Int) {
         queue.sync {
             let now = ProcessInfo.processInfo.systemUptime
-            return (running, cache.count, cacheBytes, voices.filter { $0.endsAt > now }.count)
+            return (running, cache.count, cacheBytes, voices.filter { $0.endsAt > now }.count, speechEndsAt > now, waiting.count)
         }
     }
 
@@ -321,6 +343,7 @@ final class PGAAudioEngine: @unchecked Sendable {
         queue.sync {
             running = false
             for voice in voices { voice.node.stop(); voice.loopKey = nil }
+            speech.stop(); speechGeneration += 1; speechEndsAt = 0; waiting.removeAll()
             engine.stop()
             cache.removeAll(); cacheOrder.removeAll(); cacheBytes = 0
         }
@@ -329,7 +352,13 @@ final class PGAAudioEngine: @unchecked Sendable {
         queue.async {
             guard self.running, value != self.paused else { return }
             self.paused = value
-            if value { self.engine.pause() } else { try? self.engine.start() }
+            let now = ProcessInfo.processInfo.systemUptime
+            if value { self.pausedAt = now; self.engine.pause() } else {
+                // A paused line resumes where it stopped; keep it marked busy.
+                if self.speechEndsAt > self.pausedAt { self.speechEndsAt += now - self.pausedAt }
+                try? self.engine.start()
+                self.drainWaiting()
+            }
         }
     }
 
@@ -441,13 +470,102 @@ final class PGAAudioEngine: @unchecked Sendable {
         }
     }
 
+    /// Situation events for the commentary and gallery scripts (see
+    /// PGACommentaryDirector). Evaluated on the audio queue in order.
+    func perform(_ requests: [PGAScriptRequest]) {
+        guard scripted, !requests.isEmpty else { return }
+        queue.async {
+            for request in requests {
+                switch request.timing {
+                case .cancelWaiting: self.waiting.removeAll()
+                case .whenIdle:
+                    self.waiting.append(request)
+                    if self.waiting.count > Self.waitingLimit { self.waiting.removeFirst() }
+                case .now: self.runScripts(request)
+                }
+            }
+            self.drainWaiting()
+        }
+    }
+
     // MARK: Audio queue
+
+    private func runScripts(_ request: PGAScriptRequest) {
+        guard running, !paused, let book else { return }
+        var names = request.scripts.filter { book.scripts[$0] != nil }
+        if request.firstMatching {
+            names = names.first { PGAScriptInterpreter.willExecute(book.scripts[$0]!, facts: request.facts) }.map { [$0] } ?? []
+        }
+        let now = ProcessInfo.processInfo.systemUptime
+        for name in names {
+            let plays = interpreter.run(name, script: book.scripts[name]!, facts: request.facts, now: now,
+                                        busyUntil: speechEndsAt, force: request.force, using: &random)
+            for play in plays {
+                if play.commentary { speak(play.files) }
+                else if let file = play.files.first { playFile(file, gain: 1, at: nil) }
+            }
+        }
+    }
+
+    /// Pre-shot and introduction comments wait for silence, like the
+    /// executable's InProgress polling.
+    private func drainWaiting() {
+        while !waiting.isEmpty, running, !paused, speechEndsAt <= ProcessInfo.processInfo.systemUptime {
+            runScripts(waiting.removeFirst())
+        }
+    }
+
+    /// Plays one commentary line (or a sequence) on the single speech node.
+    private func speak(_ files: [String]) {
+        let buffers = files.compactMap(speechBuffer)
+        guard !buffers.isEmpty else { return }
+        speech.stop()
+        speechGeneration += 1
+        let generation = speechGeneration
+        for (index, buffer) in buffers.enumerated() {
+            let last = index == buffers.count - 1
+            speech.scheduleBuffer(buffer, at: nil, options: [], completionCallbackType: .dataPlayedBack) { [weak self] _ in
+                guard last, let self else { return }
+                self.queue.async {
+                    guard generation == self.speechGeneration else { return }
+                    self.speechEndsAt = 0
+                    self.drainWaiting()
+                }
+            }
+        }
+        speech.play()
+        let seconds = buffers.reduce(0) { $0 + Double($1.frameLength) / speechFormat.sampleRate }
+        speechEndsAt = ProcessInfo.processInfo.systemUptime + seconds
+    }
+
+    /// Decodes one original MP3 (44.1/22.05 kHz, mono or stereo) to the
+    /// speech node's 44.1 kHz mono format. Not cached.
+    private func speechBuffer(_ file: String) -> AVAudioPCMBuffer? {
+        let url = directory.appendingPathComponent(file)
+        guard let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= Self.speechFileLimit,
+              let source = try? AVAudioFile(forReading: url), source.length > 0, source.length < 3_000_000,
+              let input = AVAudioPCMBuffer(pcmFormat: source.processingFormat, frameCapacity: AVAudioFrameCount(source.length)),
+              (try? source.read(into: input)) != nil else { return nil }
+        if input.format == speechFormat { return input }
+        guard let converter = AVAudioConverter(from: input.format, to: speechFormat) else { return nil }
+        converter.downmix = true
+        let capacity = AVAudioFrameCount(Double(input.frameLength) * speechFormat.sampleRate / input.format.sampleRate) + 64
+        guard let output = AVAudioPCMBuffer(pcmFormat: speechFormat, frameCapacity: capacity) else { return nil }
+        var consumed = false
+        var error: NSError?
+        let status = converter.convert(to: output, error: &error) { _, outStatus in
+            if consumed { outStatus.pointee = .endOfStream; return nil }
+            consumed = true; outStatus.pointee = .haveData; return input
+        }
+        return status != .error && output.frameLength > 0 ? output : nil
+    }
 
     private func startEngine() {
         if !configured { configure() }
         guard !running else { return }
         do { try engine.start(); running = true; paused = false } catch { running = false }
         guard running else { return }
+        if scripted && book == nil { book = PGAScriptBook.load(directory: directory) }
         // Preload the short gameplay sounds the original marks static.
         for event in rules.events.values where event.channel != "crowd" && !event.loop && event.conditions?.event_class != 5 {
             for file in event.groups.joined() where file.hasPrefix("gameplay/") { _ = buffer(file) }
@@ -473,6 +591,9 @@ final class PGAAudioEngine: @unchecked Sendable {
             if spatial { voice.node.renderingAlgorithm = .equalPowerPanning; voice.node.reverbBlend = 0 }
             voices.append(voice)
         }
+        engine.attach(speech)
+        engine.connect(speech, to: engine.mainMixerNode, format: speechFormat)
+        speech.volume = Self.speechGain
         engine.mainMixerNode.outputVolume = 0.9
         engine.prepare()
         configurationObserver = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine, queue: nil) { [weak self] _ in
