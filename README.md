@@ -2,7 +2,7 @@
 
 A native Apple Silicon macOS library for a family game-porting project. The first target is **Tiger Woods PGA Tour 2005**, followed by the other supplied games. Games must eventually run as native rewrites, without emulators, Wine, or Rosetta.
 
-**Status: development, not a collection of completed ports.** The hub launches native games and catalogs the original media. Two golf prototypes exist: generated practice holes, and an 18-hole Pebble Beach development module that plays on the original PGA Tour 2005 course data (terrain, textures, tees, pins and surface rules decoded locally from your own discs) with approximate native physics. An Original Course Lab shows each original hole's world. Original physics, characters, animation, audio, career modes and full behavior remain unfinished. An ARM64 rewrite cannot have the same executable bytes as an x86 Windows game; fidelity will be evaluated against specific behavior and visual references.
+**Status: development, with no completed faithful ports.** The hub catalogs all supplied titles and launches native modules. PGA 2005 has generated practice holes and development gameplay across all 18 holes of each of 11 prepared original courses. The original-course module uses locally decoded terrain, textures, trees, sky, HUD, Tiger golfer assets, audio, camera scripts, a tri-click meter and a Swift reconstruction of ball flight. The Original Course Lab views original hole geometry. Gameplay rules, physics and visuals still need comparison with a running original game; several modes, collisions, weather and presentation features remain incomplete. An ARM64 rewrite cannot have the same executable bytes as an x86 Windows game, so fidelity is tracked through asset, behavior, visual, control and performance comparisons.
 
 ## Run on this Mac
 
@@ -15,7 +15,7 @@ Double-click `Game Hub.app` after building, or run:
 
 Requires macOS 14+ and Xcode's installed Swift compiler/macOS SDK. The build script uses the compiler directly, so the current machine's `/usr/bin` Xcode launcher problem does not prevent this build. It does not accept an Xcode license or change system settings. No third-party Swift dependencies.
 
-The target Mac is an M1 MacBook Air with 8 GB RAM and a 2560 × 1600 panel. The Metal renderer explicitly targets 2560 × 1600 in fullscreen, independently of desktop scaling. Native UI testing confirmed that actual attachment size in both practice and Original Course Lab. Snapshot frame rates reached 55–60 FPS on the M1 before the Pebble Beach module existed; sustained profiling of either module remains pending.
+The release target is the owner's M1 MacBook Air with 8 GB RAM and a 2560 × 1600 panel. The Metal renderer targets actual 2560 × 1600 attachments in fullscreen, independently of desktop scaling. Earlier native UI checks confirmed that attachment size in practice and Original Course Lab. Current original-course development checks were on the son's M5 Pro; the required 30-minute M1 performance and input acceptance remains pending. See [M1 target constraints](docs/M1_TARGET_CONSTRAINT.md).
 
 ## What is being built
 
@@ -24,7 +24,7 @@ The target Mac is an M1 MacBook Air with 8 GB RAM and a 2560 × 1600 panel. The 
 - Keyboard and trackpad controls, with native GameController support for devices macOS exposes.
 - A native golf development course to exercise rendering, swing, ball simulation, putting, penalties, and input while the original engine is reconstructed.
 - An Original Course Lab for the actual Pebble Beach and Turnberry terrain, UVs, material IDs and textures, one hole world at a time, with orbit, zoom, hole/course selection and provenance.
-- An 18-hole Pebble Beach development module on the original course data, with approximate physics clearly labeled.
+- An 18-hole original-course development module for all 11 prepared courses, using a statically reconstructed ball-flight model that still needs original-game comparison.
 - Local source-media inspection, texture conversion, and REA/Ghidra research for the real PGA port.
 
 The supplied collection contains 17 archives: PGA 2004/2005, THPS 2, THUG 1/2, Apple Panic, three Asteroids editions, Breakout, Conflict 2500, Crossfire, Dig Dug, NFL Football, Night Driver, Preppie!, and Space Invaders. Each platform edition needs its own fidelity assessment.
@@ -41,7 +41,7 @@ Prepare original Pebble Beach and Turnberry course assets with one command (Pyth
 python3 Tools/prepare_pga2005.py
 ```
 
-The importer currently recovers 11 courses' INI metadata (198 holes) and converts 236 original TGA/DDS images to PNG. It preserves raw coordinates, duplicate keys, provenance hashes, and malformed source fields. Separate readers now decode version-7 TCR primary geometry, original TCL texture/material links and surface properties, and authoritative TCR tee/pin arrays. Geometry validation passes all 11 supplied courses. Pebble Beach contains 925,930 vertices, 843,279 triangles and 181 used materials. Original world units are corroborated as inches. See [asset research](docs/research/PGA2005-ASSETS.md) and [REA research](docs/research/PGA2005-REA.md).
+The importer prepares all 11 courses (198 holes), including original terrain, materials, tees, pins, scenery, golfer assets, HUD, audio and camera scripts. It preserves provenance and keeps prepared media outside Git. Source world units are inches. See [asset research](docs/research/PGA2005-ASSETS.md) and [REA research](docs/research/PGA2005-REA.md).
 
 On the original development Mac, the bundled Python is:
 
@@ -59,7 +59,7 @@ See [controller findings](docs/CONTROLLER.md). The adapter requires no kernel dr
 
 For the son: start with the [ready-to-paste continuation prompt](docs/SON_HANDOFF_PROMPT.md). The [M1 hardware constraint](docs/M1_TARGET_CONSTRAINT.md) is mandatory even when developing on the M5 Pro. Original ZIPs have already been AirDropped; follow [media setup](docs/MEDIA_SETUP.md). Work on the owner's laptop is paused for this handoff.
 
-Read [HANDOFF.md](docs/HANDOFF.md), then [INTEGRATION.md](docs/INTEGRATION.md) for the game-module contract. Original Pebble Beach gameplay is integrated; the next priorities are M1 acceptance of it and reconstructing the original `CBallFlight` physics, rules and visuals. The generated practice course remains scaffolding.
+Read [HANDOFF.md](docs/HANDOFF.md), then [INTEGRATION.md](docs/INTEGRATION.md) for the game-module contract. Original-course gameplay is integrated; the next priorities are original-game comparisons, remaining rules and presentation work, and M1 acceptance when the owner makes that machine available. The generated practice course remains scaffolding.
 
 Tests:
 
