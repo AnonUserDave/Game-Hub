@@ -53,6 +53,7 @@ struct PGAOriginalSurfaceRecord: Decodable, Equatable {
     var name: String
     var flags: UInt32
     var coefficients: [Double]
+    var sound_id: Int?
 }
 
 /// Mapped original course data shared by every hole: GHPC v3 terrain, patch
@@ -182,7 +183,10 @@ final class PGAOriginalCourseData: @unchecked Sendable {
     }
 
     private struct MaterialFile: Decodable {
-        struct Entry: Decodable { var id: UInt32; var name: String; var texture: String; var surface_types: [PGAOriginalSurfaceRecord]; var section_flags: UInt32? }
+        struct Entry: Decodable {
+            var id: UInt32; var name: String; var texture: String; var surface_types: [PGAOriginalSurfaceRecord]
+            var section_flags: UInt32?; var section_sound_id: Int?
+        }
         var schema_version: Int
         var materials: [Entry]
     }
@@ -199,7 +203,8 @@ final class PGAOriginalCourseData: @unchecked Sendable {
             result[entry.id] = Material(id: entry.id, name: entry.name, texture: texture, records: entry.surface_types,
                                         properties: PGASurfaceProperties(materialID: entry.id, materialName: entry.name,
                                                                          sectionFlags: entry.section_flags ?? 0,
-                                                                         records: entry.surface_types.map { .init(label: $0.name, flags: $0.flags, coefficients: $0.coefficients) }))
+                                                                         records: entry.surface_types.map { .init(label: $0.name, flags: $0.flags, coefficients: $0.coefficients, soundID: $0.sound_id ?? -1) },
+                                                                         sectionSoundID: entry.section_sound_id ?? -1))
         }
         return result
     }

@@ -217,6 +217,17 @@ struct PGAPlayer: Codable, Equatable {
     var holed = false
 }
 
+/// Things that happened during simulation steps, drained each frame by the
+/// session for sound (and later commentary/camera). Purely informational.
+enum PGASimulationEvent: Equatable {
+    case strike(club: PGAClub, lie: PGASurface, power: Double, accuracy: Double, fromTee: Bool)
+    case impact(position: PGAVector, surface: PGASurface, soundID: Int?, normalSpeed: Double)
+    case cup
+    case penalty(PGASurface)
+    case rest(lie: PGASurface, distanceToPin: Double, shotDistance: Double, fromTee: Bool)
+    case holed(strokes: Int, par: Int, shotDistance: Double, onGreen: Bool)
+}
+
 /// Deterministic SplitMix64, so lies drawn at rest replay identically.
 struct PGARandom: Codable, Equatable {
     var state: UInt64
@@ -260,6 +271,9 @@ struct PGASimulation {
     private let terrains: [PGATerrainSampling]
     private var random: PGARandom
     private var originLieIndex = 0
+    private(set) var events: [PGASimulationEvent] = []
+    private var shotFromTee = false
+    private var shotLie = PGASurface.tee
     /// Where and how fast the ball first touched a bunker during this shot.
     private var bunkerEntry: (position: PGAVector, speed: Double)?
     private var meterTime = 0.0
@@ -314,6 +328,8 @@ struct PGASimulation {
         random = PGARandom(seed: course.identity)
         resetHole()
     }
+
+    mutating func takeEvents() -> [PGASimulationEvent] { defer { events.removeAll(keepingCapacity: true) }; return events }
 
     /// Floor query that tolerates the hairline seams between source patches.
     func ground(x: Double, z: Double, ceiling: Double = .infinity) -> PGAGroundSample? {
@@ -401,6 +417,8 @@ struct PGASimulation {
         guard phase == .aiming || phase.swinging else { return }
         let launch = launchFactor
         shotPower = max(0.04, min(1, power)); shotAccuracy = max(-1, min(1, accuracy))
+        shotFromTee = strokes == 0; shotLie = lie
+        events.append(.strike(club: club, lie: lie, power: shotPower, accuracy: shotAccuracy, fromTee: shotFromTee))
         let angle = heading + shotAccuracy * (club == .putter ? 0.09 : 0.14)
         let speed = club.speed * shotPower * launch * (1 - abs(shotAccuracy) * 0.12)
         velocity = PGAVector(x: sin(angle) * speed * cos(club.loft), y: speed * sin(club.loft), z: cos(angle) * speed * cos(club.loft))
@@ -454,6 +472,9 @@ struct PGASimulation {
             missingFloorTime = 0
             if ball.y <= floor.height + Self.ballRadius {
                 ball.y = floor.height + Self.ballRadius
+                let n0 = floor.normal
+                let impactSpeed = -(velocity.x * n0.x + velocity.y * n0.y + velocity.z * n0.z)
+                events.append(.impact(position: ball, surface: floor.surface, soundID: floor.properties?.soundID, normalSpeed: impactSpeed))
                 if floor.surface == .water || floor.surface == .out { applyPenalty(floor.surface); return }
                 noteBunker(floor)
                 // Reflect about the sampled triangle normal. Coefficients are
@@ -480,6 +501,7 @@ struct PGASimulation {
             let toCup = hole.cup - ball
             let t = max(0, min(1, (toCup.x * travel.x + toCup.z * travel.z) / max(0.000001, travel.x * travel.x + travel.z * travel.z)))
             if (ball + travel * t).distance(to: hole.cup) < 0.24 && velocity.horizontalLength < 2.7 {
+                events.append(.cup)
                 finishHole(); return
             }
             let gradient = floor.gradient
@@ -536,6 +558,7 @@ struct PGASimulation {
     }
 
     private mutating func applyPenalty(_ hazard: PGASurface) {
+        events.append(.penalty(hazard))
         strokes += 1; ball = shotOrigin; lieIndex = originLieIndex; velocity = .zero; phase = .aiming
         lastShotDistance = 0
         if strokes >= 12 { finishHole(pickedUp: true); return }
@@ -560,6 +583,7 @@ struct PGASimulation {
             ball = shotOrigin; note = " · no playable drop found, replaying the previous lie"
         }
         lieIndex = restingLieIndex(lieSample)
+        events.append(.rest(lie: lie, distanceToPin: distanceToCup, shotDistance: lastShotDistance, fromTee: shotFromTee))
         alignToPlayLine()
         message = "\(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd to the pin\(note)"
         passTurn()
@@ -628,6 +652,7 @@ struct PGASimulation {
             ball = PGAVector(x: hole.cup.x, y: groundHeight(x: hole.cup.x, z: hole.cup.z, near: hole.cup.y) - 0.04, z: hole.cup.z)
         }
         phase = .holed
+        if !pickedUp { events.append(.holed(strokes: strokes, par: hole.par, shotDistance: lastShotDistance, onGreen: shotLie == .green || shotLie == .fringe)) }
         let difference = strokes - hole.par
         let scoreName: String
         switch difference {

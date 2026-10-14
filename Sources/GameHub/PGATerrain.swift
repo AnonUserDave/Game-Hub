@@ -52,6 +52,7 @@ final class PGASurfaceProperties: Equatable {
         var label: String
         var flags: UInt32
         var coefficients: [Double]
+        var soundID: Int = -1
         /// c0: lie power, the launch-velocity multiplier (CBallFlight::Impact).
         var power: Double { coefficients.first ?? 1 }
         /// c7: rolling resistance (CBallFlight::PureRolling).
@@ -65,6 +66,10 @@ final class PGASurfaceProperties: Equatable {
     let sectionFlags: UInt32
     let records: [Record]
     let surface: PGASurface
+    /// Collision sound key matched by the original basic.stn rules (e.g. 901
+    /// fairway, 902 green, 904 sand, 905 rough, 908 cart path); record 0's id,
+    /// or the texture section's when that is -1 (GetTerrainSound 0x10009a20).
+    let soundID: Int?
     /// Display text when no single record label applies.
     let category: String
 
@@ -74,9 +79,11 @@ final class PGASurfaceProperties: Equatable {
     /// 0x400: free relief (roads and cart paths).
     var freeDrop: Bool { flags & 0x400 != 0 }
 
-    init(materialID: UInt32, materialName: String, sectionFlags: UInt32, records: [Record]) {
+    init(materialID: UInt32, materialName: String, sectionFlags: UInt32, records: [Record], sectionSoundID: Int = -1) {
         self.materialID = materialID; self.materialName = materialName
         self.sectionFlags = sectionFlags; self.records = records
+        let recordSound = records.first?.soundID ?? -1
+        soundID = recordSound > 0 ? recordSound : sectionSoundID > 0 ? sectionSoundID : nil
         surface = Self.classify(flags: records.first?.flags ?? 0)
         let labels = Set(records.map(\.label))
         category = labels.count == 1 && Self.meaningful(labels.first!, material: materialName) ? labels.first! : surface.rawValue
