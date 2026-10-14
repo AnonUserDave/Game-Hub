@@ -1519,6 +1519,6 @@ enum PGABallSwing {
 
 // PGASimulation uses this model for original-course shots. Its eight-club UI
 // maps to original club indices through PGABallSwing; generated practice keeps
-// the native development model. Course settings are currently fixed at Normal
-// green/rough, Advanced difficulty, Solid Core ball and calm wind. Swing input
+// the native development model. Original-course shots use the round's selected
+// difficulty; green/rough, Solid Core ball and calm wind remain fixed. Swing input
 // mapping and post-shot rules remain approximations (PGA2005-PHYSICS.md).

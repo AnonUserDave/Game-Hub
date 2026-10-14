@@ -310,6 +310,7 @@ final class PGABallFlightTests: XCTestCase {
                                holes: [hole], identity: "original-flight-bridge")
         let terrain = MetersPlane()
         var game = PGASimulation(course: course, terrains: [terrain])
+        game.meterLevel = .advanced
         game.selectClub(.driver)
         game.alignToCup()
         let start = game.ball
@@ -346,6 +347,36 @@ final class PGABallFlightTests: XCTestCase {
         XCTAssertEqual(game.ball.z, rest.z, accuracy: 1e-9)
         XCTAssertEqual(game.lieIndex, direct.nextLieIndex ?? 0)
         XCTAssertEqual(game.velocity, .zero)
+    }
+
+    func testOriginalSimulationUsesSelectedDifficultyForFlight() throws {
+        let source = PGAHoleSource(number: 1, teeIndex: 3, pinIndex: 0, handicap: 1)
+        let hole = PGAHole(name: "Difficulty bridge", par: 4, tee: .zero,
+                           cup: PGAVector(x: 0, y: 0, z: 500), centerline: [.zero, PGAVector(x: 0, y: 0, z: 500)],
+                           fairwayWidth: 100, greenRadius: 10, hazards: [], terrainSeed: 0, source: source)
+        let course = PGACourse(name: "Difficulty fixture", provenance: "Synthetic original-course fixture",
+                               holes: [hole], identity: "original-difficulty-bridge")
+        let terrain = MetersPlane()
+        let adapter = PGABallTerrainAdapter(terrain: terrain)
+        var speeds: [Double] = []
+        for level in PGATriClickMeter.Level.allCases {
+            var game = PGASimulation(course: course, terrains: [terrain])
+            game.meterLevel = level
+            game.selectClub(.driver)
+            let launch = PGABallSwing.launch(club: .driver9, power: 1, accuracy: 0.25, heading: game.heading,
+                                             position: adapter.frame.point(meters: game.ball - PGAVector(x: 0, y: PGASimulation.ballRadius, z: 0)),
+                                             difficulty: level.rawValue)
+            let direct = try XCTUnwrap(PGABallFlight(launch: launch, terrain: adapter,
+                                                     conditions: .fromSettings(difficulty: level.rawValue),
+                                                     ball: .solidCore, pin: adapter.frame.point(meters: hole.cup),
+                                                     random: PGARandom(seed: course.identity)))
+            game.strike(power: 1, accuracy: 0.25)
+            XCTAssertEqual(game.velocity.x, adapter.frame.metersPerSecond(direct.velocity).x, accuracy: 1e-9)
+            XCTAssertEqual(game.velocity.z, adapter.frame.metersPerSecond(direct.velocity).z, accuracy: 1e-9)
+            speeds.append(game.velocity.horizontalLength)
+        }
+        XCTAssertLessThan(speeds[0], speeds[1])
+        XCTAssertLessThan(speeds[1], speeds[2])
     }
 
     /// Lateral offset to the LEFT of travel in our right-handed meters frame,

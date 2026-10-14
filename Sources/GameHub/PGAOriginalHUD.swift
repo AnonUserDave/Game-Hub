@@ -299,7 +299,7 @@ struct PGARoundSetupView: View {
                         }
                     }
                 }
-                section("SWING METER (TRI-CLICK)") {
+                section("DIFFICULTY (SWING METER AND BALL FLIGHT)") {
                     HStack(spacing: 6) {
                         ForEach(PGATriClickMeter.Level.allCases, id: \.self) { level in
                             Button { session.setup.difficulty = level } label: {

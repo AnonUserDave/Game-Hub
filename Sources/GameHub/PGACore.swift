@@ -492,10 +492,12 @@ struct PGASimulation {
         let launch = PGABallSwing.launch(club: PGABallSwing.originalIndex(for: club), power: shotPower,
                                          accuracy: shotAccuracy, heading: heading, position: start,
                                          lieIndex: index, lieAccuracy: PGABallSwing.lieAccuracyFactor(
-                                            flags: surface.records[index].flags, index: index))
+                                            flags: surface.records[index].flags, index: index),
+                                         difficulty: meterLevel.rawValue)
         let pin = adapter.frame.point(meters: hole.cup)
         guard let started = PGABallFlight(launch: launch, terrain: adapter,
-                                          conditions: .fromSettings(greenCondition: 3, roughLength: 2, difficulty: 2),
+                                          conditions: .fromSettings(greenCondition: 3, roughLength: 2,
+                                                                    difficulty: meterLevel.rawValue),
                                           ball: .solidCore, pin: pin, random: random) else {
             phase = .aiming; message = "Unable to start the shot from this lie."
             return
