@@ -21,6 +21,16 @@ final class PGAHUDImages {
         return image
     }
 
+    /// Course-folder image converted by the original importer (e.g. FLAG).
+    func courseImage(_ name: String, course: String = "PBL") -> NSImage? {
+        let key = "course-\(course)-\(name)"
+        if let cached = cache[key] { return cached }
+        let url = directory.deletingLastPathComponent().appendingPathComponent("\(course)/\(name).png")
+        guard let image = NSImage(contentsOf: url) else { return nil }
+        cache[key] = image
+        return image
+    }
+
     /// Bag graphic for a club, highlighted when selected.
     func club(_ club: PGAClub, selected: Bool) -> NSImage? {
         let name = ["D1", "W3", "I5", "I7", "I9", "PW", "SW", "Putter"][club.rawValue]

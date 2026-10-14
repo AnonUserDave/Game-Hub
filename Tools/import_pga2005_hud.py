@@ -41,8 +41,13 @@ HUD_IMAGES = {
     "flare3": "Lensflare/flare3.dds",
     "flare4": "Lensflare/flare4.dds",
     "ball-shadow": "Ball/Ballshad.dds",
+    "hole-decal": "Ball/Hole.dds",
+    "cup-interior": "Ball/CupInterior.dds",
+    "cup-bottom": "Ball/CupBottom.dds",
     "logo-pebble": "End/PEBLOGO.dds",
 }
+# Images stored in power-of-two textures whose visible area is smaller.
+CROPS = {"load-back": (0, 0, 1024, 768)}
 # Club bag graphics, plain and highlighted ("On").
 CLUBS = ["D1", "W2", "W3", "W4", "W5", "W7", "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8", "I9", "PW", "SW", "LW", "Putter"]
 for club in CLUBS:
@@ -63,6 +68,11 @@ def convert(game_images: Path, output: Path) -> dict:
         if len(dds) > 8 * 1024 * 1024:
             raise ValueError(f"{relative}: unexpectedly large DDS")
         width, height, rgba = decode_dds(dds)
+        if name in CROPS:
+            x0, y0, x1, y1 = CROPS[name]
+            if x1 <= width and y1 <= height:
+                rgba = b"".join(rgba[(row * width + x0) * 4:(row * width + x1) * 4] for row in range(y0, y1))
+                width, height = x1 - x0, y1 - y0
         atomic_write(output / f"{name}.png", png_bytes(width, height, rgba))
         entries.append({"name": name, "source": f"DataImages/Game/{relative}", "width": width, "height": height,
                         "dds_sha256": hashlib.sha256(dds).hexdigest()})

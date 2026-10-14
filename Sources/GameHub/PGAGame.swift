@@ -116,7 +116,8 @@ final class PGAGameSession: ObservableObject {
 
     private func showHole(_ mesh: PGAOriginalHoleMesh) {
         guard let original else { return }
-        renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: original, textures: textures), hole: original.course.holes[mesh.holeIndex])
+        renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: original, textures: textures), hole: original.course.holes[mesh.holeIndex],
+                       flagImage: hud.courseImage("FLAG", course: original.data.code), holeImage: hud.image("hole-decal"))
         holeMap = mesh.map
         lastHoleIndex = mesh.holeIndex
         view?.pointOfView = renderer.camera
@@ -507,10 +508,11 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
 
     /// Original course hole: decoded source triangles and textures only. No
     /// generated trees or sea are added; original vegetation is not decoded yet.
-    func build(original terrain: SCNNode, hole: PGAHole) {
+    func build(original terrain: SCNNode, hole: PGAHole, flagImage: NSImage? = nil, holeImage: NSImage? = nil) {
         content.removeFromParentNode(); content = SCNNode(); scene.rootNode.addChildNode(content)
         content.addChildNode(terrain)
-        makeFlag(pin: hole.cup)
+        if let flagImage { makeOriginalPin(pin: hole.cup, flagImage: flagImage, holeImage: holeImage) }
+        else { makeFlag(pin: hole.cup) }
         // render.ini [Fog] Start=800 End=64000 (inches): 20 m to 1,625 m.
         scene.fogStartDistance = 800 * 0.0254
         scene.fogEndDistance = 64_000 * 0.0254
@@ -719,6 +721,37 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         // nodes to the origin on the observed Mac. Keep authored transforms and
         // share the primitive geometry objects instead of baking that hierarchy.
         content.addChildNode(forest)
+    }
+
+    /// Original course flag texture (Pebble Beach flies yellow) on a white
+    /// 2.4 m stick. The cloth ripples in a vertex shader modifier, which costs
+    /// a few ALU ops on 36 vertices. The cup is a soft decal from the original
+    /// Hole image; a true hole in the green is not cut.
+    private func makeOriginalPin(pin: PGAVector, flagImage: NSImage, holeImage: NSImage?) {
+        let pole = SCNCylinder(radius: 0.02, height: 2.4); pole.radialSegmentCount = 8
+        pole.firstMaterial = Self.material(.white, roughness: 0.3)
+        let poleNode = SCNNode(geometry: pole); poleNode.position = Self.vector(pin + PGAVector(x: 0, y: 1.2, z: 0))
+        content.addChildNode(poleNode)
+        let cloth = SCNPlane(width: 0.78, height: 0.52); cloth.widthSegmentCount = 8; cloth.heightSegmentCount = 2
+        let clothMaterial = SCNMaterial()
+        clothMaterial.diffuse.contents = flagImage; clothMaterial.isDoubleSided = true; clothMaterial.lightingModel = .lambert
+        clothMaterial.shaderModifiers = [.geometry: """
+            float u = _geometry.position.x + 0.39;
+            _geometry.position.z += sin(scn_frame.time * 4.2 - u * 7.0) * 0.06 * u;
+            """]
+        cloth.firstMaterial = clothMaterial
+        flag = SCNNode(geometry: cloth)
+        flag.position = Self.vector(pin + PGAVector(x: 0.41, y: 2.12, z: 0))
+        content.addChildNode(flag)
+        if let holeImage {
+            let decal = SCNPlane(width: 0.2, height: 0.2)
+            let material = SCNMaterial(); material.diffuse.contents = holeImage; material.lightingModel = .constant
+            material.multiply.contents = NSColor(white: 0.15, alpha: 1); material.writesToDepthBuffer = false
+            decal.firstMaterial = material
+            let node = SCNNode(geometry: decal); node.eulerAngles.x = -.pi / 2
+            node.position = Self.vector(pin + PGAVector(x: 0, y: 0.012, z: 0))
+            content.addChildNode(node)
+        }
     }
 
     private func makeFlag(pin: PGAVector) {

@@ -23,6 +23,7 @@ final class PGASnapshotTests: XCTestCase {
         try await MainActor.run {
             _ = NSApplication.shared
             let textures = PGAOriginalTextureCache()
+            let art = PGAHUDImages(root: root)
             for number in holes where (1...course.course.holes.count).contains(number) {
                 let index = number - 1
                 let started = ProcessInfo.processInfo.systemUptime
@@ -30,17 +31,29 @@ final class PGASnapshotTests: XCTestCase {
                 let built = ProcessInfo.processInfo.systemUptime - started
                 let single = PGACourse(name: course.course.name, provenance: course.course.provenance,
                                        holes: [course.course.holes[index]], identity: course.course.identity)
-                let game = PGASimulation(course: single, terrains: [course.terrains[index]])
+                var game = PGASimulation(course: single, terrains: [course.terrains[index]])
                 let renderer = PGARenderer()
-                renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures), hole: single.holes[0])
+                renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures), hole: single.holes[0],
+                               flagImage: art.courseImage("FLAG"), holeImage: art.image("hole-decal"))
+                renderer.useOriginalBallShadow(art.image("ball-shadow"))
                 let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
                 let snapshot = SCNRenderer(device: device, options: nil)
                 snapshot.scene = renderer.scene
                 for camera in cameras {
+                    if camera == 9 {
+                        // Approach view: ball restored 12 m short of the pin on the play line.
+                        let hole = single.holes[0], toward = (hole.tee - hole.cup).horizontalUnit
+                        let spot = hole.cup + toward * 12
+                        guard let floor = game.ground(x: spot.x, z: spot.z) else { continue }
+                        try game.restore(PGARoundSnapshot(courseIdentity: single.identity, holeIndex: 0, scores: [], strokes: 1,
+                                                          ball: PGAVector(x: spot.x, y: floor.height + PGASimulation.ballRadius, z: spot.z),
+                                                          heading: atan2(hole.cup.x - spot.x, hole.cup.z - spot.z), club: PGAClub.putter.rawValue))
+                        game.selectClub(.putter)
+                    }
                     renderer.resetCamera()
-                    renderer.update(game, cameraMode: camera, zoom: 1, delta: 1)
+                    renderer.update(game, cameraMode: camera == 9 ? 0 : camera, zoom: 1, delta: 1)
                     snapshot.pointOfView = renderer.camera
-                    let image = snapshot.snapshot(atTime: 0, with: CGSize(width: 2560, height: 1600), antialiasingMode: .multisampling4X)
+                    let image = snapshot.snapshot(atTime: 1.3, with: CGSize(width: 2560, height: 1600), antialiasingMode: .multisampling4X)
                     try write(image, to: directory.appendingPathComponent(String(format: "pbl-hole%02d-camera%d.png", number, camera)))
                 }
                 if let map = mesh.map.image {

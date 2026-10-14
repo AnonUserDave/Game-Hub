@@ -23,13 +23,19 @@ struct PGAOriginalHoleMesh {
         var grouped: [UInt32: [UInt32]] = [:]
         var faces: [(UInt32, UInt32, UInt32)] = []
         faces.reserveCapacity(selection.count)
+        // Blend strips (texture-section flag 0x80: fringe, sand and tee
+        // edges) are overlays lying exactly on base terrain. Lift them 1.2 cm
+        // in the render buffers only, so they never z-fight the base; floor
+        // queries still use the exact source triangles.
+        let overlays = Set(data.materials.values.filter(\.properties.isBlend).map(\.id))
         data.terrain.withUnsafeBytes { bytes in
             func u32(_ offset: Int) -> UInt32 { UInt32(littleEndian: bytes.loadUnaligned(fromByteOffset: offset, as: UInt32.self)) }
             func f32(_ offset: Int) -> Double { Double(Float(bitPattern: u32(offset))) }
-            func local(_ vertex: UInt32) -> UInt32 {
+            func local(_ vertex: UInt32, lift: Double) -> UInt32 {
                 if remap[Int(vertex)] >= 0 { return UInt32(remap[Int(vertex)]) }
                 let offset = data.vertexOffset + Int(vertex) * 24
-                let p = transform.meters(raw: PGAVector(x: f32(offset), y: f32(offset + 4), z: f32(offset + 8)))
+                var p = transform.meters(raw: PGAVector(x: f32(offset), y: f32(offset + 4), z: f32(offset + 8)))
+                p.y += lift
                 positions.append(contentsOf: [Float(p.x), Float(p.y), Float(p.z)])
                 for component in 0..<4 { colors.append(Float(bytes[offset + 12 + component]) / 255) }
                 uvs.append(contentsOf: [Float(f32(offset + 16)), Float(f32(offset + 20))])
@@ -39,7 +45,8 @@ struct PGAOriginalHoleMesh {
             }
             for triangle in selection {
                 let offset = data.triangleOffset + Int(triangle) * 16
-                let a = local(u32(offset)), b = local(u32(offset + 4)), c = local(u32(offset + 8))
+                let lift = overlays.contains(u32(offset + 12)) ? 0.012 : 0
+                let a = local(u32(offset), lift: lift), b = local(u32(offset + 4), lift: lift), c = local(u32(offset + 8), lift: lift)
                 // The Z mirror reverses handedness, so emit (a, c, b) to keep
                 // the original front faces counter-clockwise for SceneKit.
                 grouped[u32(offset + 12), default: []].append(contentsOf: [a, c, b])
@@ -130,7 +137,15 @@ enum PGAOriginalSceneBuilder {
             } else {
                 material.diffuse.contents = NSColor(calibratedWhite: 0.6, alpha: 1)
             }
-            if surface != .unplayable { material.blendMode = .replace }
+            if source?.properties.isBlend == true {
+                // Overlay strips blend over the base terrain with their alpha,
+                // as the original's transparent edges imply.
+                material.blendMode = .alpha
+                material.transparencyMode = .aOne
+                material.writesToDepthBuffer = false
+            } else if surface != .unplayable {
+                material.blendMode = .replace
+            }
             if surface == .water {
                 // Gentle moving sheen on open water: a slow texture drift plus
                 // a little specular. Costs one texture transform per frame.
