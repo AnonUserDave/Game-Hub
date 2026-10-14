@@ -1,6 +1,7 @@
 import AppKit
 import Metal
 import SceneKit
+import SwiftUI
 import XCTest
 @testable import GameHub
 
@@ -61,6 +62,39 @@ final class PGASnapshotTests: XCTestCase {
                 }
                 print(String(format: "Hole %d: %d vertices, %d triangles, %d materials, mesh build %.3f s, lie %@",
                              number, mesh.vertexCount, mesh.batches.map(\.triangles).reduce(0, +), mesh.batches.count, built, game.lieLabel))
+            }
+        }
+    }
+
+    func testRenderOriginalHUD() async throws {
+        guard let output = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_DIR"] else {
+            throw XCTSkip("Set GAMEHUB_SNAPSHOT_DIR to capture HUD snapshots")
+        }
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let course = try PGAOriginalPlayableCourse.load(code: "PBL", root: root)
+        var game = PGASimulation(course: course.course, terrains: course.terrains)
+        for strokes in [4, 5, 3] {
+            game.restore(strokes: strokes)
+        }
+        var swinging = PGASimulation(course: course.course, terrains: course.terrains)
+        swinging.swing()
+        for _ in 0..<72 { swinging.update(deltaTime: 0.01) }   // power meter at 60%
+        let swingingGame = swinging, scoredGame = game
+        let directory = URL(fileURLWithPath: output, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try await MainActor.run {
+            let game = scoredGame
+            let art = PGAHUDImages(root: root)
+            let views: [(String, AnyView, CGSize)] = [
+                ("hud-scorecard", AnyView(PGAOriginalScorecard(images: art, simulation: game, playerName: "Player").frame(width: 760)), CGSize(width: 760, height: 458)),
+                ("hud-loading", AnyView(PGAOriginalLoadingScreen(images: art, message: "Loading original PBL terrain…")), CGSize(width: 1280, height: 800)),
+                ("hud-meter", AnyView(PGAOriginalSwingMeter(simulation: swingingGame, images: art)), CGSize(width: 256, height: 256))
+            ]
+            for (name, view, size) in views {
+                let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height).background(Color.black))
+                renderer.scale = 2
+                guard let image = renderer.nsImage else { throw CocoaError(.fileWriteUnknown) }
+                try write(image, to: directory.appendingPathComponent("\(name).png"))
             }
         }
     }

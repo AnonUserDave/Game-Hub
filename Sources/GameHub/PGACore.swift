@@ -595,6 +595,14 @@ struct PGASimulation {
         message = "Aim, choose a club, then press Space, click, or A to swing."
     }
 
+    #if DEBUG
+    /// Test helper: records a finished hole with the given strokes.
+    mutating func restore(strokes: Int) {
+        guard phase != .roundComplete else { return }
+        self.strokes = strokes; phase = .holed; continueRound()
+    }
+    #endif
+
     /// A snapshot is taken only while the ball is at rest.
     var snapshot: PGARoundSnapshot? {
         guard phase == .aiming else { return nil }

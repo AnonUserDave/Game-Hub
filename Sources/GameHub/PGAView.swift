@@ -37,10 +37,15 @@ struct PGAGameView: View {
                     } else { Spacer() }
                     bottomBar
                 }
-                if case let .loading(message) = session.loadState { loadingOverlay(message) }
+                if case let .loading(message) = session.loadState {
+                    if session.isOriginal && session.hud.available { PGAOriginalLoadingScreen(images: session.hud, message: message) }
+                    else { loadingOverlay(message) }
+                }
                 else if case let .failed(message) = session.loadState { failureOverlay(message) }
                 else if session.paused { pauseOverlay }
-                else if game.phase == .holed || game.phase == .roundComplete { scoreOverlay }
+                else if game.phase == .holed || game.phase == .roundComplete {
+                    if session.isOriginal && session.hud.available { originalScoreOverlay } else { scoreOverlay }
+                }
             }
         }.background(.black).onAppear {
             session.start()
@@ -287,6 +292,26 @@ struct PGAGameView: View {
                 }
                 Button("Return to hub") { session.exit() }.buttonStyle(.plain).font(.system(size: 11)).foregroundStyle(.white.opacity(0.6))
             }.padding(28).frame(width: game.course.holes.count > 9 ? 470 : 400).background(pgaInk, in: RoundedRectangle(cornerRadius: 15)).foregroundStyle(.white)
+        }.ignoresSafeArea()
+    }
+
+    private var originalScoreOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+            VStack(spacing: 14) {
+                Text(game.phase == .roundComplete ? "Round complete · \(game.completedStrokes) strokes" : game.message)
+                    .font(.system(size: 24, weight: .light)).foregroundStyle(.white)
+                PGAOriginalScorecard(images: session.hud, simulation: game, playerName: "Player").frame(width: 760)
+                HStack(spacing: 18) {
+                    if game.phase == .roundComplete {
+                        Button("Play again · Space / A") { session.restartRound() }.buttonStyle(.borderedProminent).tint(pgaGold).foregroundStyle(pgaInk)
+                    } else {
+                        Button(game.holeIndex + 1 < game.course.holes.count ? "Next hole · Space / A" : "Finish round · Space / A") { session.nextHole() }
+                            .buttonStyle(.borderedProminent).tint(pgaGold).foregroundStyle(pgaInk)
+                    }
+                    Button("Return to hub") { session.exit() }.buttonStyle(.plain).font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
+                }
+            }
         }.ignoresSafeArea()
     }
 

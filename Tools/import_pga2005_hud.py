@@ -47,7 +47,7 @@ HUD_IMAGES = {
     "logo-pebble": "End/PEBLOGO.dds",
 }
 # Images stored in power-of-two textures whose visible area is smaller.
-CROPS = {"load-back": (0, 0, 1024, 768)}
+CROPS = {"load-back": (0, 0, 1024, 768), "scorecard": (0, 0, 738, 444)}
 # Club bag graphics, plain and highlighted ("On").
 CLUBS = ["D1", "W2", "W3", "W4", "W5", "W7", "I1", "I2", "I3", "I4", "I5", "I6", "I7", "I8", "I9", "PW", "SW", "LW", "Putter"]
 for club in CLUBS:
