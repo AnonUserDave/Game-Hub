@@ -220,8 +220,10 @@ struct PGAPlayer: Codable, Equatable {
 /// Things that happened during simulation steps, drained each frame by the
 /// session for sound (and later commentary/camera). Purely informational.
 enum PGASimulationEvent: Equatable {
-    case strike(club: PGAClub, lie: PGASurface, power: Double, accuracy: Double, fromTee: Bool)
-    case impact(position: PGAVector, surface: PGASurface, soundID: Int?, normalSpeed: Double)
+    /// `lieFlags` are the original surface-record flags at address (0 when generated).
+    case strike(club: PGAClub, lie: PGASurface, lieFlags: UInt32, power: Double, accuracy: Double, fromTee: Bool, position: PGAVector)
+    /// `normalSpeed` in m/s into the floor; `flags` are the floor's record-0 flags.
+    case impact(position: PGAVector, surface: PGASurface, soundID: Int?, flags: UInt32, normalSpeed: Double)
     case cup
     case penalty(PGASurface)
     case rest(lie: PGASurface, distanceToPin: Double, shotDistance: Double, fromTee: Bool)
@@ -418,7 +420,9 @@ struct PGASimulation {
         let launch = launchFactor
         shotPower = max(0.04, min(1, power)); shotAccuracy = max(-1, min(1, accuracy))
         shotFromTee = strokes == 0; shotLie = lie
-        events.append(.strike(club: club, lie: lie, power: shotPower, accuracy: shotAccuracy, fromTee: shotFromTee))
+        let address = lieSample
+        events.append(.strike(club: club, lie: lie, lieFlags: address?.properties?.lieRecord(lieIndex)?.flags ?? 0,
+                              power: shotPower, accuracy: shotAccuracy, fromTee: shotFromTee, position: ball))
         let angle = heading + shotAccuracy * (club == .putter ? 0.09 : 0.14)
         let speed = club.speed * shotPower * launch * (1 - abs(shotAccuracy) * 0.12)
         velocity = PGAVector(x: sin(angle) * speed * cos(club.loft), y: speed * sin(club.loft), z: cos(angle) * speed * cos(club.loft))
@@ -474,7 +478,8 @@ struct PGASimulation {
                 ball.y = floor.height + Self.ballRadius
                 let n0 = floor.normal
                 let impactSpeed = -(velocity.x * n0.x + velocity.y * n0.y + velocity.z * n0.z)
-                events.append(.impact(position: ball, surface: floor.surface, soundID: floor.properties?.soundID, normalSpeed: impactSpeed))
+                events.append(.impact(position: ball, surface: floor.surface, soundID: floor.properties?.soundID,
+                              flags: floor.properties?.flags ?? 0, normalSpeed: impactSpeed))
                 if floor.surface == .water || floor.surface == .out { applyPenalty(floor.surface); return }
                 noteBunker(floor)
                 // Reflect about the sampled triangle normal. Coefficients are
