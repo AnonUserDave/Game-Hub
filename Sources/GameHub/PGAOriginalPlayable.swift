@@ -386,3 +386,29 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
         return (PGAVector(x: meters.x, y: chosen.height, z: meters.z), chosen.surface)
     }
 }
+
+/// One in-progress round per original course, in Application Support. The
+/// file names the course identity, so changed source data or settings start a
+/// fresh round instead of restoring onto different geometry.
+enum PGARoundStore {
+    static var directory: URL {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        return base.appendingPathComponent("Game Hub/PGA2005 Rounds", isDirectory: true)
+    }
+    private static func url(identity: String) -> URL {
+        let safe = String(identity.unicodeScalars.map { CharacterSet.alphanumerics.contains($0) || $0 == "-" ? Character($0) : "_" })
+        return directory.appendingPathComponent("\(safe.prefix(120)).json")
+    }
+    static func load(identity: String) -> PGARoundSnapshot? {
+        guard let data = try? Data(contentsOf: url(identity: identity)), data.count < 64_000,
+              let snapshot = try? JSONDecoder().decode(PGARoundSnapshot.self, from: data),
+              snapshot.courseIdentity == identity else { return nil }
+        return snapshot
+    }
+    static func save(_ snapshot: PGARoundSnapshot) {
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        if let data = try? JSONEncoder().encode(snapshot) { try? data.write(to: url(identity: snapshot.courseIdentity), options: .atomic) }
+    }
+    static func clear(identity: String) { try? FileManager.default.removeItem(at: url(identity: identity)) }
+}

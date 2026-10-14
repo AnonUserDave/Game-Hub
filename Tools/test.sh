@@ -23,4 +23,4 @@ export CLANG_MODULE_CACHE_PATH="$task_root/.build/cache"
     -Xlinker -rpath -Xlinker "$task_platform/usr/lib" \
     -Xlinker -rpath -Xlinker "$task_developer/../SharedFrameworks" \
     -Xlinker -L -Xlinker "$task_platform/usr/lib"
-exec "$task_developer/usr/bin/xctest" "$task_root/.build/arm64-apple-macosx/debug/GameHubPackageTests.xctest" "$@"
+exec "$task_developer/usr/bin/xctest" "$@" "$task_root/.build/arm64-apple-macosx/debug/GameHubPackageTests.xctest"

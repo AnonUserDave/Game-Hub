@@ -3,7 +3,7 @@ import SwiftUI
 /// Registry for future games compiled into the hub. External native .app and
 /// Mach-O games need only a manifest and do not require a hub rebuild.
 enum NativeGameFactory {
-    static let availableIDs: Set<String> = ["pga2005-native-development"]
+    static let availableIDs: Set<String> = ["pga2005-native-development", "pga2005-pebble-beach-development"]
 }
 
 struct NativeGameContainer: View {
@@ -12,6 +12,8 @@ struct NativeGameContainer: View {
     var body: some View {
         if game.launch?.builtin == "pga2005-native-development" {
             PGAGameView(onExit: onExit)
+        } else if game.launch?.builtin == "pga2005-pebble-beach-development" {
+            PGAGameView(choice: .original(code: "PBL"), onExit: onExit)
         } else {
         VStack(spacing: 20) {
             Image(systemName: "hammer").font(.system(size: 48)).foregroundStyle(game.tint)

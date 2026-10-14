@@ -273,6 +273,36 @@ struct PGASimulation {
         heading = atan2(hole.cup.x - ball.x, hole.cup.z - ball.z)
     }
 
+    /// Default target. Original holes follow their authored TCR aim points:
+    /// the farthest point ahead of the ball within driver range, else the next
+    /// one ahead. This is a development caddie, not the original aiming rule.
+    /// Generated holes aim at the cup.
+    var playLineTarget: PGAVector {
+        guard hole.source != nil, hole.centerline.count > 2 else { return hole.cup }
+        let path = hole.centerline
+        var travelled = [0.0]
+        for (a, b) in zip(path, path.dropFirst()) { travelled.append(travelled.last! + a.distance(to: b)) }
+        // Ball progress: projection onto the nearest path segment.
+        var progress = 0.0, nearest = Double.infinity
+        for index in 0..<(path.count - 1) {
+            let a = path[index], d = path[index + 1] - a, length = max(0.001, d.horizontalLength)
+            let t = max(0, min(1, ((ball.x - a.x) * d.x + (ball.z - a.z) * d.z) / (length * length)))
+            let distance = (a + d * t).distance(to: ball)
+            if distance < nearest { nearest = distance; progress = travelled[index] + t * length }
+        }
+        let ahead = path.indices.dropFirst().filter { travelled[$0] > progress + 5 }.map { path[$0] }
+        let reach = PGAClub.driver.estimatedCarry
+        if hole.cup.distance(to: ball) <= reach { return hole.cup }
+        return ahead.last { $0.distance(to: ball) <= reach } ?? ahead.first ?? hole.cup
+    }
+
+    mutating func alignToPlayLine() {
+        guard phase == .aiming else { return }
+        let target = playLineTarget
+        heading = atan2(target.x - ball.x, target.z - ball.z)
+        club = PGAClub.recommended(distance: target.distance(to: ball), surface: lie)
+    }
+
     /// The same three-click swing is used by keyboard, mouse, and gamepad.
     mutating func swing() {
         switch phase {
@@ -403,7 +433,7 @@ struct PGASimulation {
         lastShotDistance = 0
         if strokes >= 12 { finishHole(pickedUp: true); return }
         message = "\(hazard == .water ? "Water hazard" : "Out of bounds") · one penalty stroke · replay from your previous lie"
-        alignToCup(); club = PGAClub.recommended(distance: distanceToCup, surface: lie)
+        alignToPlayLine()
     }
 
     private mutating func endShot() {
@@ -416,7 +446,7 @@ struct PGASimulation {
         } else if !lie.playable {
             ball = shotOrigin; note = " · no playable drop found, replaying the previous lie"
         }
-        alignToCup(); club = PGAClub.recommended(distance: distanceToCup, surface: lie)
+        alignToPlayLine()
         message = "\(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd to the pin\(note)"
     }
 
@@ -474,8 +504,7 @@ struct PGASimulation {
         velocity = .zero; phase = .aiming; strokes = 0; meter = 0; shotPower = 0; shotAccuracy = 0
         accumulator = 0; lowSpeedTime = 0; flightTime = 0; lastShotDistance = 0; missingFloorTime = 0
         shotOrigin = ball
-        heading = atan2(hole.cup.x - ball.x, hole.cup.z - ball.z)
-        club = PGAClub.recommended(distance: distanceToCup, surface: lie)
+        alignToPlayLine()
         message = "Aim, choose a club, then press Space, click, or A to swing."
     }
 
