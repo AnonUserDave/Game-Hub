@@ -175,7 +175,14 @@ final class GameStore: ObservableObject {
         }
         if !games.contains(where: { $0.id == selectedID }) { selectedID = games.first?.id }
         if !result.errors.isEmpty { issue = HubIssue(title: "Some manifests could not load", message: result.errors.joined(separator: "\n")) }
+        // GAMEHUB_AUTOPLAY (PGAAutoplay) opens the original golf courses straight away.
+        if !autoplayLaunched, ProcessInfo.processInfo.environment["GAMEHUB_AUTOPLAY"] != nil, activeGame == nil,
+           let golf = games.first(where: { $0.id == "pga2005-original-courses" }) {
+            autoplayLaunched = true
+            launch(golf)
+        }
     }
+    private var autoplayLaunched = false
 
     nonisolated func validate(_ game: GameManifest) throws { try Self.validateManifest(game) }
 

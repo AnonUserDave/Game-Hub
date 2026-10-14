@@ -553,6 +553,8 @@ struct PGASimulation {
     /// the farthest point ahead of the ball within driver range, else the next
     /// one ahead. This is a development caddie, not the original aiming rule.
     /// Generated holes aim at the cup.
+    /// Horizontal distance from the ball to the caddie's play-line target.
+    var playLineTargetDistance: Double { playLineTarget.distance(to: ball) }
     var playLineTarget: PGAVector {
         guard hole.source != nil, hole.centerline.count > 2 else { return hole.cup }
         let path = hole.centerline

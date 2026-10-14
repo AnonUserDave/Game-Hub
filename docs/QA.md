@@ -177,3 +177,14 @@ These are static reconstruction/native consistency checks. No original was
 executed or emulated, no new playable Asteroids/Dig Dug registry entry was
 added, no live UI/physical controller comparison occurred and no sustained M1
 acceptance was performed. The all16-title goal remains unfinished.
+
+## Son's M5 autoplay play-test (development check, not M1 acceptance)
+
+2026-10-14, Mac17,9 / 24 GB / macOS 26.3, windowed (2720 × 1782 Metal target, 4× MSAA). The new `GAMEHUB_AUTOPLAY` harness launched the hub, opened Original Courses, started a Pebble Beach round and played holes 1–2 through the real tri-click meter, physics, rules, cameras, effects, sound and commentary, then quit.
+
+| Run | Result |
+| --- | --- |
+| QA run with a capture every 8 s | 14 shots, both holes finished; audio running throughout, commentary speaking at times, up to 10 voices sounding; 21 scene captures inspected (course, trees, lens flare, ball in flight). Captures caused the only long frames (max 700 ms) |
+| Clean timing run, no captures | 9 shots (bogey, birdie); 4,897 frames, average 59.9 FPS, p50 16.7 ms, p95 17.3 ms, p99 18.2 ms, max 39 ms, 7 frames over 20 ms, no hitch over 100 ms; peak footprint 768 MB |
+
+These are M5 numbers in a window. The M1 run at fullscreen 2560 × 1600 for 30 minutes remains the acceptance gate.

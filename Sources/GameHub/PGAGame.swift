@@ -77,6 +77,14 @@ final class PGAGameSession: ObservableObject {
         loadOriginal()
     }
     func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
+    /// The self-driving play-test/benchmark mode (GAMEHUB_AUTOPLAY), original courses only.
+    private(set) var autoplay: PGAAutoplay?
+    /// One-line audio diagnostics for autoplay logs.
+    var audioSummary: String {
+        guard let status = audio?.status else { return "audio off" }
+        return "audio \(status.running ? "on" : "stopped") · \(status.sounding) sounding · \(status.buffers) buffers · speech \(status.speaking ? "on" : "off")"
+    }
+
     /// Replay.stn automatic replays: the clip playing, or one waiting for the ball to settle.
     @Published private(set) var replay: PGAReplayClip?
     private var pendingReplay: (clip: PGAReplayClip, delay: Double)?
@@ -124,7 +132,8 @@ final class PGAGameSession: ObservableObject {
         self.choice = choice
         self.onExit = onExit
         if case let .original(code) = choice {
-            courseCode = code == "*" ? (UserDefaults.standard.string(forKey: "pga2005.lastCourse") ?? "PBL") : code
+            autoplay = PGAAutoplay.Options.fromEnvironment().map(PGAAutoplay.init(options:))
+            courseCode = autoplay?.options.code ?? (code == "*" ? (UserDefaults.standard.string(forKey: "pga2005.lastCourse") ?? "PBL") : code)
             loadState = .loading("Loading original course data off the main thread…")
         } else {
             renderer.build(hole: simulation.hole)
@@ -174,6 +183,10 @@ final class PGAGameSession: ObservableObject {
         if let savedRound { setup = savedRound.setup }
         awaitingSetup = true
         audio?.playMusic("music.menu")
+        if let autoplay {
+            autoplay.configure(&setup, defaults: course.defaultConditions)
+            startRound()
+        }
         loadState = .ready
     }
 
@@ -290,7 +303,7 @@ final class PGAGameSession: ObservableObject {
         }
         focusObserver = NotificationCenter.default.addObserver(forName: NSApplication.didResignActiveNotification,
                                                                object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.setPaused(true) }
+            MainActor.assumeIsolated { if self?.autoplay == nil { self?.setPaused(true) } }
         }
     }
 
@@ -434,7 +447,7 @@ final class PGAGameSession: ObservableObject {
             replay = clip.finished ? nil : clip
         }
         renderer.replay = replay
-        if !paused && NSApp.isActive && loadState == .ready && !awaitingSetup && replay == nil {
+        if !paused && (NSApp.isActive || autoplay != nil) && loadState == .ready && !awaitingSetup && replay == nil {
             let left = heldKeys.contains(123) || heldKeys.contains(0)
             let right = heldKeys.contains(124) || heldKeys.contains(2)
             if ownsInputFocus && left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
@@ -451,6 +464,7 @@ final class PGAGameSession: ObservableObject {
             previousPhase = simulation.phase
         }
         renderer.update(simulation, cameraMode: cameraMode, zoom: cameraZoom, delta: delta)
+        if let autoplay, loadState == .ready, !awaitingSetup { autoplay.tick(self, delta: delta) }
         if let audio, !paused {
             let camera = renderer.camera
             audio.setListener(position: PGAVector(camera.worldPosition), forward: PGAVector(camera.worldFront), up: PGAVector(camera.worldUp))
@@ -646,6 +660,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     private var freshCamera = true
     private var originalCameraDirector: PGACameraDirector?
     private var frameSamples: [Double] = []
+    private var frameIntervals: [Double] = []
     private let frameLock = NSLock()
     private var storedFPS = 0
     private var storedTarget: RenderTarget?
@@ -713,8 +728,15 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         scene.rootNode.addChildNode(golfer)
     }
 
+    /// Render-loop intervals since the last drain (autoplay benchmarks).
+    func drainFrameIntervals() -> [Double] {
+        frameLock.lock(); defer { frameIntervals.removeAll(keepingCapacity: true); frameLock.unlock() }
+        return frameIntervals
+    }
+
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
         frameLock.lock()
+        if let previous = frameSamples.last, frameIntervals.count < 100_000 { frameIntervals.append(time - previous) }
         frameSamples.append(time)
         frameSamples.removeAll { time - $0 > 1 }
         if let first = frameSamples.first, time - first > 0.4 {
