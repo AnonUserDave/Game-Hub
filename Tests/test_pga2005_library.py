@@ -26,8 +26,10 @@ def fixtures():
     struct.pack_into("<I", tcl, 0x7c, 0x200)
     struct.pack_into("<I", tcl, 0xe4, 0x220)
     struct.pack_into("<HI", tcl, 0x220 + 0x4d, 1, 0x280)
-    struct.pack_into("<10fIH", tcl, 0x280, *([0.5] * 10), 2, 65535)
-    tcl[0x280 + 0x2e:0x280 + 0x2e + 8] = b"Fairway\0"
+    struct.pack_into("<10fIh", tcl, 0x280, *([0.5] * 10), 2, 904)
+    tcl[0x280 + 0x2e:0x280 + 0x2e + 20] = b"Fairway-label-20byte"
+    tcl[0x280 + 0x42] = 7
+    struct.pack_into("<I", tcl, 0x220 + 0xa, 0x8c1)
     name = b"fairway.tga\0"
     dds = bytearray(128)
     dds[:4] = b"DDS "
@@ -54,8 +56,10 @@ class MaterialTests(unittest.TestCase):
             self.assertEqual(result["source_tcr_sha256"], hashlib.sha256(tcr).hexdigest())
             self.assertEqual(result["libraries"][0]["sha256"], hashlib.sha256(tcl).hexdigest())
             self.assertEqual(material["name"], "fairway.tga")
-            self.assertEqual(material["surface_types"][0]["name"], "Fairway")
-            self.assertEqual(material["surface_types"][0]["flags"], 2)
+            surface = material["surface_types"][0]
+            self.assertEqual(surface["name"], "Fairway-label-20byte", "Label stops at +0x42")
+            self.assertEqual((surface["flags"], surface["sound_id"], surface["lie_graphic_index"]), (2, 904, 7))
+            self.assertEqual(material["section_flags"], 0x8c1)
             self.assertEqual((material["width"], material["height"]), (1, 1))
             self.assertTrue((Path(directory) / material["texture"]).read_bytes().startswith(b"\x89PNG"))
             self.assertEqual((Path(directory) / material["original_dds"]).read_bytes()[-4:], bytes((3, 2, 1, 255)))

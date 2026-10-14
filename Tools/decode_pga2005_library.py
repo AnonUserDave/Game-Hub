@@ -94,13 +94,18 @@ def surface_records(library: CourseFile, texture_index: int):
         coefficients = struct.unpack_from("<10f", raw)
         if not all(math.isfinite(value) for value in coefficients):
             raise ValueError("Non-finite terrain coefficients")
-        records.append({"index": i, "name": library.text(raw[0x2e:]),
+        # +0x2c is a signed sound id (TerrainPropsSound 0x10009c90); the
+        # 20-byte label ends at +0x42, whose byte is the lie graphic
+        # (TerrainPropsLieGraphicIndex 0x10009ce0).
+        records.append({"index": i, "name": library.text(raw[0x2e:0x42]),
                         "flags": struct.unpack_from("<I", raw, 0x28)[0],
                         "coefficients": list(coefficients),
-                        "lie_graphic_index": struct.unpack_from("<H", raw, 0x2c)[0],
+                        "sound_id": struct.unpack_from("<h", raw, 0x2c)[0],
+                        "lie_graphic_index": raw[0x42],
                         "source_offset": offset})
     return records, {"source_offset": section_offset,
-                     "raw_hex": section.hex(), "surface_count": surface_count}
+                     "raw_hex": section.hex(), "surface_count": surface_count,
+                     "flags": struct.unpack_from("<I", section, 0xa)[0]}
 
 
 def decode_materials(course_data: bytes, library_data: list[bytes],
@@ -176,6 +181,7 @@ def decode_materials(course_data: bytes, library_data: list[bytes],
                           "texture": entry["texture"], "original_dds": entry["original_dds"],
                           "width": entry["width"], "height": entry["height"],
                           "surface_types": surfaces,
+                          "section_flags": section["flags"],
                           "provenance": {"course_descriptor_offset": offset,
                                          "library_guid": library.guid,
                                          "library_sha256": library.digest,

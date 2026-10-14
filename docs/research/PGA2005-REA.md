@@ -376,6 +376,335 @@ cup behavior, zero-vector edge cases, and floating-point rounding still need
 structured recovery and reference validation. Decompiled x87 arithmetic must
 not be assumed bit-identical to a new ARM64 double implementation.
 
+## Per-hole patch layers, course-condition masks and surface coefficients (2026-10-13)
+
+This pass answers how the original selects terrain patches for a hole and how
+it uses TCL surface records. It is static analysis only; nothing was executed.
+The curated summary is
+[`evidence/pga2005-patch-layers-surfaces.json`](evidence/pga2005-patch-layers-surfaces.json).
+
+**Inputs and tools.** The DLLs were re-extracted on this machine. Tools:
+`inspect_pga2005.ISO9660` copied `DATA1.HDR`, `DATA1.CAB`, `DATA2.CAB` and
+`DATA3.CAB` to ignored `Library/SourceMedia/pga2005/cabs`. Homebrew
+`unshield` 1.6.2 then extracted the `Executable` group to
+`Library/SourceMedia/pga2005/engine/Executable`. Engine.dll, CourseData.dll,
+Utils.dll, DXWrap.dll and TW2005.exe match the SHA-256 values above.
+Course inputs: PBL.TCR `3761d6f9…0e47`, PBL.TCL `72160b50…d13d`,
+TUR.TCR `34c54eca…06c5`, TUR.TCL `704397ed…dd1f`. Full digests are in the
+evidence JSON.
+
+The REA MCP Ghidra provider accepted `open_binary` for Engine.dll. Its first
+follow-up request then timed out during auto-analysis, which closed the session.
+The findings below therefore come from two sources, **not REA Evidence**:
+
+- Apple LLVM 21 `objdump` disassembly, labelled with PE export names, plus a
+  scratch import-thunk annotator.
+- Direct Ghidra 12.1.2 headless runs through `Tools/analyze_pga2005_ghidra.py`
+  with Homebrew OpenJDK 21.0.11. Auto-analysis finished in 88 s without timing
+  out, and all 71 requested functions decompiled. Outputs are in the ignored
+  `Library/Research/ghidra-layers{,-2,-3}`. The database is kept in
+  `Library/Research/ghidra-projects/pga2005-physics`.
+
+Decompiler text is not original source. Important conditions were rechecked
+against instructions.
+
+### A. Patch selection for the current hole
+
+The dword at patch descriptor `+0x61` is `tagPatch::PatchLayerInfoS`. That
+type name appears in the mangled signatures of `SetLoadLevels`,
+`GetActivePinchLayers`, `FindTerrain` and others. The u16 at `+0x63` is zero in
+every PBL and TUR patch, so the observed u16 at `+0x61` is the whole value. The
+`tagPatch` constructor (`0x10002f40`) initialises the field to `0x420`.
+
+**Filter predicate.** `CourseDataManager::AddVisiblePatch` (CourseData
+`0x10009160`) skips a patch already flagged in byte `+0x95` bit 0. When the TCR
+header s16 at `+0x4e` is greater than zero (it is 29 for both PBL and TUR), it
+also applies:
+
+```
+accept = ((patch ^ sel) & 0x1f) == 0                     // same hole number
+         && ((patch & ~0x1f) == 0                         // base patch
+             || (patch & sel & ~0x1f) != 0)               // shares a condition bit
+```
+
+`sel` is `CourseDataManager+0x483`. Accepted patches are appended to the
+visible list. The same predicate is duplicated at six more sites in Engine.dll:
+
+- The render visibility pass, `CRData::FlagVisiblePatches` (`0x101b701f`).
+  This copy runs only when the course reports `IsComposite()`.
+- Five terrain queries in `CTerrainMesh`, which apply it only when given a
+  non-null `PatchLayerInfoS*`:
+  - `TerrainHeightFromTable` (`0x10200d42`)
+  - `GridTerrainHeightFromTable` (`0x102019df`)
+  - `FindTerrainRect` (`0x101ff2c8`)
+  - `RayIntersect2DBucket` (`0x10200118`)
+  - `TerrainHeightMapped` (`0x10205451`)
+
+These queries map a triangle to its patch with `u32 >> 16` of the per-triangle
+word, then read patch `+0x61`. `CTerrainMesh::AddPatchToMesh` itself has no
+layer test.
+
+**How a hole is loaded.** `CHole::Load` (`0x10183ca1`) runs only for layered
+TCRs (`hdr+0x4e > 0`):
+
+1. Start with `sel = 0x420`.
+2. If DXWrap `CDisplay::IsInFrontEnd()` is true (`0x100084d0`, byte `+0x4b7`),
+   use `sel = 0xffffffff`.
+3. Otherwise, if course vtable `+0x38` (`IsComposite`) is true and vtable
+   `+0x30` (`GetActivePinchLayers`) returns non-null, copy that mask.
+4. Write `sel = (sel & ~0x1f) | (CHole+0xc & 0x1f)` to `+0x483`.
+
+It then runs `PtInRect`, `LineIntersectsSquare` and `SquareIntersectsSquare`
+passes around tees, pins and aim points. A final pass calls
+`AddVisiblePatch(patch, 2, 0)` for every patch. As a result, the loaded set is
+exactly "every patch of this hole whose condition bits match". The spatial
+passes only decide which patches get class 1 rather than class 2 in byte `+0x95`
+bits 2–4. The function then calls `LoadPatches` and
+`CTerrainMesh::CreateTHMapTable(…, 0x168, 0x168)`. Unlayered TCRs instead use
+`LoadHoleOldStyle` (`0x101850fd`), with inflated rectangles and no hole or
+layer filter.
+
+PBL has no hole-0 patches, so every patch belongs to exactly one hole. Applying
+the predicate with `0x420` to holes 1–18 selects 6,609 of 6,943 PBL patches and
+6,394 of 6,742 TUR patches.
+
+**Where the condition bits come from.** These are the per-hole settings of a
+*composite* course: `CompositeCourse` and `CompositeCourseSettings`, whose holes
+can come from different course GUIDs (`SetCourseGuid`, `SetPhysicalHole`).
+This appears to be the Tiger-Proofing / custom-course feature. That label is an
+inference from names such as `UseTPCondition`.
+
+- `CompositeHoleSettings` records are `0x68` bytes, indexed by the logical hole.
+  The mask is at `+0x3c`, and `CompositeCourse::GetActivePinchLayers`
+  (`0x10172a5d`) returns it.
+- `SetFairwayWidthLevel` (`0x1017013a`) and `SetGreenSizeLevel` (`0x1016ffb8`)
+  store float levels at `+0x24` and `+0x2c`. They then rebuild the mask as:
+  `physicalHole(+0x10) | 1<<(5+fw) | 1<<(10+gr) | 1<<16`.
+  Here `fw = _ftol(level * 4.0f)` and `gr = _ftol(level * 4.0f)`, with the
+  constant at `0x102d6304`.
+- `SetActivePinchLayers` (`0x1016fedb`) writes a mask directly.
+- The constructor `CompositeHoleSettings` (`0x1016e42b`) sets these defaults:
+  - mask `0x420`
+  - physical hole 1
+  - rough, wet and sand levels 1.0
+  - fairway and green levels 0
+  - undulation −10.0
+
+Each condition group selects exactly one bit, and the authored patches pair up
+as complements:
+
+| Group | Bits by level 0→4 | Level 0 (default) | Level 4 |
+| --- | --- | --- | --- |
+| Fairway width | `0x20,0x40,0x80,0x100,0x200` | Every fairway-band variant (`0x20/0x60/0xE0/0x1E0`) | Every rough variant (`0x3C0/0x380/0x300/0x200`) |
+| Green size | `0x400,0x800,0x1000,0x2000,0x4000` | Largest green (`0x400…0x7C00` green rings) | Ring variants `0x4000/0x6000/0x7000/0x7800` (fairway) and `0x7C00` |
+
+Standard (non-composite) courses always use `0x420`. That means every hole is
+loaded at fairway level 0 and green level 0: widest fairway bands and largest
+greens. Raising a level replaces outer bands and rings with their complementary
+rough or fairway variants.
+
+**Course INI `[Conditions]`.** These keys are read by four CourseData functions,
+each via `GetPrivateProfileIntA("Conditions", key, default, GetDefaultsFile())`:
+
+| Key | Function | Default |
+| --- | --- | --- |
+| `Skydome` | `CourseInfoC::GetDefaultSkydome` (`0x1000ae50`) | 1 |
+| `GreenCond` | `GetDefaultGreenCond` (`0x1000aec0`) | 3 |
+| `RoughLength` | `GetDefaultRoughLength` (`0x1000af30`) | 2 |
+| `WindSpeed` | `GetDefaultWindSpeed` (`0x1000afa0`) | 1 |
+
+None of these values reaches the layer mask. No static caller was found in
+Engine.dll or the other unprotected modules; their names are absent from those
+import tables. The caller is presumably the protected TW2005.exe front end,
+which is unverified.
+
+RoughLength and GreenCond are the `CGameSettings` bytes `+0xe` and `+0x10`
+(accessors `0x1001ab90` and `0x1001abb0`). They affect physics only:
+
+- `CCourse::GetRoughLength` (`0x1017abcc`): 1→1.3, 3→0.7, otherwise 1.0.
+- `CCourse::GetWetScale` (`0x1017ac0e`): GreenCond 1..5 → 0.6, 0.8, 1.0, 1.2,
+  1.4; otherwise 1.0.
+- `CCourse::GetSandDifficulty` always returns 1.0.
+- For composite courses, `CompositeCourse::InitializeConditions` (`0x1017093b`)
+  overwrites these bytes from the per-hole floats, gated by `UseTPCondition(n)`.
+
+**Bit `0x8000`.** The default `0x420` never contains it, and neither do the
+masks rebuilt by `Set*Level`; those set bit 16 instead, which no PBL/TUR patch
+uses. The write path of `CompositeHoleSettings::Serialize` (`0x1016eb36`) forces
+`mask |= 0x8000` and the physical-hole bits before saving.
+
+So the `0x8000` patches (PBL 20, TUR 19) are omitted from standard-course play.
+They load only for composite holes restored from saved settings, or in
+front-end all-layer mode. Those patches are the `ttwood`/`tt_logo` tee signs and
+some tee-box and cliff pieces. Their purpose (composite/Tiger-Proof tee
+decoration) is an inference.
+
+**Confidence.** The predicate, defaults and `CHole::Load` mask construction are
+high, read from instructions. The level arithmetic is high. Mapping level 0 to
+"widest fairway / largest green" is medium-high, based on the bit maths plus the
+complementary data pairs. The purpose of `0x8000` is medium-low.
+
+### B. TCL surface records: layout, record selection and coefficients
+
+**Layout correction.** The u16 at `+0x2c` is a signed **sound id**, not the lie
+graphic. `TerrainPropsSound` (`0x10009c90`) reads it. `GetTerrainSound`
+(`0x10009a20`) falls back to the texture section's word at `+0x23` when it is
+−1; PBL/TUR use 903, 904, 906, 908 and 910.
+
+The label at `+0x2e` is 20 bytes, translated through Language.dll
+`TranslateCourseString`. The **lie graphic is byte `+0x42`**:
+
+- `TerrainPropsLieGraphicIndex` (`0x10009ce0`) returns
+  `(libraryNumber << 8) | byte+0x42`.
+- `Position::GetLieId` (`0x10186c92`) substitutes `0xfffc` for out of bounds,
+  `0xfffe` for in the hole and `0xfffd` for on the tee.
+
+Byte `+0x43` is zero in PBL and TUR. Every accessor takes `(materialId,
+surfaceIndex)`, and `LibraryC::GetTerrainInfo` (`0x1000c5a0`) does **not**
+bound-check the surface index.
+
+**Flag bits.** The `Position` predicates (`IsThis`, `0x10186fa2`, which tests
+`Position+0xc`) name the bits:
+
+| Bit | Meaning (predicate) |
+| --- | --- |
+| `0x1` | fairway (`InFairway 0x100094e0`) |
+| `0x2` | rough (`InRough 0x10009540`) |
+| `0x4` | green/putting surface (`OnGreen 0x10009500`) |
+| `0x8` | bunker (`InBunker 0x10009580`) |
+| `0x10` | fringe (`OnFringe 0x100095a0`) |
+| `0x20` | unplayable (`Unplayable 0x10009560`; `Playable 0x100096e0` rejects `0x20/0x40/0x80/0x100`) |
+| `0x40` | water (`InWater 0x10009640`); `BallAtRest` adds `0x20` |
+| `0x80` | out of bounds (`OutOfBounds 0x10009620`); set at runtime, absent from TCL data |
+| `0x100` | hazard (`InHazard 0x10009660`); water, ocean, cliffs |
+| `0x200` | drop allowed (`AllowsDrop 0x10009770`, excluding green/fringe) |
+| `0x400` | free drop/relief (`FreeDrop 0x100097d0`); roads, cart paths |
+| `0x800` | ball disappears (`BallDisappears 0x10009680`, also true for `0x40`/`0x4000`) |
+| `0x1000` | tee box (`OnTeeBox 0x100094c0`) |
+| `0x2000` | player may stand on this unplayable surface (`CPlayer::IsPlayableStance 0x10143e29`) |
+| `0x80000000` | weed/heavy rough (`InWeedRough 0x10009520`) |
+
+Some bits are set only at runtime: `0x4000` in the hole, `0x8000` on the tee,
+`0x10000` touched the hole, and `0x40000` tournament structure. The last comes
+from TCR render-props bit `0x4000` in `Position::SetAttributes`.
+
+The supplied examples decode as follows:
+
+- Ocean `0x960`: water + hazard + unplayable + ball disappears.
+- Road `0x2420`: stance allowed + free drop + unplayable.
+- Cliff `0x120`: hazard + unplayable.
+- Buildings `0x20`: unplayable.
+
+**Which record is used.**
+
+- The player's lie uses `Position+0x18` (`SubTerrainTypeE`;
+  `GetSubTerrainType 0x101864f3`, `SetSubTerrainType 0x10186508`).
+  `Position::SetAttributes` (`0x10186e46`) uses
+  `(material, Position+0x18)` for the flags, lie text, lie graphic and
+  "terrain difficulty". The difficulty value is clamped: below 0.05 becomes
+  0.3, above 5.0 becomes 0.7.
+- `CBallFlight::StopBall` (`0x101f769c`) chooses the next lie index at
+  `CBallFlight+0x99`:
+  - **Bunker (`0x8`).** Index 1 (`Lt. Sand`) if any of these hold: no bunker
+    entry was recorded; the ball moved at least 6 units on any axis from the
+    entry point; or the entry speed was below 10. The entry point and speed are
+    recorded by `BallLoopTestTerrainCollisions` (`0x101f8d87`). Otherwise, if
+    speed < 12 or `rn() <= 0.9`, choose 2 (`Dp`) with p = 0.1, else 0 (`Med`).
+    Otherwise, if (speed ≥ 14 and `rn() > 0.9`) or `rn() < 0.1`, choose 3
+    (`Plug`). Otherwise 2.
+  - **Rough (`0x2`).** If texture-section flag `0x80` is set, index 1.
+    Otherwise `random(2) > 0` gives 0, else `random(surfaceCount)`. For
+    three records this works out to Md ⅔, Lt ⅙, Dp ⅙.
+  - The record order matches the labels: rough 0=Md, 1=Lt, 2=Dp; sand
+    0=Med, 1=Lt, 2=Dp, 3=Plug. Weed rough has no `0x2` flag, so this branch
+    does not choose its index.
+- `CGolfBall::BallAtRest` (`0x10135d98`) applies `CGolfBall+0x342` through
+  `SetSubTerrainType` only when the ball rests on rough, weed or bunker.
+  `CGolfBall::SetupBall` (`0x1013786f`) seeds `+0x342` from the lie.
+- `CBallFlight::Impact` (`0x101f4e6a`) calls
+  `TerrainData::ConsiderTerrain(material under ball, CBallFlight+0x99, rough, sand)`.
+- **Flight, bounce, roll and stop physics use record 0.** That covers
+  `RollingAndSlipping`, `PureRolling`, `StopBall`, `BallLoopRecord`,
+  `BallLoopTestTerrainCollisions` and `TreeCollide`. The exception is
+  `CBallFlight::Collide` (`0x101f3310`): it uses record 1 when texture-section
+  flag `0x80000` is set and the count is above 1. Collide also sends materials
+  whose section flag has `0x8` (trees) to `TreeCollide`.
+- `ConsiderTerrain` (`0x101fd345`) steps down to lower indices while `c0 == 0.0`.
+  Its intended "no record → 0.7" branch is unreachable because of an unsigned
+  comparison.
+- **Blend materials** (section flag `0x80`, observed `0x8c1`) store two small
+  integers as float bit patterns in record 0 `c0/c1`. These equal the texture
+  indices of the blended materials:
+  - `pbl_teebox_rough1`: 7 (`pbl_teebox`) and 2 (`pbl_rough`).
+  - `tur_bunker_fairway`: 5 and 9.
+
+  This is a data inference, consistent with `StopBall` avoiding record 0 for
+  these rough sections. Confidence is medium. A bunker blend could still be
+  given index 0, which would yield a near-zero `c0`; the original behaviour in
+  that case has not been validated.
+
+**Coefficients** (per record; constants are listed with bytes in the evidence
+JSON):
+
+| Index | Original use | Meaning |
+| --- | --- | --- |
+| c0 | `ConsiderTerrain` → `Impact` launch-velocity multiplier and `Position` difficulty. Rough: `(g + c0)·(1 + 0.2·(rough−1))`, where `g = CPlayer::GetMagnetEffect()·0.05`. Sand: `c0·(1 + 0.2·(sand−1))`. | Lie power/distance factor |
+| c1 | `Impact`: spin magnitude `∝ c1·clubSpin / 0.84`; multiplied by the rough factor in rough; reduced in bunkers | Lie spin factor |
+| c2 | `Collide`: normal impulse factor `1 + c2·s`. `s = 1` at impact speed ≤ 8, else `1 − 1.75·(speed−8)/c8` (green uses `c8/0.8`). Fairway c2 ×0.9; short grass `×(1 + 0.11·(wet−1))`. | Bounce restitution |
+| c3 | `Collide`: tangential impulse limited to `|normal impulse|·c3·0.3` (short grass ×wet) | Bounce friction |
+| c4 | `RollingAndSlipping`: tangential gravity `×(1−c4)`, then rough `×(2−rough)` or short grass `×(2−wet)` | Slip-phase slope damping |
+| c5 | `RollingAndSlipping`: friction torque `n·g·c5·1.5·2.5/0.84` spins the ball up. Switches to pure rolling when `|v| ≤ |ω|·0.84`. | Slip friction |
+| c6 | `PureRolling`: turn angle `∝` lateral slope force `·c6` (green ×0.6); 0.375 everywhere observed | Break / slope curvature |
+| c7 | `PureRolling`: deceleration `g·n_y·(5/7)·c7`. Green ×0.575; rough `×(2−rough)`; short grass scaled by wet. `StopBall` fires when speed < deceleration. | Rolling resistance |
+| c8 | `Collide`: divides the normal impact speed in the dent/absorption term and sets the restitution fall-off | Ground firmness |
+| c9 | `Collide`: added to the dent term. Rough ×0.667, weed ×0.5; fairway/green second bounce ×0.75, later bounces ×0.5. | Base softness |
+
+`Collide` then damps linear and angular velocity by surface:
+
+| Surface | Factor |
+| --- | --- |
+| Rough | 0.8 |
+| Section flag `0x80000` | 0.9 |
+| Weed | 0.6 |
+| Fairway / green | 0.97 |
+
+"Short grass" means flags `0x1015` (fairway, green, fringe, tee). The condition
+scalars come from `CGolfBall::SetupBall`:
+
+| Field | Source |
+| --- | --- |
+| `+0x2ad` | wet scale, course vtable `+0xb8`; above 1 it is reduced by a player stat |
+| `+0x2b1` | rough length, vtable `+0x88` |
+| `+0x2b5` | sand difficulty, vtable `+0x8c` |
+
+The flight code reads them as `CBallFlight+4/+8/+0xc`. That copy was not traced,
+but `Impact` passing `+8/+0xc` into `ConsiderTerrain(rough, sand)` is
+consistent with it. `PureRolling` turns the wet scale into a rolling-resistance
+factor: about ×1.56 at 0.8, ×1.0 at 1.0, ×0.77 at 1.2, ×0.54 at 1.4. So a larger
+GreenCond gives a faster surface.
+
+**Confidence.**
+
+- Flag meanings, record-selection rules, c0, c1, c2, c3 and c7: high.
+- c4, c5, c6, c8 and c9: medium. Roles are clear from the code, but the
+  physical naming is interpretive.
+- Condition scalars: medium-high.
+
+### Open questions from this pass
+
+- The meaning of the TCR header s16 at `+0x4e` (29), beyond enabling the
+  filters.
+- Who copies the `CourseInfoC::GetDefault*` values into `CGameSettings`;
+  probably the protected TW2005.exe.
+- The exact copies `CBallFlight+0x99 → CGolfBall+0x342` and
+  `CGolfBall+0x2ad.. → CBallFlight+4/+8/+0xc`.
+- The intended purpose of the `0x8000` patches and of mask bit 16.
+- Whether standard-course front-end previews (all-layer mask, no render filter)
+  draw overlapping variants.
+- The remaining texture-section flags at `+0xa` (only `0x8`, `0x80` and
+  `0x80000` are explained).
+- Runtime validation of all thresholds and probabilities against a reference.
+
 ## Original visual data
 
 The `Data-Golfball` cabinet group contains text DirectX `.x` meshes, DDS

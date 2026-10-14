@@ -182,6 +182,37 @@ struct PGAOriginalTerrain {
         }
     }
 
+    /// Batches and bounds for one hole's own world under the given conditions.
+    /// Holes overlap in source space, so the lab shows one at a time.
+    func holeView(_ hole: Int, conditions: PGACourseConditions = .standard) -> (batches: [Batch], min: PGAVector, max: PGAVector)? {
+        guard formatVersion == 3, !patchLayers.isEmpty else { return nil }
+        return source.withUnsafeBytes { bytes in
+            func uint(_ offset: Int) -> UInt32 { UInt32(littleEndian: bytes.loadUnaligned(fromByteOffset: offset, as: UInt32.self)) }
+            func float(_ offset: Int) -> Double { Double(Float(bitPattern: uint(offset))) }
+            let start = headerBytes + sourceVertices * 24
+            var groups: [UInt32: [UInt32]] = [:]
+            var low = PGAVector(x: .infinity, y: .infinity, z: .infinity), high = PGAVector(x: -.infinity, y: -.infinity, z: -.infinity)
+            for patch in patchLayers where conditions.includes(layer: patch.layer, hole: hole) {
+                for triangle in patch.firstTriangle..<(patch.firstTriangle + patch.triangleCount) {
+                    let offset = start + triangle * 16
+                    let corners = [uint(offset), uint(offset + 4), uint(offset + 8)]
+                    groups[uint(offset + 12), default: []].append(contentsOf: corners)
+                    for corner in corners {
+                        let p = headerBytes + Int(corner) * 24
+                        let x = float(p), y = float(p + 4), z = float(p + 8)
+                        low = PGAVector(x: min(low.x, x), y: min(low.y, y), z: min(low.z, z))
+                        high = PGAVector(x: max(high.x, x), y: max(high.y, y), z: max(high.z, z))
+                    }
+                }
+            }
+            guard !groups.isEmpty else { return nil }
+            let batches = groups.keys.sorted().map { key in
+                Batch(terrainID: key, indices: groups[key]!.withUnsafeBufferPointer { Data(buffer: $0) }, triangles: groups[key]!.count / 3)
+            }
+            return (batches, low, high)
+        }
+    }
+
     private struct MaterialManifest: Decodable {
         var schema_version: Int
         var materials: [Material]
@@ -215,6 +246,9 @@ final class PGAOriginalCourseSession: ObservableObject {
     @Published private(set) var telemetry = "Metal · loading original course"
     @Published private(set) var pointSize: CGFloat = 2.5
     @Published private(set) var courseCode = "PBL"
+    /// One hole's world at a time for GHPC v3 data; nil shows a v1/v2 file whole.
+    @Published private(set) var holeNumber = 1
+    @Published private(set) var holeCount = 0
     let renderer = PGAOriginalRenderer()
     var onExit: () -> Void
     var onHub: () -> Void
@@ -274,7 +308,10 @@ final class PGAOriginalCourseSession: ObservableObject {
             do {
                 let terrain = try await task.value
                 guard let self, self.loadID == id, !self.stopped else { return }
-                self.terrain = terrain; self.renderer.install(terrain, elevationPalette: self.elevationPalette, pointSize: self.pointSize)
+                self.terrain = terrain
+                self.holeCount = terrain.patchLayers.isEmpty ? 0 : Int(terrain.patchLayers.map { $0.layer & 0x1f }.max() ?? 0)
+                self.holeNumber = min(max(1, self.holeNumber), max(1, self.holeCount))
+                self.installView()
                 self.loading = false; self.home()
             } catch {
                 guard let self, self.loadID == id, !self.stopped else { return }
@@ -284,6 +321,16 @@ final class PGAOriginalCourseSession: ObservableObject {
         }
     }
     func home() { azimuth = 0.8; elevation = 0.75; distance = 260; target = .zero; updateCamera() }
+    private func installView() {
+        guard let terrain else { return }
+        renderer.install(terrain, elevationPalette: elevationPalette, pointSize: pointSize,
+                         view: holeCount > 0 ? terrain.holeView(holeNumber) : nil)
+    }
+    func selectHole(_ delta: Int) {
+        guard holeCount > 0 else { return }
+        holeNumber = (holeNumber - 1 + delta + holeCount) % holeCount + 1
+        installView(); home()
+    }
     func selectCourse(_ code: String) {
         guard ["PBL", "TUR"].contains(code), code != courseCode else { return }
         courseCode = code; terrain = nil; renderer.clear(); load()
@@ -298,7 +345,7 @@ final class PGAOriginalCourseSession: ObservableObject {
     }
     func togglePalette() {
         elevationPalette.toggle()
-        if let terrain { renderer.install(terrain, elevationPalette: elevationPalette, pointSize: pointSize) }
+        installView()
     }
     func cyclePointSize() {
         pointSize = pointSize >= 5 ? 1.5 : pointSize + 0.5
@@ -312,7 +359,7 @@ final class PGAOriginalCourseSession: ObservableObject {
     }
     private func key(_ event: NSEvent) -> Bool {
         let code = event.keyCode
-        guard [0, 1, 2, 8, 3, 4, 13, 15, 24, 27, 53, 123, 124, 125, 126].contains(Int(code)) else { return false }
+        guard [0, 1, 2, 8, 3, 4, 13, 15, 24, 27, 30, 33, 53, 123, 124, 125, 126].contains(Int(code)) else { return false }
         if event.type == .keyUp { heldKeys.remove(code); return true }
         heldKeys.insert(code)
         guard !event.isARepeat else { return true }
@@ -322,6 +369,8 @@ final class PGAOriginalCourseSession: ObservableObject {
         case 8: togglePalette()
         case 3: fullscreen()
         case 15: load()
+        case 33: selectHole(-1)
+        case 30: selectHole(1)
         default: break
         }
         return true
@@ -351,6 +400,7 @@ final class PGAOriginalCourseSession: ObservableObject {
         if pressed("B") { exit(); return }; if pressed("Menu") { hub(); return }
         if pressed("X") { togglePalette() }; if pressed("Y") { home() }; if pressed("A") { cyclePointSize() }
         if pressed("LB") || pressed("RB") { selectCourse(courseCode == "PBL" ? "TUR" : "PBL") }
+        if pressed("Left") { selectHole(-1) }; if pressed("Right") { selectHole(1) }
         let x = sample.axes[0], y = sample.axes[1]
         let rx = sample.axes[2], ry = sample.axes[3]
         if abs(x) > 0.16 || abs(y) > 0.16 { orbit(x: Double(abs(x) > 0.16 ? x : 0) * delta, y: Double(abs(y) > 0.16 ? y : 0) * delta * 0.7) }
@@ -379,7 +429,12 @@ final class PGAOriginalRenderer: NSObject, SCNSceneRendererDelegate {
         let ambient = SCNNode(); ambient.light = SCNLight(); ambient.light?.type = .ambient; ambient.light?.intensity = 600
         scene.rootNode.addChildNode(ambient)
     }
-    func install(_ terrain: PGAOriginalTerrain, elevationPalette: Bool, pointSize: CGFloat) {
+    /// `view` limits drawing to one hole's batches and centers on its bounds.
+    /// Source space is left-handed, so Z is mirrored for SceneKit.
+    func install(_ terrain: PGAOriginalTerrain, elevationPalette: Bool, pointSize: CGFloat,
+                 view: (batches: [PGAOriginalTerrain.Batch], min: PGAVector, max: PGAVector)? = nil) {
+        let batches = view?.batches ?? terrain.batches
+        let low = view?.min ?? terrain.boundsMin, high = view?.max ?? terrain.boundsMax
         let position = SCNGeometrySource(data: terrain.source, semantic: .vertex, vectorCount: terrain.displayedVertices,
                                          usesFloatComponents: true, componentsPerVector: 3, bytesPerComponent: 4,
                                          dataOffset: terrain.positionOffset, dataStride: 24)
@@ -396,7 +451,7 @@ final class PGAOriginalRenderer: NSObject, SCNSceneRendererDelegate {
         }
         let elements: [SCNGeometryElement]
         if terrain.triangleCount > 0 {
-            elements = terrain.batches.map { SCNGeometryElement(data: $0.indices, primitiveType: .triangles, primitiveCount: $0.triangles, bytesPerIndex: 4) }
+            elements = batches.map { SCNGeometryElement(data: $0.indices, primitiveType: .triangles, primitiveCount: $0.triangles, bytesPerIndex: 4) }
             pointElements = []
         } else {
             var indices = [UInt32](repeating: 0, count: terrain.displayedVertices)
@@ -412,7 +467,7 @@ final class PGAOriginalRenderer: NSObject, SCNSceneRendererDelegate {
             material.lightingModel = terrain.triangleCount > 0 && !elevationPalette ? .lambert : .constant
             material.isDoubleSided = true
             if terrain.triangleCount > 0 {
-                let id = terrain.batches[index].terrainID
+                let id = batches[index].terrainID
                 material.name = "Original terrain ID \(id) · \(terrain.materialNames[id] ?? "unmapped")"
                 if !elevationPalette, let texture = terrain.materialTextures[id] {
                     material.diffuse.contents = texture
@@ -424,9 +479,10 @@ final class PGAOriginalRenderer: NSObject, SCNSceneRendererDelegate {
             return material
         }
         model.removeFromParentNode(); model = SCNNode(geometry: geometry)
-        let scale = 200 / max(terrain.extent.x, terrain.extent.z)
-        model.scale = SCNVector3(scale, scale, scale)
-        model.position = SCNVector3(-terrain.center.x * scale, -terrain.center.y * scale, -terrain.center.z * scale)
+        let center = (low + high) * 0.5, extent = high - low
+        let scale = 200 / max(extent.x, extent.z)
+        model.scale = SCNVector3(scale, scale, -scale)
+        model.position = SCNVector3(-center.x * scale, -center.y * scale, center.z * scale)
         scene.rootNode.addChildNode(model)
     }
     func updatePointSize(_ value: CGFloat) {
@@ -469,13 +525,17 @@ struct PGAOriginalCourseView: View {
             VStack(spacing: 0) {
                 HStack(spacing: 18) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("ORIGINAL COURSE LAB · \(session.courseCode == "PBL" ? "PEBBLE BEACH" : "TURNBERRY")").font(.system(size: 12, weight: .bold, design: .monospaced)).tracking(1)
-                        Text("Original terrain extraction · native rendering · whole-game fidelity pending").font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                        Text("ORIGINAL COURSE LAB · \(session.courseCode == "PBL" ? "PEBBLE BEACH" : "TURNBERRY")\(session.holeCount > 0 ? " · HOLE \(session.holeNumber)" : "")").font(.system(size: 12, weight: .bold, design: .monospaced)).tracking(1)
+                        Text(session.holeCount > 0 ? "Each hole is its own source world · \(PGACourseConditions.standard.summary), as CHole::Load selects" : "Original terrain extraction · native rendering · whole-game fidelity pending").font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
                     }
                     Spacer()
+                    if session.holeCount > 0 {
+                        Button("◀ Hole · [") { session.selectHole(-1) }
+                        Button("Hole ▶ · ]") { session.selectHole(1) }
+                    }
                     Button("Home · H") { session.home() }
                     Button("Full screen · F") { session.fullscreen() }
-                    Button("Practice · Esc") { session.exit() }
+                    Button("Back to golf · Esc") { session.exit() }
                     Button("Hub") { session.hub() }
                 }.buttonStyle(.plain).font(.system(size: 11)).padding(20).background(Color(hex: "102223").opacity(0.95))
                 HStack(alignment: .top) {
@@ -501,9 +561,9 @@ struct PGAOriginalCourseView: View {
                 }.padding(20)
                 Spacer()
                 HStack {
-                    Text("Drag / arrows orbit · right-drag pan · scroll / pinch / W S zoom · H home · C palette · R reload")
+                    Text("Drag / arrows orbit · right-drag pan · scroll / pinch / W S zoom · [ ] hole · H home · C palette · R reload")
                     Spacer()
-                    Text("Controller: sticks orbit/pan · triggers zoom · LB/RB course · X palette · Y home · B practice · Menu hub")
+                    Text("Controller: sticks orbit/pan · triggers zoom · D-pad ◀ ▶ hole · LB/RB course · X palette · Y home · B back · Menu hub")
                 }.font(.system(size: 8, design: .monospaced)).foregroundStyle(.white.opacity(0.65)).padding(14).background(Color(hex: "102223").opacity(0.95))
             }
             if session.loading { ProgressView("Loading original terrain off the main thread…").padding(25).background(Color(hex: "102223"), in: RoundedRectangle(cornerRadius: 10)) }
@@ -511,7 +571,7 @@ struct PGAOriginalCourseView: View {
                 VStack(spacing: 17) {
                     Text("Original terrain unavailable").font(.title2)
                     Text(error).font(.system(size: 12)).foregroundStyle(.white.opacity(0.65)).textSelection(.enabled)
-                    HStack(spacing: 20) { Button("Reload") { session.load() }; Button("Return to practice") { session.exit() } }
+                    HStack(spacing: 20) { Button("Reload") { session.load() }; Button("Back to golf") { session.exit() } }
                 }.padding(25).frame(width: 460).background(Color(hex: "102223"), in: RoundedRectangle(cornerRadius: 12))
             }
         }.foregroundStyle(.white).onAppear { session.start() }.onDisappear { session.stop() }

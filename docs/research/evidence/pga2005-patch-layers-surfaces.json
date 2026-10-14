@@ -1,0 +1,435 @@
+{
+  "schema_version": 1,
+  "title": "PGA Tour 2005 per-hole patch layers, condition masks and TCL surface coefficients",
+  "date": "2026-10-13",
+  "method": "Static only. Apple LLVM 21 objdump disassembly with PE export symbols plus direct Ghidra 12.1.2 headless decompilation (Tools/analyze_pga2005_ghidra.py). Not REA Evidence: REA open_binary on Engine.dll timed out during auto-analysis and the session closed. No Windows code executed.",
+  "targets": {
+    "Engine.dll": "94aa30bb645ea089fed6e98df0dce38d75c309e4531386cbe33c07f65bd19728",
+    "CourseData.dll": "36664435b88646e6b96d55f81573e1fdb73ee88e7f54762c4a723c693832e82c",
+    "DXWrap.dll": "493a8aee88ef75d06d26b77802c20cd383a2ae6bf3c8b03fa5cb46a0c7696f3e",
+    "PBL.TCR": "3761d6f98e032a4381372d5b3cbfa8198129de25751f84cd4dbea17923580e47",
+    "PBL.TCL": "72160b503f32d79e830d988923acd928dc02597d30d6a95da4ba99cb0d2cd13d",
+    "PBL.INI": "f7ff4ef2e1240b6ced8640885c0e62f11f423faf66a8d923b113b340354d0058",
+    "TUR.TCR": "34c54eca42471fc8247e0cc6cd3f95296f4de52067a0f0046e5d6217860306c5",
+    "TUR.TCL": "704397ed430abfc411d575c9c1f32720068421a09b5f2ff0c9a74272f324dd1f"
+  },
+  "patch_layers": {
+    "field": "u32 tagPatch::PatchLayerInfoS at patch descriptor +0x61 (u16 +0x63 is zero in every PBL/TUR patch)",
+    "hole_bits": "0x1f",
+    "groups": {
+      "fairway_width": {
+        "bits": [
+          "0x20",
+          "0x40",
+          "0x80",
+          "0x100",
+          "0x200"
+        ],
+        "select": "1 << (5 + trunc(level*4))"
+      },
+      "green_size": {
+        "bits": [
+          "0x400",
+          "0x800",
+          "0x1000",
+          "0x2000",
+          "0x4000"
+        ],
+        "select": "1 << (10 + trunc(level*4))"
+      },
+      "composite_only": {
+        "bits": [
+          "0x8000"
+        ],
+        "set_by": "CompositeHoleSettings::Serialize write path 0x1016eb36"
+      },
+      "inert_bit16": {
+        "bits": [
+          "0x10000"
+        ],
+        "set_by": "SetFairwayWidthLevel 0x1017013a / SetGreenSizeLevel 0x1016ffb8; no PBL/TUR patch uses it"
+      }
+    },
+    "predicate": "if s16 header+0x4e > 0: accept iff ((patch ^ sel) & 0x1f) == 0 and ((patch & ~0x1f) == 0 or (patch & sel & ~0x1f) != 0)",
+    "predicate_sites": {
+      "CourseDataManager::AddVisiblePatch": "0x10009160 (CourseData.dll)",
+      "CRData::FlagVisiblePatches": "0x101b701f (composite courses only)",
+      "CTerrainMesh::TerrainHeightFromTable": "0x10200d42",
+      "CTerrainMesh::GridTerrainHeightFromTable": "0x102019df",
+      "CTerrainMesh::FindTerrainRect": "0x101ff2c8",
+      "CTerrainMesh::RayIntersect2DBucket": "0x10200118",
+      "CTerrainMesh::TerrainHeightMapped": "0x10205451"
+    },
+    "selection_sources": {
+      "default": "0x420 | hole (CourseDataManager ctor 0x10006f90 +0x483; tagPatch ctor 0x10002f40; CompositeHoleSettings ctor 0x1016e42b; CHole::Load 0x10183ca1 fallback)",
+      "front_end": "0xffffffe0 | hole when DXWrap CDisplay::IsInFrontEnd (0x100084d0, byte +0x4b7)",
+      "composite": "CompositeCourse::GetActivePinchLayers 0x10172a5d -> CompositeHoleSettings[logicalHole-1]+0x3c (stride 0x68)"
+    },
+    "chole_load": "Final pass calls AddVisiblePatch(patch, 2, 0) for every patch, so the loaded set is exactly the predicate's set; spatial passes only tag byte +0x95 class 1. Non-layered courses use LoadHoleOldStyle 0x101850fd.",
+    "observed": {
+      "PBL": {
+        "patches": 6943,
+        "selected_at_0x420_all_holes": 6609,
+        "mask_0x8000_patches": 20
+      },
+      "TUR": {
+        "patches": 6742,
+        "selected_at_0x420_all_holes": 6394,
+        "mask_0x8000_patches": 19
+      }
+    },
+    "ini_conditions": {
+      "reader": "CourseInfoC::GetDefault* via GetPrivateProfileIntA section Conditions",
+      "defaults": {
+        "Skydome": 1,
+        "GreenCond": 3,
+        "RoughLength": 2,
+        "WindSpeed": 1
+      },
+      "addresses": {
+        "GetDefaultSkydome": "0x1000ae50",
+        "GetDefaultGreenCond": "0x1000aec0",
+        "GetDefaultRoughLength": "0x1000af30",
+        "GetDefaultWindSpeed": "0x1000afa0"
+      },
+      "feeds_layer_mask": false,
+      "static_caller": "not found in Engine.dll or other unprotected modules"
+    },
+    "confidence": {
+      "predicate_and_defaults": "high",
+      "level_arithmetic": "high",
+      "level0_is_widest_fairway_largest_green": "medium-high (bit math plus complementary data pairs)",
+      "purpose_of_0x8000": "medium-low"
+    }
+  },
+  "surface_record": {
+    "layout": {
+      "0x00-0x24": "float32 c0..c9",
+      "0x28": "u32 flags",
+      "0x2c": "s16 sound id (-1 = texture-section default at section+0x23)",
+      "0x2e": "20-byte label (translated by Language.dll)",
+      "0x42": "u8 lie-graphic index; TerrainPropsLieGraphicIndex returns (library<<8)|byte",
+      "0x43": "u8, zero in PBL/TUR"
+    },
+    "coefficients": {
+      "c0": "lie power factor: TerrainData::ConsiderTerrain 0x101fd345/0x101fd3f3 -> CBallFlight::Impact launch velocity multiplier and Position terrain difficulty",
+      "c1": "lie spin factor at Impact",
+      "c2": "bounce normal restitution in CBallFlight::Collide 0x101f3310",
+      "c3": "bounce tangential friction limit in Collide",
+      "c4": "slip phase: tangential gravity multiplied by (1 - c4) in RollingAndSlipping 0x101f6112",
+      "c5": "slip phase friction torque coefficient in RollingAndSlipping",
+      "c6": "pure-roll side-slope break in PureRolling 0x101f6742",
+      "c7": "pure-roll rolling resistance in PureRolling (stop when speed < deceleration)",
+      "c8": "impact firmness divisor in Collide (dent/absorption term and restitution fall-off)",
+      "c9": "constant dent/absorption term in Collide"
+    },
+    "flags": {
+      "0x1": "fairway",
+      "0x2": "rough",
+      "0x4": "green",
+      "0x8": "bunker",
+      "0x10": "fringe",
+      "0x20": "unplayable",
+      "0x40": "water",
+      "0x80": "out of bounds (runtime)",
+      "0x100": "hazard",
+      "0x200": "drop allowed (except green/fringe)",
+      "0x400": "free drop",
+      "0x800": "ball disappears",
+      "0x1000": "tee box",
+      "0x2000": "stance allowed on unplayable surface",
+      "0x4000": "in hole (runtime)",
+      "0x8000": "on the tee (runtime)",
+      "0x10000": "touched hole (runtime)",
+      "0x40000": "tournament structure (runtime from TCR render props 0x4000)",
+      "0x80000000": "weed/heavy rough"
+    },
+    "record_selection": {
+      "lie": "Position+0x18 SubTerrainTypeE; Position::SetAttributes 0x10186e46",
+      "next_lie": "CBallFlight::StopBall 0x101f769c writes CBallFlight+0x99",
+      "physics": "index 0 in flight/roll/stop; Collide uses 1 when section flag 0x80000 and count > 1",
+      "fallback": "ConsiderTerrain decrements index while c0 == 0.0"
+    },
+    "confidence": {
+      "flags": "high",
+      "c0_c1_c2_c3_c7": "high",
+      "c4_c5_c6_c8_c9": "medium",
+      "sub_index_rules": "high",
+      "condition_scalers": "medium-high"
+    }
+  },
+  "constants": [
+    {
+      "address": "0x102d6304",
+      "bytes_hex": "00008040",
+      "width": "f32",
+      "value": 4.0,
+      "use": "Composite fairway/green level float*4.0 then _ftol -> level 0..4"
+    },
+    {
+      "address": "0x102d60c0",
+      "bytes_hex": "000000000000f03f",
+      "width": "f64",
+      "value": 1.0,
+      "use": "1.0 in ConsiderTerrain scaling"
+    },
+    {
+      "address": "0x102d9980",
+      "bytes_hex": "000000a09999c93f",
+      "width": "f64",
+      "value": 0.200000003,
+      "use": "rough-length slope 0.2 in ConsiderTerrain"
+    },
+    {
+      "address": "0x102d9988",
+      "bytes_hex": "000000a09999c93f",
+      "width": "f64",
+      "value": 0.200000003,
+      "use": "sand-difficulty slope 0.2 in ConsiderTerrain"
+    },
+    {
+      "address": "0x102d64dc",
+      "bytes_hex": "cdcc4c3d",
+      "width": "f32",
+      "value": 0.050000001,
+      "use": "0.05: player magnet scale for rough c0 bonus; Position difficulty lower clamp"
+    },
+    {
+      "address": "0x102d56ac",
+      "bytes_hex": "0000a040",
+      "width": "f32",
+      "value": 5.0,
+      "use": "5.0: Position difficulty upper clamp; composite wet level*5"
+    },
+    {
+      "address": "0x102d70fc",
+      "bytes_hex": "3333333f",
+      "width": "f32",
+      "value": 0.699999988,
+      "use": "CCourse::GetRoughLength enum 3 -> 0.7"
+    },
+    {
+      "address": "0x102d8cd4",
+      "bytes_hex": "6666a63f",
+      "width": "f32",
+      "value": 1.299999952,
+      "use": "CCourse::GetRoughLength enum 1 -> 1.3"
+    },
+    {
+      "address": "0x102d6c2c",
+      "bytes_hex": "9a99193f",
+      "width": "f32",
+      "value": 0.600000024,
+      "use": "GetWetScale GreenCond 1 -> 0.6"
+    },
+    {
+      "address": "0x102d6c30",
+      "bytes_hex": "cdcc4c3f",
+      "width": "f32",
+      "value": 0.800000012,
+      "use": "GetWetScale GreenCond 2 -> 0.8"
+    },
+    {
+      "address": "0x102d70b0",
+      "bytes_hex": "9a99993f",
+      "width": "f32",
+      "value": 1.200000048,
+      "use": "GetWetScale GreenCond 4 -> 1.2"
+    },
+    {
+      "address": "0x102d8cd8",
+      "bytes_hex": "3333b33f",
+      "width": "f32",
+      "value": 1.399999976,
+      "use": "GetWetScale GreenCond 5 -> 1.4"
+    },
+    {
+      "address": "0x102d9890",
+      "bytes_hex": "0000000000001840",
+      "width": "f64",
+      "value": 6.0,
+      "use": "StopBall bunker: max displacement from entry point per axis"
+    },
+    {
+      "address": "0x102d9878",
+      "bytes_hex": "0000000000002440",
+      "width": "f64",
+      "value": 10.0,
+      "use": "StopBall bunker: entry speed below -> Lt (1)"
+    },
+    {
+      "address": "0x102d9880",
+      "bytes_hex": "0000000000002840",
+      "width": "f64",
+      "value": 12.0,
+      "use": "StopBall bunker: entry speed below -> Med/Dp roll"
+    },
+    {
+      "address": "0x102d9888",
+      "bytes_hex": "0000000000002c40",
+      "width": "f64",
+      "value": 14.0,
+      "use": "StopBall bunker: entry speed at/above -> plug chance"
+    },
+    {
+      "address": "0x102d64c0",
+      "bytes_hex": "6666663f",
+      "width": "f32",
+      "value": 0.899999976,
+      "use": "0.9: StopBall random threshold; Collide fairway restitution scale"
+    },
+    {
+      "address": "0x102d5e78",
+      "bytes_hex": "cdcccc3d",
+      "width": "f32",
+      "value": 0.100000001,
+      "use": "0.1: StopBall random threshold"
+    },
+    {
+      "address": "0x1038bae8",
+      "bytes_hex": "0000000000002040",
+      "width": "f64",
+      "value": 8.0,
+      "use": "Collide: restitution full below this impact speed"
+    },
+    {
+      "address": "0x1038baf0",
+      "bytes_hex": "000000000000fc3f",
+      "width": "f64",
+      "value": 1.75,
+      "use": "Collide: restitution fall-off slope"
+    },
+    {
+      "address": "0x1038bae0",
+      "bytes_hex": "000000a09999e93f",
+      "width": "f64",
+      "value": 0.800000012,
+      "use": "Collide: green/fringe dent scale; green c8 divisor"
+    },
+    {
+      "address": "0x1038baf8",
+      "bytes_hex": "000000403333d33f",
+      "width": "f64",
+      "value": 0.300000012,
+      "use": "Collide: friction limit scale on c3"
+    },
+    {
+      "address": "0x102d9948",
+      "bytes_hex": "000000601058e53f",
+      "width": "f64",
+      "value": 0.666999996,
+      "use": "Collide: rough c9 scale"
+    },
+    {
+      "address": "0x102d62e8",
+      "bytes_hex": "000000000000e03f",
+      "width": "f64",
+      "value": 0.5,
+      "use": "Collide: weed c9 scale; later fairway/green bounce c9 scale"
+    },
+    {
+      "address": "0x102d7070",
+      "bytes_hex": "000000000000e83f",
+      "width": "f64",
+      "value": 0.75,
+      "use": "Collide: second fairway/green bounce c9 scale"
+    },
+    {
+      "address": "0x102d9860",
+      "bytes_hex": "000000c0f528bc3f",
+      "width": "f64",
+      "value": 0.109999999,
+      "use": "Collide: short-grass restitution wet slope"
+    },
+    {
+      "address": "0x102d9868",
+      "bytes_hex": "000000606666f63f",
+      "width": "f64",
+      "value": 1.399999976,
+      "use": "Collide: short-grass dent wet slope"
+    },
+    {
+      "address": "0x1038bb08",
+      "bytes_hex": "000000000000f83f",
+      "width": "f64",
+      "value": 1.5,
+      "use": "RollingAndSlipping: c5 friction scale"
+    },
+    {
+      "address": "0x102d9958",
+      "bytes_hex": "0000000000000440",
+      "width": "f64",
+      "value": 2.5,
+      "use": "RollingAndSlipping: angular impulse scale"
+    },
+    {
+      "address": "0x102d98a0",
+      "bytes_hex": "000000403333e33f",
+      "width": "f64",
+      "value": 0.600000024,
+      "use": "PureRolling: green break (c6) scale"
+    },
+    {
+      "address": "0x102d9898",
+      "bytes_hex": "000000606666e23f",
+      "width": "f64",
+      "value": 0.574999988,
+      "use": "PureRolling: green rolling-resistance (c7) scale"
+    },
+    {
+      "address": "0x102d64b8",
+      "bytes_hex": "0000000000001440",
+      "width": "f64",
+      "value": 5.0,
+      "use": "PureRolling: 5 (of 5/7 rolling factor)"
+    },
+    {
+      "address": "0x102d9960",
+      "bytes_hex": "0000000000001c40",
+      "width": "f64",
+      "value": 7.0,
+      "use": "PureRolling: 7 (of 5/7 rolling factor)"
+    },
+    {
+      "address": "0x102d98a8",
+      "bytes_hex": "000000205c8ff23f",
+      "width": "f64",
+      "value": 1.159999967,
+      "use": "PureRolling: wet>1 slope"
+    },
+    {
+      "address": "0x102d98b0",
+      "bytes_hex": "000000a09999e13f",
+      "width": "f64",
+      "value": 0.550000012,
+      "use": "PureRolling: wet<1 slope"
+    },
+    {
+      "address": "0x102d9758",
+      "bytes_hex": "000000a047e1ea3f",
+      "width": "f64",
+      "value": 0.839999974,
+      "use": "ball radius-like constant (inches)"
+    },
+    {
+      "address": "0x102d9768",
+      "bytes_hex": "0000002085ebf93f",
+      "width": "f64",
+      "value": 1.620000005,
+      "use": "ball mass-like constant"
+    }
+  ],
+  "open_questions": [
+    "Meaning of TCR header s16 +0x4e (29 in PBL/TUR) beyond enabling filters",
+    "Caller that copies CourseInfoC::GetDefault* into CGameSettings (likely protected TW2005.exe)",
+    "Exact copy of CBallFlight+0x99 to CGolfBall+0x342 and of CGolfBall+0x2ad.. to CBallFlight+4/+8/+0xc",
+    "Intended purpose of 0x8000 patches and of bit 0x10000",
+    "Whether standard-course front-end previews render overlapping layer variants",
+    "Texture-section flag bits other than 0x8, 0x80 and 0x80000"
+  ],
+  "limitations": [
+    "Decompiler output is not original source.",
+    "No runtime observation; probabilities and thresholds are static readings.",
+    "x87 arithmetic and float/double widths must be checked per instruction before bit-exact reuse."
+  ]
+}

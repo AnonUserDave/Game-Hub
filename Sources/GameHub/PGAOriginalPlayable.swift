@@ -1,28 +1,30 @@
 import Foundation
 
-/// Course-condition variant layers. Each source patch carries a u16 at
-/// descriptor +0x61: the low five bits name its hole, and two complementary
-/// five-level groups swap fairway/rough bands (0x20...0x200) and green/fringe
-/// rings (0x400...0x4000). 0x8000 marks a further layer that holds tee signs,
-/// some tee boxes and cliff faces. The original rule that chooses each level is
-/// not reconstructed yet, so the defaults below are development choices.
+/// Course-condition patch layers. Each source patch carries
+/// `tagPatch::PatchLayerInfoS` (u16 at descriptor +0x61): the low five bits name
+/// the hole whose world owns it and the higher bits are condition variants.
+/// `CourseDataManager::AddVisiblePatch` (CourseData 0x10009160) accepts a patch
+/// for the same hole when it is a base patch or shares a condition bit with the
+/// selector. `CHole::Load` (Engine 0x10183ca1) uses 0x420 for every standard
+/// course: fairway level 0 (widest bands) and green level 0 (largest greens).
+/// Bit 0x8000 is never selected in standard play. Static analysis; see
+/// docs/research/PGA2005-REA.md.
 struct PGACourseConditions: Codable, Equatable {
-    /// 0...4, selecting bit 0x20 << level.
-    var fairwayLevel: Int
-    /// 0...4, selecting bit 0x400 << level.
-    var greenLevel: Int
-    var includeLayer8000: Bool
+    /// Condition bits of the selector; the hole number is ORed in per hole.
+    var selector: UInt32
 
-    static let development = PGACourseConditions(fairwayLevel: 2, greenLevel: 2, includeLayer8000: true)
-    var summary: String { "fairway layer \(fairwayLevel + 1)/5 · green layer \(greenLevel + 1)/5" }
+    static let standard = PGACourseConditions(selector: 0x420)
+    /// Composite-course levels as built by SetFairwayWidthLevel/SetGreenSizeLevel.
+    static func composite(fairwayLevel: Int, greenLevel: Int) -> PGACourseConditions {
+        PGACourseConditions(selector: (0x20 << UInt32(max(0, min(4, fairwayLevel)))) | (0x400 << UInt32(max(0, min(4, greenLevel)))))
+    }
+    var summary: String { selector == 0x420 ? "standard layers 0x420" : String(format: "layers 0x%X", selector) }
 
     func includes(layer: UInt32, hole: Int) -> Bool {
-        guard Int(layer & 0x1f) == hole, layer <= 0xffff else { return false }
-        let fairway = layer & 0x3e0, green = layer & 0x7c00
-        if fairway != 0 && fairway & (0x20 << UInt32(max(0, min(4, fairwayLevel)))) == 0 { return false }
-        if green != 0 && green & (0x400 << UInt32(max(0, min(4, greenLevel)))) == 0 { return false }
-        if layer & 0x8000 != 0 && !includeLayer8000 { return false }
-        return true
+        let selected = (selector & ~0x1f) | UInt32(hole & 0x1f)
+        guard (layer ^ selected) & 0x1f == 0 else { return false }
+        let conditions = layer & ~0x1f
+        return conditions == 0 || conditions & selected & ~0x1f != 0
     }
 }
 
@@ -53,45 +55,6 @@ struct PGAOriginalSurfaceRecord: Decodable, Equatable {
     var coefficients: [Double]
 }
 
-/// How an original material plays under the provisional native rules.
-struct PGAOriginalSurfaceClass: Equatable {
-    var surface: PGASurface
-    var lie: String
-
-    /// Category from original flag bits observed in PBL/TUR TCL records:
-    /// 0x1 fairway, 0x2 rough, 0x4 green, 0x8 sand, 0x10 fringe, 0x20
-    /// unplayable, 0x1000 tee box, 0x800/0x40 ocean. Bit meanings are inferred
-    /// from labels and need confirmation in the original lie code.
-    static func classify(flags: UInt32) -> PGASurface {
-        if flags & 0x840 != 0 { return .water }
-        if flags & 0x4 != 0 { return .green }
-        if flags & 0x10 != 0 { return .fringe }
-        if flags & 0x1000 != 0 { return .tee }
-        if flags & 0x8 != 0 { return .sand }
-        if flags & 0x1 != 0 { return .fairway }
-        if flags & 0x2 != 0 || flags & 0x8000_0000 != 0 { return .rough }
-        if flags & 0x20 != 0 { return .unplayable }
-        if flags & 0x200 != 0 { return .rough }
-        return .unplayable
-    }
-
-    /// Several materials have more than one surface record (rough Md/Lt/Dp,
-    /// sand Med/Lt/Dp/Plug, sand-to-grass transition strips). The original
-    /// record choice is unknown, so the category comes from the first record's
-    /// flags and the label is used only when every record agrees.
-    init(materialName: String, records: [PGAOriginalSurfaceRecord]) {
-        surface = Self.classify(flags: records.first?.flags ?? 0)
-        let labels = Set(records.map { $0.name.trimmingCharacters(in: .whitespaces) })
-        if labels.count == 1, let label = labels.first, !label.isEmpty,
-           !materialName.lowercased().hasPrefix(label.lowercased()) {
-            lie = label
-        } else {
-            lie = surface.rawValue
-        }
-    }
-    init(surface: PGASurface, lie: String) { self.surface = surface; self.lie = lie }
-}
-
 /// Mapped original course data shared by every hole: GHPC v3 terrain, patch
 /// layers, materials and TCR hole records. Nothing is decoded per hole twice.
 final class PGAOriginalCourseData: @unchecked Sendable {
@@ -108,7 +71,7 @@ final class PGAOriginalCourseData: @unchecked Sendable {
         var name: String
         var texture: URL?
         var records: [PGAOriginalSurfaceRecord]
-        var surfaceClass: PGAOriginalSurfaceClass
+        var properties: PGASurfaceProperties
     }
     struct SourceHole {
         var number: Int
@@ -219,7 +182,7 @@ final class PGAOriginalCourseData: @unchecked Sendable {
     }
 
     private struct MaterialFile: Decodable {
-        struct Entry: Decodable { var id: UInt32; var name: String; var texture: String; var surface_types: [PGAOriginalSurfaceRecord] }
+        struct Entry: Decodable { var id: UInt32; var name: String; var texture: String; var surface_types: [PGAOriginalSurfaceRecord]; var section_flags: UInt32? }
         var schema_version: Int
         var materials: [Entry]
     }
@@ -234,7 +197,9 @@ final class PGAOriginalCourseData: @unchecked Sendable {
             if !entry.texture.hasPrefix("/"), url.path.hasPrefix(directory.path + "/"), url.pathExtension.lowercased() == "png",
                FileManager.default.fileExists(atPath: url.path) { texture = url }
             result[entry.id] = Material(id: entry.id, name: entry.name, texture: texture, records: entry.surface_types,
-                                        surfaceClass: PGAOriginalSurfaceClass(materialName: entry.name, records: entry.surface_types))
+                                        properties: PGASurfaceProperties(materialID: entry.id, materialName: entry.name,
+                                                                         sectionFlags: entry.section_flags ?? 0,
+                                                                         records: entry.surface_types.map { .init(label: $0.name, flags: $0.flags, coefficients: $0.coefficients) }))
         }
         return result
     }
@@ -278,19 +243,19 @@ final class PGAOriginalCourseData: @unchecked Sendable {
 final class PGAOriginalHoleTerrain: PGATerrainSampling, @unchecked Sendable {
     let collider: PGAOriginalCollision
     let transform: PGACourseTransform
-    let classes: [UInt32: PGAOriginalSurfaceClass]
-    private static let unknown = PGAOriginalSurfaceClass(surface: .unplayable, lie: "Unclassified")
+    let classes: [UInt32: PGASurfaceProperties]
 
-    init(collider: PGAOriginalCollision, transform: PGACourseTransform, classes: [UInt32: PGAOriginalSurfaceClass]) {
+    init(collider: PGAOriginalCollision, transform: PGACourseTransform, classes: [UInt32: PGASurfaceProperties]) {
         self.collider = collider; self.transform = transform; self.classes = classes
     }
 
     func ground(x: Double, z: Double, ceiling: Double) -> PGAGroundSample? {
         let raw = transform.raw(meters: PGAVector(x: x, y: ceiling.isFinite ? ceiling : 0, z: z))
         guard let hit = collider.sample(rawX: raw.x, rawZ: raw.z, maximumHeight: ceiling.isFinite ? raw.y : .infinity) else { return nil }
-        let info = classes[hit.terrainID] ?? Self.unknown
+        let info = classes[hit.terrainID]
         return PGAGroundSample(height: (hit.rawHeight - transform.origin.y) * PGACourseTransform.metersPerInch,
-                               normal: transform.direction(raw: hit.normal), surface: info.surface, lie: info.lie, materialID: hit.terrainID)
+                               normal: transform.direction(raw: hit.normal), surface: info?.surface ?? .unplayable,
+                               lie: info?.category ?? "Unclassified", materialID: hit.terrainID, properties: info)
     }
 
     /// Successive floors from the top down, for choosing an authored surface
@@ -331,12 +296,12 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
 
     /// Synchronous and CPU-bound: run on a worker. Builds one bounded floor
     /// index per hole over that hole's triangles only.
-    init(data: PGAOriginalCourseData, conditions: PGACourseConditions = .development,
+    init(data: PGAOriginalCourseData, conditions: PGACourseConditions = .standard,
          teeIndex: Int = PGAOriginalPlayableCourse.developmentTeeIndex, pinIndex: Int = 0) throws {
         self.data = data; self.conditions = conditions; self.teeIndex = teeIndex; self.pinIndex = pinIndex
         let transform = data.defaultTransform
         self.transform = transform
-        let classes = data.materials.mapValues(\.surfaceClass)
+        let classes = data.materials.mapValues(\.properties)
         var holes: [PGAHole] = [], terrains: [PGAOriginalHoleTerrain] = [], selections: [[UInt32]] = [], checks: [Validation] = []
         for source in data.holes {
             try Task.checkCancellation()
@@ -362,13 +327,13 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
                                      pinHeightOffsetInches: (transform.meters(raw: rawPin).y - pin.point.y) / PGACourseTransform.metersPerInch,
                                      triangles: selection.count))
         }
-        let identity = "pga2005-\(data.code)-\(data.sourceTCRSHA256.prefix(16))-ghpc3-f\(conditions.fairwayLevel)g\(conditions.greenLevel)l\(conditions.includeLayer8000 ? 1 : 0)-t\(teeIndex)p\(pinIndex)"
+        let identity = "pga2005-\(data.code)-\(data.sourceTCRSHA256.prefix(16))-ghpc3-l\(String(conditions.selector, radix: 16))-t\(teeIndex)p\(pinIndex)"
         course = PGACourse(name: data.title, provenance: "Original \(data.code) TCR terrain, materials, tees and pins · approximate native physics",
                            holes: holes, identity: identity)
         self.terrains = terrains; self.selections = selections; validation = checks
     }
 
-    static func load(code: String, root: URL, conditions: PGACourseConditions = .development) throws -> PGAOriginalPlayableCourse {
+    static func load(code: String, root: URL, conditions: PGACourseConditions = .standard) throws -> PGAOriginalPlayableCourse {
         guard ["PBL", "TUR"].contains(code) else { throw PGAOriginalCourseData.LoadError.invalid("Unsupported course \(code).") }
         let directory = root.appendingPathComponent("Library/Imported/pga2005/\(code)")
         return try PGAOriginalPlayableCourse(data: PGAOriginalCourseData(directory: directory, code: code), conditions: conditions)

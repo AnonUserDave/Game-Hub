@@ -15,28 +15,27 @@ final class PGAOriginalPlayableTests: XCTestCase {
         return try pebble.get()
     }
 
-    func testConditionMasksSelectOneVariantPerGroupAndOnlyTheHole() {
-        let conditions = PGACourseConditions(fairwayLevel: 2, greenLevel: 1, includeLayer8000: false)
-        XCTAssertTrue(conditions.includes(layer: 0x0001, hole: 1))
-        XCTAssertFalse(conditions.includes(layer: 0x0002, hole: 1), "Another hole's world never leaks in")
-        // Fairway level 2 selects bit 0x80: bands 0xE0/0x1E0 stay fairway and
-        // their complements 0x300/0x200 are excluded.
-        XCTAssertTrue(conditions.includes(layer: 0x00e1, hole: 1))
-        XCTAssertFalse(conditions.includes(layer: 0x0301, hole: 1))
-        XCTAssertFalse(conditions.includes(layer: 0x0061, hole: 1))
-        XCTAssertTrue(conditions.includes(layer: 0x0381, hole: 1))
+    func testStandardSelectorMatchesOriginalAddVisiblePatchPredicate() {
+        let standard = PGACourseConditions.standard
+        XCTAssertEqual(standard.selector, 0x420)
+        XCTAssertTrue(standard.includes(layer: 0x0001, hole: 1), "Base patches always load")
+        XCTAssertFalse(standard.includes(layer: 0x0002, hole: 1), "Another hole's world never leaks in")
+        // Level 0 keeps every fairway band (0x20 bit) and drops their rough complements.
+        for band: UInt32 in [0x20, 0x60, 0xe0, 0x1e0] { XCTAssertTrue(standard.includes(layer: band | 7, hole: 7)) }
+        for rough: UInt32 in [0x3c0, 0x380, 0x300, 0x200] { XCTAssertFalse(standard.includes(layer: rough | 7, hole: 7)) }
+        // Largest green: every ring holding 0x400; the fairway-ring variants drop out.
+        for ring: UInt32 in [0x400, 0xc00, 0x1c00, 0x3c00, 0x7c00] { XCTAssertTrue(standard.includes(layer: ring | 7, hole: 7)) }
+        for ring: UInt32 in [0x4000, 0x6000, 0x7000, 0x7800] { XCTAssertFalse(standard.includes(layer: ring | 7, hole: 7)) }
+        XCTAssertFalse(standard.includes(layer: 0x8001, hole: 1), "0x8000 is never selected in standard play")
+        // Composite levels select one bit per group, and complements cover each gap once.
+        let composite = PGACourseConditions.composite(fairwayLevel: 2, greenLevel: 1)
+        XCTAssertEqual(composite.selector, 0x80 | 0x800)
         for pair: (UInt32, UInt32) in [(0x20, 0x3c0), (0x60, 0x380), (0xe0, 0x300), (0x1e0, 0x200)] {
             for level in 0..<5 {
-                let c = PGACourseConditions(fairwayLevel: level, greenLevel: 0, includeLayer8000: true)
-                XCTAssertNotEqual(c.includes(layer: pair.0 | 3, hole: 3), c.includes(layer: pair.1 | 3, hole: 3),
-                                  "Complementary bands cover a gap exactly once")
+                let c = PGACourseConditions.composite(fairwayLevel: level, greenLevel: 0)
+                XCTAssertNotEqual(c.includes(layer: pair.0 | 3, hole: 3), c.includes(layer: pair.1 | 3, hole: 3))
             }
         }
-        // Green level 1 selects bit 0x800.
-        XCTAssertTrue(conditions.includes(layer: 0x0c01, hole: 1))
-        XCTAssertFalse(conditions.includes(layer: 0x0401, hole: 1))
-        XCTAssertFalse(conditions.includes(layer: 0x8001, hole: 1))
-        XCTAssertTrue(PGACourseConditions.development.includes(layer: 0x8001, hole: 1))
     }
 
     func testTransformRoundTripsAndMirrorsLeftHandedSource() {
@@ -54,16 +53,39 @@ final class PGAOriginalPlayableTests: XCTestCase {
         XCTAssertLessThan(up.y, 0, "In right-handed space, forward × right points down")
     }
 
-    func testOriginalFlagBitsMapToProvisionalCategories() {
+    func testOriginalFlagBitsMapToCategoriesAndRecordsDriveLies() {
         let samples: [(UInt32, PGASurface)] = [(0x201, .fairway), (0x202, .rough), (0x8000_0200, .rough), (0x4, .green), (0x210, .fringe),
-                                               (0x1200, .tee), (0x208, .sand), (0x960, .water), (0x2420, .unplayable), (0x120, .unplayable), (0, .unplayable)]
-        for (flags, surface) in samples { XCTAssertEqual(PGAOriginalSurfaceClass.classify(flags: flags), surface, String(format: "0x%x", flags)) }
-        let rough = PGAOriginalSurfaceClass(materialName: "pbl_rough.tga", records: ["Md Rough", "Lt Rough", "Dp Rough"].map { .init(name: $0, flags: 0x202, coefficients: []) })
-        XCTAssertEqual(rough.lie, "Rough", "Unresolved record choice falls back to the category label")
-        let fringe = PGAOriginalSurfaceClass(materialName: "pbl_green_fringe.tga", records: [.init(name: "Fringe", flags: 0x210, coefficients: [])])
-        XCTAssertEqual(fringe.lie, "Fringe")
-        let truncated = PGAOriginalSurfaceClass(materialName: "pbl_teebox_rough1.tga", records: [.init(name: "pbl_teebo", flags: 0x202, coefficients: [])])
-        XCTAssertEqual(truncated.lie, "Rough", "Truncated texture names are not original lie text")
+                                               (0x1200, .tee), (0x208, .sand), (0x960, .water), (0x2420, .unplayable), (0x120, .unplayable),
+                                               (0x80, .out), (0, .unplayable)]
+        for (flags, surface) in samples { XCTAssertEqual(PGASurfaceProperties.classify(flags: flags), surface, String(format: "0x%x", flags)) }
+        func record(_ label: String, _ flags: UInt32, power: Double, rolling: Double = 0.9) -> PGASurfaceProperties.Record {
+            .init(label: label, flags: flags, coefficients: [power, 0.7, 0.06, 0.15, 0.725, 0.725, 0.375, rolling, 40, 0.3])
+        }
+        let rough = PGASurfaceProperties(materialID: 2, materialName: "pbl_rough.tga", sectionFlags: 0x8002,
+                                         records: [record("Md Rough", 0x202, power: 0.8), record("Lt Rough", 0x202, power: 0.9), record("Dp Rough", 0x202, power: 0.7)])
+        XCTAssertEqual(rough.category, "Rough", "No single record label, so the category is shown")
+        XCTAssertEqual(rough.label(2), "Dp Rough")
+        XCTAssertEqual(rough.lieRecord(1)?.power, 0.9)
+        XCTAssertEqual(rough.rollingDeceleration(normalY: 1), 9.81 * 5 / 7 * 0.9, accuracy: 1e-9, "PureRolling g·n_y·(5/7)·c7")
+        let green = PGASurfaceProperties(materialID: 6, materialName: "pbl_green.tga", sectionFlags: 2, records: [record("Green", 0x4, power: 0.975, rolling: 0.2)])
+        XCTAssertEqual(green.rollingDeceleration(normalY: 1), 9.81 * 5 / 7 * 0.2 * 0.575, accuracy: 1e-9, "Greens ×0.575")
+        // Blend strips store texture indices in record 0; launch power falls back to a usable record.
+        let blend = PGASurfaceProperties(materialID: 13, materialName: "pbl_bunker_rough.tga", sectionFlags: 0x8c1,
+                                         records: [record("pbl_bunke", 0x208, power: 1e-44), record("pbl_bunke", 0x208, power: 0.95)])
+        XCTAssertTrue(blend.isBlend)
+        XCTAssertEqual(blend.lieRecord(0)?.power, 0.95)
+        XCTAssertEqual(blend.label(0), "Bunker", "Truncated texture names are not original lie text")
+        let road = PGASurfaceProperties(materialID: 3, materialName: "pbl_road.tga", sectionFlags: 0x88042, records: [record("Unplayable", 0x2420, power: 1)])
+        XCTAssertTrue(road.freeDrop)
+        let cliff = PGASurfaceProperties(materialID: 14, materialName: "tbcliff.tga", sectionFlags: 0x20002, records: [record("Unplayable", 0x120, power: 0.75)])
+        XCTAssertFalse(cliff.freeDrop)
+    }
+
+    func testStandardSelectionLoadsTheOriginalPatchCount() throws {
+        let pebble = try pebbleCourse()
+        let loaded = pebble.data.patches.filter { patch in (1...18).contains { pebble.conditions.includes(layer: patch.layer, hole: $0) } }.count
+        XCTAssertEqual(pebble.data.patches.count, 6_943)
+        XCTAssertEqual(loaded, 6_609, "CHole::Load with 0x420 keeps 6,609 PBL patches")
     }
 
     func testPebbleBeachHasEighteenHolesWithTeesOnTeeBoxesAndPinsOnGreens() throws {

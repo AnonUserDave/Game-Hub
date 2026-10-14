@@ -44,13 +44,15 @@ enum PGASurface: String, Codable {
         }
     }
     /// Bounce restitution and tangential retention for the provisional impact.
+    /// Tuned so drives roll out roughly 10-15% of carry; the original Collide
+    /// model (c2/c3/c8/c9 plus a slip phase) is not reconstructed yet.
     var impact: (restitution: Double, retention: Double) {
         switch self {
-        case .sand: return (0, 0.25)
-        case .green: return (0.22, 0.62)
-        case .rough: return (0.2, 0.6)
+        case .sand: return (0, 0.15)
+        case .green: return (0.15, 0.45)
+        case .rough: return (0.12, 0.35)
         case .unplayable: return (0.45, 0.82)
-        default: return (0.28, 0.74)
+        default: return (0.18, 0.5)
         }
     }
     /// A lie the provisional rules allow the player to hit from.
@@ -194,6 +196,28 @@ struct PGARoundSnapshot: Codable, Equatable {
     var ball: PGAVector
     var heading: Double
     var club: Int
+    var lieIndex: Int? = nil
+    var randomState: UInt64? = nil
+}
+
+/// Deterministic SplitMix64, so lies drawn at rest replay identically.
+struct PGARandom: Codable, Equatable {
+    var state: UInt64
+    init(seed: String) {
+        var hash: UInt64 = 0xcbf2_9ce4_8422_2325
+        for byte in seed.utf8 { hash = (hash ^ UInt64(byte)) &* 0x100_0000_01b3 }
+        state = hash
+    }
+    mutating func next() -> UInt64 {
+        state &+= 0x9e37_79b9_7f4a_7c15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xbf58_476d_1ce4_e5b9
+        z = (z ^ (z >> 27)) &* 0x94d0_49bb_1331_11eb
+        return z ^ (z >> 31)
+    }
+    /// Uniform in [0, 1).
+    mutating func unit() -> Double { Double(next() >> 11) / Double(1 << 53) }
+    mutating func int(_ bound: Int) -> Int { bound <= 1 ? 0 : Int(next() % UInt64(bound)) }
 }
 
 struct PGASimulation {
@@ -213,7 +237,13 @@ struct PGASimulation {
     private(set) var shotAccuracy = 0.0
     private(set) var lastShotDistance = 0.0
     private(set) var message = "Aim, choose a club, then press Space or A to start your swing."
+    /// Original surface record index of the resting lie (CBallFlight+0x99).
+    private(set) var lieIndex = 0
     private let terrains: [PGATerrainSampling]
+    private var random: PGARandom
+    private var originLieIndex = 0
+    /// Where and how fast the ball first touched a bunker during this shot.
+    private var bunkerEntry: (position: PGAVector, speed: Double)?
     private var meterTime = 0.0
     private var accumulator = 0.0
     private var shotOrigin: PGAVector = .zero
@@ -226,11 +256,26 @@ struct PGASimulation {
     /// The floor directly under a resting ball; nil only outside the world.
     var lieSample: PGAGroundSample? { ground(x: ball.x, z: ball.z, ceiling: ball.y + 0.3) }
     var lie: PGASurface { lieSample?.surface ?? .out }
-    var lieLabel: String { lieSample?.lie ?? PGASurface.out.rawValue }
+    var lieLabel: String {
+        guard let sample = lieSample else { return PGASurface.out.rawValue }
+        return sample.properties?.label(lieIndex) ?? sample.lie
+    }
+    /// Launch-speed multiplier: original c0 of the lie record when present.
+    var launchFactor: Double {
+        guard let sample = lieSample else { return 1 }
+        return sample.properties?.lieRecord(lieIndex)?.power ?? sample.surface.launchFactor
+    }
     var direction: PGAVector { PGAVector(x: sin(heading), y: 0, z: cos(heading)) }
     var completedStrokes: Int { scores.reduce(0, +) }
     var scoreToPar: Int { zip(scores, course.holes).reduce(0) { $0 + $1.0 - $1.1.par } }
-    var targetDistance: Double { club.estimatedCarry * (lie == .rough || lie == .sand ? lie.launchFactor * lie.launchFactor : 1) }
+    var targetDistance: Double {
+        let factor = lieSample?.properties != nil || lie == .rough || lie == .sand ? launchFactor : 1
+        if club == .putter, let sample = lieSample, let properties = sample.properties {
+            let speed = PGAClub.putter.speed * factor
+            return speed * speed / (2 * max(0.05, properties.rollingDeceleration(normalY: sample.normal.y)))
+        }
+        return club.estimatedCarry * factor * factor
+    }
 
     /// `terrains` supplies one sampler per hole. Omitted, the generated holes'
     /// analytic height fields are used.
@@ -239,6 +284,7 @@ struct PGASimulation {
         precondition(terrains == nil || terrains!.count == course.holes.count, "One terrain sampler per hole")
         self.course = course
         self.terrains = terrains ?? course.holes.map { PGAProceduralTerrain(hole: $0) }
+        random = PGARandom(seed: course.identity)
         resetHole()
     }
 
@@ -326,12 +372,13 @@ struct PGASimulation {
     /// Deterministic launch API, also useful for replay and regression tests.
     mutating func strike(power: Double, accuracy: Double) {
         guard phase == .aiming || phase.swinging else { return }
-        let launchLie = lie
+        let launch = launchFactor
         shotPower = max(0.04, min(1, power)); shotAccuracy = max(-1, min(1, accuracy))
         let angle = heading + shotAccuracy * (club == .putter ? 0.09 : 0.14)
-        let speed = club.speed * shotPower * launchLie.launchFactor * (1 - abs(shotAccuracy) * 0.12)
+        let speed = club.speed * shotPower * launch * (1 - abs(shotAccuracy) * 0.12)
         velocity = PGAVector(x: sin(angle) * speed * cos(club.loft), y: speed * sin(club.loft), z: cos(angle) * speed * cos(club.loft))
-        shotOrigin = ball; strokes += 1; lowSpeedTime = 0; flightTime = 0; accumulator = 0; missingFloorTime = 0
+        shotOrigin = ball; originLieIndex = lieIndex; bunkerEntry = nil
+        strokes += 1; lowSpeedTime = 0; flightTime = 0; accumulator = 0; missingFloorTime = 0
         phase = club == .putter ? .rolling : .airborne
         if phase == .airborne { ball.y += 0.01 }
         message = abs(shotAccuracy) < 0.08 ? "Clean strike" : shotAccuracy < 0 ? "Pulled left" : "Pushed right"
@@ -381,6 +428,7 @@ struct PGASimulation {
             if ball.y <= floor.height + Self.ballRadius {
                 ball.y = floor.height + Self.ballRadius
                 if floor.surface == .water || floor.surface == .out { applyPenalty(floor.surface); return }
+                noteBunker(floor)
                 // Reflect about the sampled triangle normal. Coefficients are
                 // provisional per category, not decoded original values.
                 let n = floor.normal
@@ -397,6 +445,7 @@ struct PGASimulation {
             guard let floor = ground(x: ball.x, z: ball.z, ceiling: ball.y + 0.3) else { applyPenalty(.out); return }
             let surface = floor.surface
             if surface == .water || surface == .out { applyPenalty(surface); return }
+            noteBunker(floor)
             // Capture only a slow ball that actually crosses the cup. A fast
             // approach can roll over it, and a ball behind it cannot disappear.
             let next = ball + velocity * dt
@@ -408,13 +457,16 @@ struct PGASimulation {
             }
             let gradient = floor.gradient
             let speed = velocity.horizontalLength
+            // Original surfaces use the recovered PureRolling deceleration;
+            // the slip phase and impact model remain native approximations.
+            let resistance = floor.properties?.rollingDeceleration(normalY: floor.normal.y) ?? surface.rollingFriction
             if speed > 0.001 {
-                let nextSpeed = max(0, speed - surface.rollingFriction * dt)
+                let nextSpeed = max(0, speed - resistance * dt)
                 velocity = velocity.horizontalUnit * nextSpeed
             }
             // Static friction prevents an almost-stationary ball from creeping
             // forever on small terrain gradients.
-            if speed > 0.18 || gradient.horizontalLength * 9.81 > surface.rollingFriction * 0.9 {
+            if speed > 0.18 || gradient.horizontalLength * 9.81 > resistance * 0.9 {
                 velocity = velocity - gradient * (9.81 * dt)
             }
             ball = ball + velocity * dt
@@ -428,8 +480,35 @@ struct PGASimulation {
         if flightTime > 35 { endShot() } // finite recovery for unusual imported terrain
     }
 
+    private mutating func noteBunker(_ floor: PGAGroundSample) {
+        guard bunkerEntry == nil, let flags = floor.properties?.flags, flags & 0x8 != 0 else { return }
+        bunkerEntry = (ball, velocity.length)
+    }
+
+    /// Lie index chosen when the ball stops (CBallFlight::StopBall 0x101f769c).
+    /// Speeds are original inches per 60 Hz tick; 6 units of movement is 6 in.
+    /// The draw order of the random calls is not verified.
+    private mutating func restingLieIndex(_ sample: PGAGroundSample?) -> Int {
+        guard let properties = sample?.properties else { return 0 }
+        let flags = properties.flags
+        if flags & 0x8 != 0 {
+            guard let entry = bunkerEntry else { return 1 }
+            let moved = max(abs(ball.x - entry.position.x), abs(ball.y - entry.position.y), abs(ball.z - entry.position.z))
+            let speed = entry.speed / PGACourseTransform.metersPerInch / 60
+            if moved >= 6 * PGACourseTransform.metersPerInch || speed < 10 { return 1 }
+            if speed < 12 || random.unit() <= 0.9 { return random.unit() < 0.1 ? 2 : 0 }
+            if (speed >= 14 && random.unit() > 0.9) || random.unit() < 0.1 { return 3 }
+            return 2
+        }
+        if flags & 0x2 != 0 {
+            if properties.isBlend { return 1 }
+            return random.int(2) > 0 ? 0 : random.int(properties.records.count)
+        }
+        return 0
+    }
+
     private mutating func applyPenalty(_ hazard: PGASurface) {
-        strokes += 1; ball = shotOrigin; velocity = .zero; phase = .aiming
+        strokes += 1; ball = shotOrigin; lieIndex = originLieIndex; velocity = .zero; phase = .aiming
         lastShotDistance = 0
         if strokes >= 12 { finishHole(pickedUp: true); return }
         message = "\(hazard == .water ? "Water hazard" : "Out of bounds") · one penalty stroke · replay from your previous lie"
@@ -441,11 +520,17 @@ struct PGASimulation {
         lastShotDistance = ball.distance(to: shotOrigin)
         if strokes >= 12 { finishHole(pickedUp: true); return }
         var note = ""
+        let resting = lieSample
         if lie == .unplayable, let drop = nearestPlayableDrop() {
-            ball = drop; note = " · free drop from an unplayable surface (provisional rule)"
+            // Original flag 0x400 grants free relief (roads, paths); other
+            // unplayable surfaces cost a stroke. Drop placement is native.
+            let free = resting?.properties?.freeDrop ?? true
+            if !free { strokes += 1 }
+            ball = drop; note = free ? " · free drop from \(resting?.lie ?? "an unplayable surface")" : " · unplayable · one-stroke drop"
         } else if !lie.playable {
             ball = shotOrigin; note = " · no playable drop found, replaying the previous lie"
         }
+        lieIndex = restingLieIndex(lieSample)
         alignToPlayLine()
         message = "\(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd to the pin\(note)"
     }
@@ -503,6 +588,7 @@ struct PGASimulation {
         ball = PGAVector(x: tee.x, y: groundHeight(x: tee.x, z: tee.z, near: tee.y) + Self.ballRadius, z: tee.z)
         velocity = .zero; phase = .aiming; strokes = 0; meter = 0; shotPower = 0; shotAccuracy = 0
         accumulator = 0; lowSpeedTime = 0; flightTime = 0; lastShotDistance = 0; missingFloorTime = 0
+        lieIndex = 0; originLieIndex = 0; bunkerEntry = nil
         shotOrigin = ball
         alignToPlayLine()
         message = "Aim, choose a club, then press Space, click, or A to swing."
@@ -512,7 +598,7 @@ struct PGASimulation {
     var snapshot: PGARoundSnapshot? {
         guard phase == .aiming else { return nil }
         return PGARoundSnapshot(courseIdentity: course.identity, holeIndex: holeIndex, scores: scores, strokes: strokes,
-                                ball: ball, heading: heading, club: club.rawValue)
+                                ball: ball, heading: heading, club: club.rawValue, lieIndex: lieIndex, randomState: random.state)
     }
 
     enum RestoreError: LocalizedError, Equatable {
@@ -542,6 +628,8 @@ struct PGASimulation {
         resetHole()
         scores = snapshot.scores; strokes = snapshot.strokes
         ball = snapshot.ball; shotOrigin = ball; heading = snapshot.heading; club = restoredClub
+        lieIndex = max(0, min(8, snapshot.lieIndex ?? 0)); originLieIndex = lieIndex
+        if let state = snapshot.randomState { random.state = state }
         message = "Round restored · \(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd to the pin"
     }
 }

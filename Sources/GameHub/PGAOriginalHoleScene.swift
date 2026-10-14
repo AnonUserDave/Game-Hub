@@ -62,7 +62,7 @@ struct PGAOriginalHoleMesh {
         }
         func pack<T>(_ values: [T]) -> Data { values.withUnsafeBufferPointer { Data(buffer: $0) } }
         let batches = grouped.keys.sorted().map { key in Batch(material: key, indices: pack(grouped[key]!), triangles: grouped[key]!.count / 3) }
-        let classes = data.materials.mapValues(\.surfaceClass.surface)
+        let classes = data.materials.mapValues(\.properties.surface)
         var mapTriangles: [(UInt32, UInt32, UInt32)] = [], mapSurfaces: [PGASurface] = []
         for (key, indices) in grouped {
             let surface = classes[key] ?? .unplayable
@@ -121,7 +121,7 @@ enum PGAOriginalSceneBuilder {
             } else {
                 material.diffuse.contents = NSColor(calibratedWhite: 0.6, alpha: 1)
             }
-            let surface = source?.surfaceClass.surface ?? .unplayable
+            let surface = source?.properties.surface ?? .unplayable
             if surface != .unplayable { material.blendMode = .replace }
             return material
         }
