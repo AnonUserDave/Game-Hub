@@ -333,6 +333,10 @@ struct PGAGameView: View {
                 Text(game.phase == .roundComplete ? "Round complete · \(game.completedStrokes) strokes" : game.message)
                     .font(.system(size: 24, weight: .light)).foregroundStyle(.white)
                 PGAOriginalScorecard(images: session.hud, simulation: game).frame(width: 760)
+                if let standings = PGAStandings.summary(type: session.setup.type, players: game.players,
+                                                         holes: game.course.holes.count, complete: game.phase == .roundComplete) {
+                    Text(standings).font(.system(size: 15, weight: .semibold)).foregroundStyle(pgaGold)
+                }
                 HStack(spacing: 18) {
                     if game.phase == .roundComplete {
                         Button("Play again · Space / A") { session.restartRound() }.buttonStyle(.borderedProminent).tint(pgaGold).foregroundStyle(pgaInk)

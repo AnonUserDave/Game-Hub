@@ -768,3 +768,60 @@ struct PGASimulation {
         message = "Round restored · \(lieLabel) · \(Int((distanceToCup * 1.09361).rounded())) yd to the pin"
     }
 }
+
+/// Round formats computed from recorded hole scores only.
+enum PGAGameType: String, Codable, CaseIterable {
+    case stroke, match, skins
+    var title: String { ["Stroke play", "Match play", "Skins"][Self.allCases.firstIndex(of: self)!] }
+}
+
+enum PGAStandings {
+    /// Hole-by-hole match status for two players: positive means player 0 up.
+    static func match(_ a: [Int], _ b: [Int], holes: Int = 18) -> (status: Int, played: Int, decided: String?) {
+        var status = 0, played = 0
+        for (x, y) in zip(a, b) {
+            played += 1
+            if x < y { status += 1 } else if y < x { status -= 1 }
+            let remaining = holes - played
+            if abs(status) > remaining { return (status, played, remaining == 0 ? "\(abs(status)) UP" : "\(abs(status))&\(remaining)") }
+        }
+        return (status, played, nil)
+    }
+
+    /// Skins won per player; a tied hole carries its skin to the next.
+    static func skins(_ scores: [[Int]]) -> (won: [Int], carried: Int) {
+        var won = Array(repeating: 0, count: scores.count), carry = 0
+        let holes = scores.map(\.count).min() ?? 0
+        for hole in 0..<holes {
+            let values = scores.map { $0[hole] }
+            let best = values.min()!
+            let winners = values.indices.filter { values[$0] == best }
+            carry += 1
+            if winners.count == 1 { won[winners[0]] += carry; carry = 0 }
+        }
+        return (won, carry)
+    }
+
+    static func summary(type: PGAGameType, players: [PGAPlayer], holes: Int, complete: Bool) -> String? {
+        guard players.count > 1 else { return nil }
+        switch type {
+        case .stroke:
+            let totals = players.map { $0.scores.reduce(0, +) }
+            guard let best = totals.min() else { return nil }
+            let leaders = players.indices.filter { totals[$0] == best }.map { players[$0].name }
+            return complete ? (leaders.count == 1 ? "\(leaders[0]) wins with \(best)" : "Tied at \(best): \(leaders.joined(separator: ", "))")
+                            : "Leader: \(leaders.joined(separator: ", ")) (\(best))"
+        case .match:
+            guard players.count == 2 else { return "Match play needs two players; showing stroke totals" }
+            let result = match(players[0].scores, players[1].scores, holes: holes)
+            let leader = result.status > 0 ? players[0].name : players[1].name
+            if let decided = result.decided { return "\(leader) wins \(decided)" }
+            if result.played == 0 { return "Match play · all square" }
+            return result.status == 0 ? "All square thru \(result.played)" : "\(leader) \(abs(result.status)) UP thru \(result.played)"
+        case .skins:
+            let result = skins(players.map(\.scores))
+            let text = players.indices.map { "\(players[$0].name) \(result.won[$0])" }.joined(separator: " · ")
+            return "Skins: \(text)" + (result.carried > 0 ? " · \(result.carried) carried" : "")
+        }
+    }
+}

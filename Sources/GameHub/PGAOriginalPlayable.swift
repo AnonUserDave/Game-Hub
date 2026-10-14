@@ -401,6 +401,9 @@ struct PGARoundSetup: Codable, Equatable {
     var teeIndex = PGAOriginalPlayableCourse.developmentTeeIndex
     var pins: Pins = .standard
     var seed: UInt32 = 1
+    /// Optional so saves from before game types decode; nil is stroke play.
+    var gameType: PGAGameType? = nil
+    var type: PGAGameType { gameType ?? .stroke }
 
     static let teeNames = ["Forward", "Middle", "Back", "Championship", "Tips"]
 

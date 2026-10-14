@@ -204,4 +204,15 @@ final class PGACoreTests: XCTestCase {
         var wrong = PGASimulation(course: PGACourse.development, playerNames: ["Dad"])
         XCTAssertThrowsError(try wrong.restore(snapshot))
     }
+
+    func testMatchAndSkinsStandings() {
+        XCTAssertEqual(PGAStandings.match([4, 4, 3], [5, 4, 4], holes: 18).status, 2)
+        XCTAssertEqual(PGAStandings.match([4, 4, 3, 4], [5, 5, 5, 5], holes: 6).decided, "4&2", "Decided when the lead exceeds holes left")
+        let skins = PGAStandings.skins([[4, 4, 3, 5], [4, 5, 4, 4]])
+        XCTAssertEqual(skins.won, [3, 1], "Hole 1 tie carries: Dad takes two skins on 2 and one on 3")
+        XCTAssertEqual(skins.carried, 0)
+        let players = [PGAPlayer(name: "Dad", scores: [4, 4]), PGAPlayer(name: "Pablo", scores: [4, 5])]
+        XCTAssertEqual(PGAStandings.summary(type: .match, players: players, holes: 18, complete: false), "Dad 1 UP thru 2")
+        XCTAssertNil(PGAStandings.summary(type: .stroke, players: [players[0]], holes: 18, complete: false))
+    }
 }

@@ -264,6 +264,20 @@ struct PGARoundSetupView: View {
                         }
                     }
                 }
+                if session.setup.players.count > 1 {
+                    section("GAME") {
+                        HStack(spacing: 6) {
+                            ForEach(PGAGameType.allCases, id: \.self) { type in
+                                Button { session.setup.gameType = type } label: {
+                                    Text(type.title + (type == .match && session.setup.players.count != 2 ? " (2 players)" : ""))
+                                        .font(.system(size: 11, weight: .semibold)).frame(maxWidth: .infinity).padding(.vertical, 8)
+                                        .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.type == type ? gold : .white.opacity(0.08)))
+                                        .foregroundStyle(session.setup.type == type ? ink : .white)
+                                }.buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
                 section("TEES") {
                     HStack(spacing: 6) {
                         ForEach(0..<5, id: \.self) { index in
