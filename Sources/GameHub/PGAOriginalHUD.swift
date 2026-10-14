@@ -33,7 +33,7 @@ final class PGAHUDImages {
 
     /// Bag graphic for a club, highlighted when selected.
     func club(_ club: PGAClub, selected: Bool) -> NSImage? {
-        let name = ["D1", "W3", "I5", "I7", "I9", "PW", "SW", "Putter"][club.rawValue]
+        let name = ["D1", "W3", "W5", "I3", "I4", "I5", "I6", "I7", "I8", "I9", "PW", "SW", "LW", "Putter"][PGAClub.allCases.firstIndex(of: club)!]
         return image("club-\(name)\(selected ? "-on" : "")")
     }
 }

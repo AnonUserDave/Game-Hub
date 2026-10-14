@@ -135,8 +135,8 @@ struct PGAGameView: View {
             }
             HStack(spacing: 6) {
                 ForEach(PGAClub.allCases, id: \.rawValue) { club in
-                    Button { session.changeClub(club.rawValue - game.club.rawValue) } label: {
-                        Text(club.shortTitle).font(.system(size: 10, weight: .bold, design: .monospaced))
+                    Button { session.selectClub(club) } label: {
+                        Text(club.shortTitle).font(.system(size: 9, weight: .bold, design: .monospaced))
                             .frame(maxWidth: .infinity).padding(.vertical, 7)
                             .background(RoundedRectangle(cornerRadius: 5).fill(club == game.club ? pgaGold : .white.opacity(0.08)))
                             .foregroundStyle(club == game.club ? pgaInk : .white.opacity(0.7))
@@ -170,16 +170,16 @@ struct PGAGameView: View {
                     Text(game.club == .putter ? "\(Int((game.targetDistance * 3.28084).rounded())) FT MAX" : "~\(Int((game.targetDistance * 1.09361).rounded())) YD")
                         .font(.system(size: 11, weight: .bold, design: .monospaced)).foregroundStyle(pgaGold)
                 }
-                HStack(alignment: .bottom, spacing: 3) {
+                HStack(alignment: .bottom, spacing: 2) {
                     ForEach(PGAClub.allCases, id: \.rawValue) { club in
-                        Button { session.changeClub(club.rawValue - game.club.rawValue) } label: {
+                        Button { session.selectClub(club) } label: {
                             VStack(spacing: 3) {
                                 if let image = session.hud.club(club, selected: club == game.club) {
-                                    Image(nsImage: image).resizable().interpolation(.high).aspectRatio(contentMode: .fit).frame(height: 74)
+                                    Image(nsImage: image).resizable().interpolation(.high).aspectRatio(contentMode: .fit).frame(height: 70)
                                 }
                                 Text(club.shortTitle).font(.system(size: 8, weight: .bold, design: .monospaced))
                                     .foregroundStyle(club == game.club ? pgaGold : .white.opacity(0.55))
-                            }.frame(width: 26)
+                            }.frame(width: 22)
                         }.buttonStyle(.plain).disabled(game.phase != .aiming)
                     }
                 }

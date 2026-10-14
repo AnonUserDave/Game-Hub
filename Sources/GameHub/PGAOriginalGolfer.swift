@@ -47,10 +47,10 @@ enum PGAGolferClubKind: String, CaseIterable {
     init(_ club: PGAClub) {
         switch club {
         case .driver: self = .driver
-        case .wood3: self = .fairwayWood
-        case .iron5: self = .iron3
-        case .iron7, .iron9: self = .iron7
-        case .wedge, .sandWedge: self = .wedge
+        case .wood3, .wood5: self = .fairwayWood
+        case .iron3, .iron4, .iron5: self = .iron3
+        case .iron6, .iron7, .iron8, .iron9: self = .iron7
+        case .wedge, .sandWedge, .lobWedge: self = .wedge
         case .putter: self = .putter
         }
     }

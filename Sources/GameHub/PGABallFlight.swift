@@ -1439,16 +1439,22 @@ enum PGABallSwing {
     /// GetMaxClubPower: 8 putter, 14 otherwise.
     static func maxClubPower(club: Int) -> Double { club == PGABallFlight.putter ? 8.0 : 14.0 }
 
-    /// Stopgap mapping of the current 8-club PGAClub bag onto original indices.
+    /// The native 14-club bag on the original club tables.
     static func originalIndex(for club: PGAClub) -> Int {
         switch club {
         case .driver: return PGAOriginalClub.driver9.rawValue
         case .wood3: return PGAOriginalClub.wood3.rawValue
+        case .wood5: return PGAOriginalClub.wood5.rawValue
+        case .iron3: return PGAOriginalClub.iron3.rawValue
+        case .iron4: return PGAOriginalClub.iron4.rawValue
         case .iron5: return PGAOriginalClub.iron5.rawValue
+        case .iron6: return PGAOriginalClub.iron6.rawValue
         case .iron7: return PGAOriginalClub.iron7.rawValue
+        case .iron8: return PGAOriginalClub.iron8.rawValue
         case .iron9: return PGAOriginalClub.iron9.rawValue
         case .wedge: return PGAOriginalClub.pitchingWedge.rawValue
         case .sandWedge: return PGAOriginalClub.sandWedge.rawValue
+        case .lobWedge: return PGAOriginalClub.lobWedge.rawValue
         case .putter: return PGAOriginalClub.putter.rawValue
         }
     }

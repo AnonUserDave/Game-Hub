@@ -109,16 +109,16 @@ struct PGAAudioRules {
     static let factCount = 32
 
     /// Club mask (0x1021038a): 1 driver, 2 wood, 4 iron/wedge, 0x10 putter,
-    /// 0x20 wedge, 0x40/0x80/0x100 long/mid/short iron. The iron split of the
-    /// native bag is an assumption.
+    /// 0x20 wedge, 0x40/0x80/0x100 long/mid/short iron. The iron group
+    /// boundaries (3–4 long, 5–7 mid, 8–9 short) are an assumption.
     static func clubMask(_ club: PGAClub) -> Int64 {
         switch club {
         case .driver: return 0x1
-        case .wood3: return 0x2
-        case .iron5: return 0x4 | 0x80
-        case .iron7: return 0x4 | 0x80
-        case .iron9: return 0x4 | 0x100
-        case .wedge, .sandWedge: return 0x4 | 0x20
+        case .wood3, .wood5: return 0x2
+        case .iron3, .iron4: return 0x4 | 0x40
+        case .iron5, .iron6, .iron7: return 0x4 | 0x80
+        case .iron8, .iron9: return 0x4 | 0x100
+        case .wedge, .sandWedge, .lobWedge: return 0x4 | 0x20
         case .putter: return 0x10
         }
     }

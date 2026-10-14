@@ -275,6 +275,7 @@ final class PGAGameSession: ObservableObject {
     }
 
     func changeClub(_ delta: Int) { guard !paused else { return }; simulation.changeClub(delta) }
+    func selectClub(_ club: PGAClub) { guard !paused else { return }; simulation.selectClub(club) }
     func aim(_ delta: Double) { guard !paused else { return }; simulation.aim(delta) }
     func autoAim() { guard !paused else { return }; simulation.alignToCup() }
     func cancelSwing() { simulation.cancelSwing() }

@@ -162,7 +162,7 @@ struct PGACameraDirector {
 
         if !previousPhase.inMotion && simulation.phase.inMotion {
             shotOrigin = simulation.ball
-            shortApproach = mode == 0 && (simulation.club == .wedge || simulation.club == .sandWedge) &&
+            shortApproach = mode == 0 && [.wedge, .sandWedge, .lobWedge].contains(simulation.club) &&
                 (simulation.shotPower <= 0.65 || simulation.distanceToCup <= 50)
             shortApproachHold = 0
             // A partial wedge's full-club range puts source landing cameras far
@@ -354,7 +354,7 @@ struct PGACameraDirector {
     private func facts(for simulation: PGASimulation) -> [UInt32] {
         var result = [UInt32](repeating: 0, count: 32)
         result[0] = UInt32(PGAAudioRules.clubMask(simulation.club))
-        result[1] = simulation.club == .putter ? 2 : shortApproach ? (simulation.club == .sandWedge ? 0x800 : 0x4)
+        result[1] = simulation.club == .putter ? 2 : shortApproach ? (simulation.club == .wedge ? 0x4 : 0x800)
             : (simulation.strokes <= 1 ? 0x401 : 0x400)
         let origin = shotOrigin ?? simulation.ball
         let originSample = simulation.ground(x: origin.x, z: origin.z, ceiling: origin.y + 0.3)

@@ -167,12 +167,24 @@ struct PGACourse: Codable, Equatable {
     ])
 }
 
+/// The 14-club bag, in bag order (driver, 3 and 5 woods, 3–9 irons, PW, SW,
+/// LW, putter; the original's club art covers every one). Raw values of the
+/// first eight clubs are kept from the earlier 8-club bag so saved rounds
+/// restore the same club.
 enum PGAClub: Int, CaseIterable {
-    case driver, wood3, iron5, iron7, iron9, wedge, sandWedge, putter
-    var title: String { ["Driver", "3 Wood", "5 Iron", "7 Iron", "9 Iron", "Pitching Wedge", "Sand Wedge", "Putter"][rawValue] }
-    var shortTitle: String { ["DR", "3W", "5I", "7I", "9I", "PW", "SW", "PT"][rawValue] }
-    var speed: Double { [68, 58, 48, 42, 36, 28, 22, 7.5][rawValue] }
-    var loft: Double { [14, 19, 28, 35, 44, 53, 59, 0][rawValue] * .pi / 180 }
+    case driver = 0, wood3 = 1, wood5 = 8, iron3 = 9, iron4 = 10, iron5 = 2, iron6 = 11, iron7 = 3, iron8 = 12, iron9 = 4
+    case wedge = 5, sandWedge = 6, lobWedge = 13, putter = 7
+    private var bagIndex: Int { Self.allCases.firstIndex(of: self)! }
+    var title: String {
+        ["Driver", "3 Wood", "5 Wood", "3 Iron", "4 Iron", "5 Iron", "6 Iron", "7 Iron", "8 Iron", "9 Iron",
+         "Pitching Wedge", "Sand Wedge", "Lob Wedge", "Putter"][bagIndex]
+    }
+    var shortTitle: String { ["DR", "3W", "5W", "3I", "4I", "5I", "6I", "7I", "8I", "9I", "PW", "SW", "LW", "PT"][bagIndex] }
+    /// Generated practice holes' provisional launch speed (m/s) and loft.
+    var speed: Double { [68, 58, 54, 52, 50, 48, 45, 42, 39, 36, 28, 22, 18, 7.5][bagIndex] }
+    var loft: Double { [14, 19, 22, 24, 26, 28, 31.5, 35, 39.5, 44, 53, 59, 63, 0][bagIndex] * .pi / 180 }
+    /// The neighbouring club in the bag, clamped at the ends.
+    func offset(_ delta: Int) -> Self { Self.allCases[max(0, min(Self.allCases.count - 1, bagIndex + delta))] }
     var estimatedCarry: Double { self == .putter ? speed * speed / (2 * PGASurface.green.rollingFriction) : speed * speed * sin(2 * loft) / 9.81 * 0.86 }
     static func recommended(distance: Double, surface: PGASurface) -> Self {
         if surface == .green || (surface == .fringe && distance < 18) { return .putter }
@@ -385,7 +397,7 @@ struct PGASimulation {
 
     mutating func changeClub(_ delta: Int) {
         guard phase == .aiming else { return }
-        club = PGAClub(rawValue: min(PGAClub.putter.rawValue, max(0, club.rawValue + delta))) ?? club
+        club = club.offset(delta)
     }
 
     mutating func selectClub(_ newClub: PGAClub) { if phase == .aiming { club = newClub } }

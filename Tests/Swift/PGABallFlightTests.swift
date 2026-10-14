@@ -485,7 +485,12 @@ final class PGABallFlightTests: XCTestCase {
 
     func testSwingMappingAssumptions() throws {
         XCTAssertEqual(PGABallSwing.originalIndex(for: .driver), 0)
-        XCTAssertEqual(PGAClub.allCases.map(PGABallSwing.originalIndex(for:)), [0, 3, 12, 14, 16, 17, 18, 20])
+        // Bag order: D, 3W, 5W, 3–9 irons, PW, SW, LW, putter on the original tables.
+        XCTAssertEqual(PGAClub.allCases.map(PGABallSwing.originalIndex(for:)), [0, 3, 5, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+        // Saved rounds from the 8-club bag keep their club.
+        XCTAssertEqual([PGAClub.driver, .wood3, .iron5, .iron7, .iron9, .wedge, .sandWedge, .putter].map(\.rawValue), Array(0...7))
+        XCTAssertEqual(PGAClub.allCases.count, 14)
+        XCTAssertEqual(PGAClub.iron9.offset(1), .wedge); XCTAssertEqual(PGAClub.putter.offset(1), .putter)
         let full = PGABallSwing.launch(club: .driver9, power: 1, accuracy: 0, heading: 0, position: .zero)
         XCTAssertEqual(full.power, 15.5555553, accuracy: 1e-6, "100% at Advanced is 15.556")
         XCTAssertEqual(full.path, 0); XCTAssertEqual(full.face, 0); XCTAssertEqual(full.loftAdjust, 0)
