@@ -75,9 +75,20 @@ class TerrainDecodeTests(unittest.TestCase):
     def test_original_group_indices_and_material_are_preserved(self):
         data, _ = self.mesh_fixture()
         output, report = decode(bytes(data))
-        self.assertEqual(struct.unpack_from("<IIII", output, 4), (2, 3, 1, 1))
-        self.assertEqual(struct.unpack_from("<4I", output, 44 + 3 * 24), (0, 1, 2, 10))
+        self.assertEqual(struct.unpack_from("<IIII", output, 4), (3, 3, 1, 1))
+        self.assertEqual(struct.unpack_from("<I", output, 44)[0], 1)
+        self.assertEqual(struct.unpack_from("<4I", output, 48 + 3 * 24), (0, 1, 2, 10))
         self.assertEqual(report["material_triangle_counts"], {10: 1})
+
+    def test_patch_hole_and_condition_layer_is_retained(self):
+        data, _ = self.mesh_fixture()
+        table = 0x324
+        struct.pack_into("<H", data, table + 0x61, 0x1e1)
+        output, report = decode(bytes(data))
+        self.assertEqual(len(output), 48 + 3 * 24 + 16 + 20)
+        self.assertEqual(struct.unpack_from("<5I", output, len(output) - 20), (0x1e1, 0, 3, 0, 1))
+        self.assertEqual((report["patches"][0]["hole"], report["patches"][0]["condition_mask"]), (1, 0x1e0))
+        self.assertEqual(report["patch_layers"]["patches_by_condition_mask"], {"0x1e0": 1})
 
     def test_group_out_of_range_indices_are_rejected(self):
         data, size = self.mesh_fixture()

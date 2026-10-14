@@ -6,7 +6,8 @@ import SwiftUI
 
 /// Source-bound terrain inspection, separate from the provisional golf game.
 /// GHPC v1 holds original points; v2 adds decoded, globally indexed triangles
-/// and the original terrain IDs. It never manufactures replacement triangles.
+/// and the original terrain IDs; v3 adds per-patch hole/condition layers. It
+/// never manufactures replacement triangles.
 struct PGAOriginalTerrain {
     struct Batch {
         var terrainID: UInt32
@@ -31,6 +32,8 @@ struct PGAOriginalTerrain {
     var formatVersion: Int
     var materialTextures: [UInt32: URL]
     var materialNames: [UInt32: String]
+    /// GHPC v3 patch layers: (layer field, first triangle, triangle count).
+    var patchLayers: [(layer: UInt32, firstTriangle: Int, triangleCount: Int)] = []
     var positionOffset: Int { headerBytes }
     var center: PGAVector { (boundsMin + boundsMax) * 0.5 }
     var extent: PGAVector { boundsMax - boundsMin }
@@ -55,16 +58,29 @@ struct PGAOriginalTerrain {
             func uint(_ offset: Int) -> UInt32 { UInt32(littleEndian: bytes.loadUnaligned(fromByteOffset: offset, as: UInt32.self)) }
             func float(_ offset: Int) -> Float { Float(bitPattern: uint(offset)) }
             let version = Int(uint(4))
-            guard version == 1 || version == 2 else { throw ImportError.invalid("Unsupported terrain format version \(version).") }
-            let header = version == 1 ? 36 : 44
+            guard (1...3).contains(version) else { throw ImportError.invalid("Unsupported terrain format version \(version).") }
+            let header = [36, 44, 48][version - 1]
             guard mapped.count >= header else { throw ImportError.invalid("Terrain header is incomplete.") }
-            let vertices = Int(uint(8)), triangles = version == 2 ? Int(uint(12)) : 0
-            let groups = version == 2 ? Int(uint(16)) : 0
-            guard vertices > 0, vertices <= 2_000_000, triangles <= 4_000_000, groups <= 1_000_000 else {
+            let vertices = Int(uint(8)), triangles = version >= 2 ? Int(uint(12)) : 0
+            let groups = version >= 2 ? Int(uint(16)) : 0
+            let patchCount = version == 3 ? Int(uint(44)) : 0
+            guard vertices > 0, vertices <= 2_000_000, triangles <= 4_000_000, groups <= 1_000_000, patchCount <= 100_000 else {
                 throw ImportError.invalid("Terrain counts exceed the viewer limits or contain no vertices.")
             }
-            let expected = header + vertices * 24 + triangles * 16
+            let expected = header + vertices * 24 + triangles * 16 + patchCount * 20
             guard mapped.count == expected else { throw ImportError.invalid("Terrain byte count does not match its declared vertices and triangles.") }
+            var layers: [(layer: UInt32, firstTriangle: Int, triangleCount: Int)] = []
+            let table = header + vertices * 24 + triangles * 16
+            var nextTriangle = 0
+            for index in 0..<patchCount {
+                let offset = table + index * 20
+                let entry = (layer: uint(offset), firstTriangle: Int(uint(offset + 12)), triangleCount: Int(uint(offset + 16)))
+                guard entry.firstTriangle == nextTriangle, entry.firstTriangle + entry.triangleCount <= triangles else {
+                    throw ImportError.invalid("Patch layers do not tile the source triangles.")
+                }
+                nextTriangle += entry.triangleCount
+                layers.append(entry)
+            }
             let boundsOffset = version == 1 ? 12 : 20
             let values = (0..<6).map { Double(float(boundsOffset + $0 * 4)) }
             guard values.allSatisfy(\.isFinite) else { throw ImportError.invalid("Terrain bounds contain a non-finite coordinate.") }
@@ -162,7 +178,7 @@ struct PGAOriginalTerrain {
                         sourceVertices: vertices, displayedVertices: rendered, triangleCount: triangles, groupCount: groups,
                         boundsMin: minimum, boundsMax: maximum, colors: colors, elevationColors: elevation,
                         normals: normalData, batches: batches, sampled: step > 1, formatVersion: version,
-                        materialTextures: materials.textures, materialNames: materials.names)
+                        materialTextures: materials.textures, materialNames: materials.names, patchLayers: layers)
         }
     }
 

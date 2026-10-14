@@ -16,10 +16,11 @@ struct VerifyOriginalCourse {
         var checked = 0, missing = 0, projectedDegenerate = 0, greatestError = 0.0
         source.withUnsafeBytes { bytes in
             func u32(_ offset: Int) -> UInt32 { UInt32(littleEndian: bytes.loadUnaligned(fromByteOffset: offset, as: UInt32.self)) }
+            let header = u32(4) == 3 ? 48 : 44
             func coordinate(_ vertex: UInt32, _ component: Int) -> Double {
-                Double(Float(bitPattern: u32(44 + Int(vertex) * 24 + component * 4)))
+                Double(Float(bitPattern: u32(header + Int(vertex) * 24 + component * 4)))
             }
-            let vertices = Int(u32(8)), start = 44 + vertices * 24
+            let vertices = Int(u32(8)), start = header + vertices * 24
             for triangle in stride(from: 0, to: collision.triangleCount, by: 83) {
                 let offset = start + triangle * 16
                 let a = u32(offset), b = u32(offset + 4), c = u32(offset + 8)

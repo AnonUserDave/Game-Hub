@@ -5,6 +5,11 @@ This is a version-7 static decoder derived from shipped CourseData/Engine DLLs,
 not a replacement game engine. It emits original vertices and triangle groups;
 texture/material reconstruction remains incomplete. Proprietary output stays
 in ignored Library/Imported. See docs/research/PGA2005-REA.md for evidence.
+
+GHPC v3 adds one record per source patch with the u16 at descriptor +0x61.
+Its low five bits name the hole whose local world owns the patch; the higher
+bits are course-condition variant masks. Holes share one coordinate space but
+overlap, so a consumer must select a single hole's patches.
 """
 from __future__ import annotations
 
@@ -19,6 +24,7 @@ from import_pga2005 import atomic_write
 from inspect_pga2005 import ISO9660
 
 PATCH_STRIDE = 0x136
+PATCH_LAYER_FIELD = 0x61
 SOURCE_DLL_SHA256 = "36664435b88646e6b96d55f81573e1fdb73ee88e7f54762c4a723c693832e82c"
 MAX_VERTICES = 4_000_000
 
@@ -51,6 +57,7 @@ def decode(data: bytes, mesh: bool = True) -> tuple[bytes, dict]:
         raise ValueError("Invalid compressed vertex scales/origin")
     records = bytearray()
     triangles = bytearray()
+    patch_records = bytearray()
     group_count = 0
     material_counts = {}
     minimum, maximum = [math.inf] * 3, [-math.inf] * 3
@@ -65,7 +72,9 @@ def decode(data: bytes, mesh: bool = True) -> tuple[bytes, dict]:
         count = max(counts)
         if source < header_size or source + size > len(data) or count * 20 > size:
             raise ValueError(f"Patch {i} has invalid payload/vertex bounds")
+        layer = struct.unpack_from("<H", data, base + PATCH_LAYER_FIELD)[0]
         patch_vertex_base = total
+        patch_triangle_base = len(triangles) // 16
         total += count
         if total > MAX_VERTICES:
             raise ValueError("Vertex resource bound exceeded")
@@ -109,14 +118,21 @@ def decode(data: bytes, mesh: bool = True) -> tuple[bytes, dict]:
             if covered_vertices != count:
                 raise ValueError(f"Patch {i} groups do not cover the primary vertex buffer")
             group_count += groups
+            patch_records.extend(struct.pack("<5I", layer, patch_vertex_base, count,
+                                             patch_triangle_base, len(triangles) // 16 - patch_triangle_base))
         patches.append({"index": i, "descriptor_offset": base, "source_offset": source,
                         "payload_bytes": size, "layer_vertex_counts": list(counts),
-                        "decoded_vertices": count})
+                        "decoded_vertices": count, "layer_field": layer,
+                        "hole": layer & 0x1f, "condition_mask": layer & ~0x1f})
     if total == 0:
         raise ValueError("No vertices in course")
     triangle_count = len(triangles) // 16
-    header = (b"GHPC" + struct.pack("<IIII6f", 2, total, triangle_count, group_count, *minimum, *maximum)
+    header = (b"GHPC" + struct.pack("<IIII6fI", 3, total, triangle_count, group_count, *minimum, *maximum, patch_count)
               if mesh else b"GHPC" + struct.pack("<II6f", 1, total, *minimum, *maximum))
+    holes, conditions = {}, {}
+    for patch in patches:
+        holes[patch["hole"]] = holes.get(patch["hole"], 0) + 1
+        conditions[patch["condition_mask"]] = conditions.get(patch["condition_mask"], 0) + 1
     title = data[22:62].split(b"\0", 1)[0].decode("cp1252")
     report = {"schema_version": 1, "title": title, "tcr_version": version,
               "source_tcr_sha256": hashlib.sha256(data).hexdigest(),
@@ -131,16 +147,27 @@ def decode(data: bytes, mesh: bool = True) -> tuple[bytes, dict]:
               "method": "Static source-bound coordinate reconstruction; no original code execution",
               "header_bytes": header_size, "patch_count": patch_count,
               "point_count": total, "triangle_count": triangle_count, "group_count": group_count,
+              "patch_layers": {
+                  "field": "u16 at patch descriptor +0x61",
+                  "hole_bits": "0x001f: one-based hole whose local world owns the patch",
+                  "condition_bits": "0xffe0: course-condition variant masks; 0 = always present for that hole",
+                  "patches_by_hole": {str(k): v for k, v in sorted(holes.items())},
+                  "patches_by_condition_mask": {hex(k): v for k, v in sorted(conditions.items())},
+                  "classification": "Static data observation corroborated by per-hole tee/pin floor checks; original selection code pending"},
               "material_triangle_counts": material_counts,
               "bounds_raw": {"min": minimum, "max": maximum},
               "scales": {"y": scale_y, "xz": scale_xz, "origin": list(origin)},
-              "format": {"file": "terrain.ghpc", "version": 2 if mesh else 1,
-                         "header_bytes": 44 if mesh else 36, "record_bytes": 24,
+              "format": {"file": "terrain.ghpc", "version": 3 if mesh else 1,
+                         "header_bytes": 48 if mesh else 36, "record_bytes": 24,
                          "record": "little-endian xyz:f32[3], rgba:u8[4], uv:f32[2]",
                          "triangle_record_bytes": 16 if mesh else 0,
-                         "triangle_record": "little-endian vertex_indices:u32[3], terrain_id:u32"},
+                         "triangle_record": "little-endian vertex_indices:u32[3], terrain_id:u32",
+                         "patch_record_bytes": 20 if mesh else 0,
+                         "patch_record": "little-endian layer_field:u32, first_vertex:u32, vertex_count:u32, first_triangle:u32, triangle_count:u32"},
               "limitations": [
                   "Primary terrain geometry only; alternate LOD layers, vegetation and other objects are not reconstructed.",
+                  "Each hole is a separate overlapping local world; drawing every patch at once overlays 18 holes and all condition variants.",
+                  "Source positions are a left-handed (DirectX-style) world; a right-handed renderer must mirror one axis.",
                   "Baked diffuse values alone do not reproduce original terrain textures/lighting.",
                   "Course world coordinates are preserved; inch-based physical units are inferred, not yet runtime-verified.",
                   "INI hole metadata and TCR world coordinates still need an independently confirmed transform.",
@@ -149,7 +176,7 @@ def decode(data: bytes, mesh: bool = True) -> tuple[bytes, dict]:
     report["patches"] = patches
     if mesh:
         report["evidence"]["triangle_groups"] = "Engine.dll AddPatchToMesh 0x102039b5, CreateMesh 0x10203dad, CRTerrain::VBAddPolys_Terrain 0x101c4be2"
-    return header + records + triangles, report
+    return header + records + triangles + (patch_records if mesh else b""), report
 
 
 def main():
