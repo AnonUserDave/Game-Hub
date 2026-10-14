@@ -27,7 +27,7 @@ The 2026-10-13 son's checkpoint added playable original Pebble Beach development
 | Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-pebble-beach-development`) |
 | Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, snapshots), `PGATerrain.swift` (terrain protocol, original surface properties) |
 | Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round store), `PGAOriginalCollision.swift` (CSR floor index) |
-| Golf rendering and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAView.swift`, `PGAMetalView.swift` |
+| Golf rendering and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAOriginalScenery.swift`, `PGAOriginalSky.swift`, `PGAOriginalVegetation.swift` (decoded scenery and bounded Metal draws), `PGAView.swift`, `PGAMetalView.swift` |
 | Original Course Lab | `PGAOriginalCourse.swift` |
 | Game metadata | `Library/Manifests/*.json` |
 | Media and decoders | `Tools/inspect_pga2005.py`, `import_pga2005.py`, `decode_pga2005_{terrain,library,holes}.py`, `prepare_pga2005.py` |
@@ -54,7 +54,7 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
    - Visually confirm the sRGB change and the Lab's per-hole view.
 3. **Reconstruct `CBallFlight`.** Cover flight drag and lift, `Collide` (c2/c3/c8/c9, surface damping), `RollingAndSlipping` (c4/c5), `PureRolling` break (c6), cup capture and `StopBall`. Build numeric fixtures from the decompiled formulas and keep units in inches per 60 Hz tick. Then remove the provisional bounce tuning.
 4. **Rules.** Decode INI OB polygons (`[Hole N OB k]`, type 1/2), lateral water-hazard drops and the original tee/pin selection. Add hazard and drop placement from the original rules.
-5. **Visuals.** Original sky dome, fog and lighting (`render.ini`), shaders (vertex-shader resources), water, alternate LODs, vegetation and object placement (Pebble's cypresses are missing), and the golfer/ball meshes and animation.
+5. **Visuals.** Decoded sky dome, tree placement, three mesh LODs, distant billboards and panorama strips are integrated in the development scene and M5 offscreen snapshots. Recover exact `renderN.ini` fog/lighting, baked per-rotation tree lighting, LOD transitions, water, shader behaviour, and golfer/ball meshes and animation. Compare with original-game references.
 6. **Memory and performance.** Keep the 3 GB budget. Consider memoryless MSAA/depth attachments on Apple Silicon, compressed (BC1/BC2) original DDS textures instead of RGBA8 PNGs, and whole-course buffers in the Lab.
 7. **Controller.** Validate every Pebble Beach action, held buttons across pause and hole transitions, focus loss and unplug/replug on the Fusion Pro.
 8. **More content.** Turnberry gameplay reuses the same code path once its tees and pins validate. Then the other modes, saves and audio.
@@ -69,6 +69,8 @@ python3 -m unittest discover -s Tests -p 'test_*.py'
 python3 Tools/prepare_pga2005.py
 GAMEHUB_SNAPSHOT_DIR=/tmp/pga-snaps ./Tools/test.sh -XCTest GameHubTests.PGASnapshotTests
 ```
+
+The vegetation branch's 2026-10-13 M5 Pro check captured all 18 Pebble tee views and Turnberry holes 1, 9 and 18 at 2560 × 1600, 4× MSAA. The offscreen test asserts a sky node and visible tree draws. Pebble tee views submitted 14–75 vegetation/panorama draws and 14,146–516,381 vertices depending on hole; these are submission counts, not frame-time measurements. Trees and sky looked present in inspected captures. The temporary captures contain original artwork and remain outside Git. **M1 performance and visual acceptance are unverified.**
 
 The snapshot test writes original-course images; keep its output outside Git. `Tools/verify_original_course.swift` compiles with `PGACore.swift`, `PGATerrain.swift` and `PGAOriginalCollision.swift`.
 

@@ -568,8 +568,8 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         frameLock.lock(); storedTarget = target; frameLock.unlock()
     }
 
-    /// Original course hole: decoded source triangles and textures only. No
-    /// generated trees or sea are added; original vegetation is not decoded yet.
+    /// Original course hole: decoded terrain, sky and vegetation are supplied
+    /// by the scene builder. No generated practice trees or sea are added.
     func build(original terrain: SCNNode, hole: PGAHole, flagImage: NSImage? = nil, holeImage: NSImage? = nil) {
         content.removeFromParentNode(); content = SCNNode(); scene.rootNode.addChildNode(content)
         content.addChildNode(terrain)

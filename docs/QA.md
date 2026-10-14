@@ -43,3 +43,7 @@ Remaining physical-input checks include shoulders/D-pad/menu, every gameplay map
 | Tests | 32 Swift (snapshot test opt-in) and 19 Python tests pass |
 
 Not checked here: fullscreen 2560 × 1600 on the M1, sustained 30-minute statistics, thermals, controller input in the Pebble module (gameplay input pauses while the app is inactive, so background automation cannot exercise it), and Turnberry gameplay.
+
+## Original scenery branch (son's M5 Pro only)
+
+2026-10-13, native arm64 development checks on the M5 Pro with 24 GB. `./Tools/build.sh` passed. `./Tools/test.sh` passed 34 ordinary XCTest cases; two opt-in snapshot cases were skipped in that standard run. Python unittest discovery passed 96 tests. With GPU access, the updated opt-in test captured all 18 Pebble tee views and Turnberry holes 1, 9 and 18 at 2560 × 1600 with 4× MSAA. It asserted the decoded sky node, vegetation node, nonzero Metal draws and visible trees. Tee-view scenery submitted 14–75 draws per Pebble hole; the largest vertex submission was 516,381 on hole 4. Pebble 1/9/18 and Turnberry 1 were visually inspected for sky, trees and terrain placement. The offscreen runs took seconds but are **not frame-time, memory, thermal or M1 performance evidence**. Exact original lighting and visual equivalence are still unverified.

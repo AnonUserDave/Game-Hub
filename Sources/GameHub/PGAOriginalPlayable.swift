@@ -296,6 +296,8 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
     let terrains: [PGAOriginalHoleTerrain]
     let selections: [[UInt32]]
     let validation: [Validation]
+    /// Original trees, panoramas and sky, loaded on first use.
+    let scenery: PGAOriginalScenery
 
     static let developmentTeeIndex = 3
 
@@ -346,6 +348,7 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
     init(data: PGAOriginalCourseData, conditions: PGACourseConditions = .standard,
          teeIndex: Int = PGAOriginalPlayableCourse.developmentTeeIndex, pinIndex: Int = 0) throws {
         self.data = data; self.conditions = conditions; self.teeIndex = teeIndex; self.pinIndex = pinIndex
+        scenery = PGAOriginalScenery(directory: data.directory)
         let transform = data.defaultTransform
         self.transform = transform
         let classes = data.materials.mapValues(\.properties)
