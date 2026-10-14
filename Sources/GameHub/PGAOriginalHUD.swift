@@ -218,7 +218,7 @@ struct PGARoundSetupView: View {
                     if session.courseCode == "PBL", let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
                     VStack(alignment: .leading, spacing: 4) {
                         Text(session.courseTitle.uppercased()).font(.system(size: 22, weight: .bold)).tracking(1.5)
-                        Text("Original course data · 18 holes · approximate native physics · course \(session.courseCode)")
+                        Text("Original course data · 18 holes · development gameplay · course \(session.courseCode)")
                             .font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
                     }
                     Spacer()

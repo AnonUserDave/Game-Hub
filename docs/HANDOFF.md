@@ -10,7 +10,7 @@ Executable byte identity across x86 Windows and ARM64 macOS is impossible. Track
 
 Work on the owner's laptop is paused at his request. His son continues on an M5 MacBook Pro with 24 GB RAM. The mandatory runtime target remains the owner's M1 Air, 8 GB, 2560 × 1600. Read [the binding hardware constraint](M1_TARGET_CONSTRAINT.md) and [status](STATUS.md). Do not start background work on the owner's laptop.
 
-The 2026-10-13 son's checkpoint added playable original gameplay on all 11 courses, corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and added round setup, hot-seat multiplayer, match play and skins. The second wave added native original audio, the exact original tri-click meter, and static decodes of the ball flight, trees and sky, the golfer, and the camera director. All of it was checked on the M5 only.
+The 2026-10-13 son's checkpoint added playable original gameplay on all 11 courses, corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and added round setup, hot-seat multiplayer, match play and skins. The second wave added native original audio, the exact original tri-click meter, and static decodes of the ball flight, trees and sky, the golfer, and the camera director. Original-course shots now use a Swift port of the statically reconstructed `CBallFlight`; generated practice keeps its provisional model. All of it was checked on the M5 only. Agreement between Swift and Python is not comparison with a running original game.
 
 ## Development environments
 
@@ -25,7 +25,7 @@ The 2026-10-13 son's checkpoint added playable original gameplay on all 11 cours
 | Hub UI, library and native launch | `Sources/GameHub/HubView.swift`, `GameModel.swift`, `DetailSheets.swift` |
 | Controller discovery/navigation | `Sources/GameHub/ControllerManager.swift`, `FusionController.swift`, `Sources/FusionUSB/` |
 | Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-original-courses`) |
-| Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, multiplayer turns, game types, snapshots, event queue), `PGATerrain.swift` (terrain protocol, original surface properties and sound ids), `PGASwingMeter.swift` (original tri-click meter) |
+| Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, multiplayer turns, game types, snapshots, event queue), `PGABallFlight.swift` (reconstructed original flight and terrain/frame adapter), `PGATerrain.swift` (terrain protocol, original surface properties and sound ids), `PGASwingMeter.swift` (original tri-click meter) |
 | Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round setup and store, course catalog), `PGAOriginalCollision.swift` (CSR floor index) |
 | Golf rendering, HUD and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAOriginalHUD.swift` (original HUD art, meter dial, scorecard, loading screen, round setup), `PGAView.swift`, `PGAMetalView.swift` |
 | Audio | `PGAAudio.swift` (rules from `audio.json`, AVAudioEngine playback, ambience) |
@@ -49,7 +49,7 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
 ## Next work, in order
 
 1. **Publish the checkpoint.** The son's GitHub account has read-only access, so local commits are not on GitHub yet. Either the owner adds `Pablo-Rogers` as a collaborator, or the son pushes to a fork and opens a pull request. Then `git push origin main`.
-2. **Merge the running branches** (each in `.worktrees/`, git-ignored via `.git/info/exclude`): `physics-port` (Swift `CBallFlight`), `vegetation` (trees and sky), `golfer` (animated Tiger Woods). The first native camera director integration is on `main`: four script choices, situation selection, attachment/target offsets and zoom. It still needs source-game visual comparisons and the missing commands; its flight-progress and landing values are approximations. Integrate the physics port into `PGASimulation`, expand the bag to the original clubs, and add wind.
+2. **Merge the remaining branches** (each in `.worktrees/`, git-ignored via `.git/info/exclude`): `vegetation` (trees and sky) and `golfer` (animated Tiger Woods). The first native camera director and the `CBallFlight` port are on `main`. Compare both against a running original game; camera flight-progress and landing values are approximations. Expand the bag to the original clubs and add wind/settings UI with save tests.
 3. **Weather and time of day.** The original blends two of 40 `renderN.ini` presets (`RenderCommand::renderIni1/2`); research is in progress. Then fog, global diffuse, terrain/tree contrast, sky type and the original lens flare per preset, and a setup choice.
 4. **M1 acceptance**, when the owner makes the laptop available: every course at fullscreen 2560 × 1600 for 30 minutes; FPS, p95/p99 frame time, footprint, swap, thermals and load time.
 5. **Rules.** INI OB polygons (`[Hole N OB k]`), lateral water-hazard drops, the original tee/pin selection.
@@ -68,7 +68,7 @@ python3 Tools/prepare_pga2005.py
 GAMEHUB_SNAPSHOT_DIR=/tmp/pga-snaps ./Tools/test.sh -XCTest GameHubTests.PGASnapshotTests
 ```
 
-The snapshot test writes original-course images; keep its output outside Git. `Tools/verify_original_course.swift` compiles with `PGACore.swift`, `PGATerrain.swift` and `PGAOriginalCollision.swift`.
+The snapshot test writes original-course images; keep its output outside Git. `Tools/verify_original_course.swift` also requires `PGABallFlight.swift` when compiled with `PGACore.swift`. `python3 Tools/make_ballflight_fixtures.py --check` verifies the committed Python-reference golden fixture.
 
 ## Original-course gameplay adapter plan (implemented 2026-10-13)
 
