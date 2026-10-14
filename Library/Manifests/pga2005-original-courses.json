@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
-  "id": "pga2005-turnberry-development",
-  "title": "Turnberry \u00b7 Original Data",
-  "edition": "Golf prototype \u00b7 original course data",
+  "id": "pga2005-original-courses",
+  "title": "PGA Tour 2005 \u00b7 Original Courses",
+  "edition": "Golf prototype \u00b7 11 original courses",
   "platform": "macOS",
   "year": 2026,
   "genre": "Golf",
-  "summary": "Play all 18 holes of Turnberry's Ailsa course on the original PGA Tour 2005 course geometry, textures, tees and pins, decoded locally from your own disc images. Ball physics, rules and the golfer are approximate native development code.",
+  "summary": "Play any of the 11 original PGA Tour 2005 courses \u2014 Pebble Beach, St Andrews, Sawgrass, Turnberry, Harbour Town and more \u2014 on their original geometry, textures, tees and pins, decoded locally from your own disc images. Ball physics, rules and the golfer are approximate native development code.",
   "sourceArchive": "Tiger_Woods_PGA_Tour_2005_Win_ISO_EN.zip",
-  "accent": "8FB8C9",
+  "accent": "9CCB86",
   "artwork": "golf",
   "launch": {
     "kind": "builtin",
-    "builtin": "pga2005-turnberry-development"
+    "builtin": "pga2005-original-courses"
   },
   "fidelity": "prototype",
   "notes": [
     "This is a native development prototype, not Tiger Woods PGA Tour 2005 or a verified port.",
-    "Original per-hole terrain, materials, tees and pins come from the local TUR course files; all 18 tees and pins validate against their floors. Run python3 Tools/prepare_pga2005.py once to prepare them.",
-    "Lies, lie records, launch power and rolling resistance follow statically recovered original surface rules. Ball flight, bounces, slipping, cup capture and drop placement are approximate native rules until the original physics are reconstructed. Original vegetation, golfer, audio and modes are not included yet.",
+    "All 11 supplied courses (198 holes) load from local files prepared by python3 Tools/prepare_pga2005.py --courses AUS EDW FAN HAR JPN MON PBL SAW SHR STA TUR; every TCR tee snaps to a tee box and every pin to a green.",
     "Each hole loads its own original world with the standard condition layers (0x420) that the original CHole::Load selects, from static analysis.",
-    "Rounds save when paused, between holes and on exit, and resume only onto identical course data.",
+    "Lies, lie records, launch power and rolling resistance follow statically recovered original surface rules. Ball flight, bounces, slipping, cup capture and drop placement are approximate native rules until the original physics are reconstructed. Original vegetation, golfer, audio and modes are not included yet.",
+    "Setup chooses the course, 1-4 hot-seat players, tee set and pins. Rounds save on pause, between holes and on exit.",
     "Performance on the required M1 MacBook Air at 2560 \u00d7 1600 has not been measured for this module yet."
   ],
   "keyboard": [

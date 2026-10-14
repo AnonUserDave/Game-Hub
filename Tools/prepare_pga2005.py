@@ -40,7 +40,7 @@ def main():
     root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, default=root / "Tiger_Woods_PGA_Tour_2005_Win_ISO_EN.zip")
-    parser.add_argument("--courses", nargs="+", choices=["AUS", "EDW", "FAN", "HAR", "JPN", "MON", "PBL", "SAW", "SHR", "STA", "TUR"], default=["PBL", "TUR"])
+    parser.add_argument("--courses", nargs="+", choices=["AUS", "EDW", "FAN", "HAR", "JPN", "MON", "PBL", "SAW", "SHR", "STA", "TUR"], default=["AUS", "EDW", "FAN", "HAR", "JPN", "MON", "PBL", "SAW", "SHR", "STA", "TUR"])
     args = parser.parse_args()
     media_dir = root / "Library/SourceMedia/pga2005"
     media = media_dir / "EA-TigerWoodsPGATour2005-CD3-CoursesDisc.B6I"

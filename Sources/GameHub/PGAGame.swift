@@ -56,9 +56,22 @@ final class PGAGameSession: ObservableObject {
     @Published private(set) var awaitingSetup = false
     @Published var setup = PGARoundSetup()
     @Published private(set) var savedRound: PGARoundStore.Saved?
-    var courseCode: String { if case let .original(code) = choice { return code }; return "" }
+    /// The original course in use; the setup screen can switch it.
+    @Published private(set) var courseCode = ""
+    /// Prepared original courses (code, title, par) for the setup picker.
+    private(set) lazy var catalog: [PGAOriginalCourseCatalog.Entry] = PGAOriginalCourseCatalog.available(root: GameStore.workspaceRoot())
     /// Original course title once loaded (e.g. "Pebble Beach Golf Links 2005").
-    var courseTitle: String { original?.data.title ?? (courseCode == "TUR" ? "Turnberry" : "Pebble Beach") }
+    var courseTitle: String { original?.data.title ?? catalog.first { $0.code == courseCode }?.title ?? courseCode }
+
+    /// Loads another prepared course from the setup screen.
+    func selectCourse(_ code: String) {
+        guard awaitingSetup, code != courseCode, catalog.contains(where: { $0.code == code }) else { return }
+        loadTask?.cancel(); loadWork?.cancel(); loadTask = nil; loadWork = nil
+        prefetch?.task.cancel(); prefetch = nil
+        original = nil; courseCode = code
+        UserDefaults.standard.set(code, forKey: "pga2005.lastCourse")
+        loadOriginal()
+    }
     func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
     private var prefetch: (index: Int, task: Task<PGAOriginalHoleMesh, Never>)?
     /// The view observes this instead of storing a closure on the session; a
@@ -70,7 +83,8 @@ final class PGAGameSession: ObservableObject {
         renderer = PGARenderer(assetRoot: GameStore.workspaceRoot().appendingPathComponent("Library/Imported/pga2005/PBL"))
         self.choice = choice
         self.onExit = onExit
-        if case .original = choice {
+        if case let .original(code) = choice {
+            courseCode = code == "*" ? (UserDefaults.standard.string(forKey: "pga2005.lastCourse") ?? "PBL") : code
             loadState = .loading("Loading original course data off the main thread…")
         } else {
             renderer.build(hole: simulation.hole)
@@ -81,7 +95,8 @@ final class PGAGameSession: ObservableObject {
     /// Loads the mapped course, builds 18 bounded floor indexes and the first
     /// hole's render buffers on a worker; the hub and UI stay responsive.
     private func loadOriginal() {
-        guard case let .original(code) = choice, original == nil, loadTask == nil else { return }
+        guard isOriginal, original == nil, loadTask == nil else { return }
+        let code = courseCode
         let root = GameStore.workspaceRoot()
         let started = ProcessInfo.processInfo.systemUptime
         loadState = .loading("Loading original \(code) terrain, materials, tees and pins…")

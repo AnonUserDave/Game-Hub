@@ -223,10 +223,26 @@ struct PGARoundSetupView: View {
                     if session.courseCode == "PBL", let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
                     VStack(alignment: .leading, spacing: 4) {
                         Text(session.courseTitle.uppercased()).font(.system(size: 22, weight: .bold)).tracking(1.5)
-                        Text("Original course data · 18 holes · approximate native physics")
+                        Text("Original course data · 18 holes · approximate native physics · course \(session.courseCode)")
                             .font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
                     }
                     Spacer()
+                }
+                if session.catalog.count > 1 {
+                    section("COURSE") {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
+                            ForEach(session.catalog) { course in
+                                Button { session.selectCourse(course.code) } label: {
+                                    VStack(spacing: 2) {
+                                        Text(course.title).font(.system(size: 10.5, weight: .semibold)).lineLimit(1)
+                                        Text("Par \(course.par)").font(.system(size: 8.5, design: .monospaced)).opacity(0.75)
+                                    }.frame(maxWidth: .infinity).padding(.vertical, 6)
+                                        .background(RoundedRectangle(cornerRadius: 6).fill(session.courseCode == course.code ? gold : .white.opacity(0.08)))
+                                        .foregroundStyle(session.courseCode == course.code ? ink : .white)
+                                }.buttonStyle(.plain)
+                            }
+                        }
+                    }
                 }
                 section("PLAYERS") {
                     VStack(spacing: 8) {
@@ -288,7 +304,7 @@ struct PGARoundSetupView: View {
                 Text("Return: start · Controller: A start · Y resume · LB/RB tees · X pins · B hub")
                     .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
             }
-            .padding(26).frame(width: 640)
+            .padding(26).frame(width: 700)
             .background(ink.opacity(0.94), in: RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.12)))
             .foregroundStyle(.white)

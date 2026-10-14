@@ -371,7 +371,9 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
     }
 
     static func load(code: String, root: URL, conditions: PGACourseConditions = .standard) throws -> PGAOriginalPlayableCourse {
-        guard ["PBL", "TUR"].contains(code) else { throw PGAOriginalCourseData.LoadError.invalid("Unsupported course \(code).") }
+        guard code.count == 3, code.allSatisfy({ $0.isASCII && $0.isUppercase }) else {
+            throw PGAOriginalCourseData.LoadError.invalid("Unsupported course code \(code).")
+        }
         let directory = root.appendingPathComponent("Library/Imported/pga2005/\(code)")
         return try PGAOriginalPlayableCourse(data: PGAOriginalCourseData(directory: directory, code: code), conditions: conditions)
     }
@@ -439,4 +441,31 @@ enum PGARoundStore {
         if let data = try? JSONEncoder().encode(Saved(setup: setup, snapshot: snapshot)) { try? data.write(to: url(code: code), options: .atomic) }
     }
     static func clear(code: String) { try? FileManager.default.removeItem(at: url(code: code)) }
+}
+
+/// Prepared original courses found under Library/Imported/pga2005, read from
+/// each course's small holes.json (title and pars) without loading terrain.
+enum PGAOriginalCourseCatalog {
+    struct Entry: Equatable, Identifiable {
+        var code: String
+        var title: String
+        var par: Int
+        var id: String { code }
+    }
+    private struct Holes: Decodable {
+        struct Hole: Decodable { var par: Int }
+        var course_title: String
+        var holes: [Hole]
+    }
+    static func available(root: URL) -> [Entry] {
+        let base = root.appendingPathComponent("Library/Imported/pga2005", isDirectory: true)
+        guard let codes = try? FileManager.default.contentsOfDirectory(atPath: base.path) else { return [] }
+        return codes.sorted().compactMap { code in
+            guard code.count == 3, code.allSatisfy({ $0.isASCII && $0.isUppercase }),
+                  FileManager.default.fileExists(atPath: base.appendingPathComponent("\(code)/terrain.ghpc").path),
+                  let data = try? Data(contentsOf: base.appendingPathComponent("\(code)/holes.json")), data.count < 5_000_000,
+                  let holes = try? JSONDecoder().decode(Holes.self, from: data), holes.holes.count == 18 else { return nil }
+            return Entry(code: code, title: holes.course_title.replacingOccurrences(of: " 2005", with: ""), par: holes.holes.map(\.par).reduce(0, +))
+        }
+    }
 }
