@@ -101,6 +101,7 @@ final class PGAGameSession: ObservableObject {
     private func install(_ course: PGAOriginalPlayableCourse, mesh: PGAOriginalHoleMesh, indexSeconds: Double, total: Double) {
         original = course
         renderer.useOriginalBallShadow(hud.image("ball-shadow"))
+        renderer.useOriginalAimArrow(hud.image("aim-arrow"))
         var game = PGASimulation(course: course.course, terrains: course.terrains)
         var restored = false
         if let saved = PGARoundStore.load(identity: course.course.identity) { restored = (try? game.restore(saved)) != nil }
@@ -520,6 +521,26 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         freshCamera = true
     }
 
+    private var aimArrow: SCNNode?
+
+    /// Original aim arrow (DataImages/Game/Interface/aim) laid on the ground
+    /// in front of the ball along the aim line while the player is aiming.
+    func useOriginalAimArrow(_ image: NSImage?) {
+        guard let image, aimArrow == nil else { return }
+        let plane = SCNPlane(width: 0.55, height: 2.2)
+        let material = SCNMaterial()
+        material.diffuse.contents = image; material.lightingModel = .constant
+        material.writesToDepthBuffer = false; material.isDoubleSided = true; material.transparency = 0.85
+        plane.firstMaterial = material
+        let pivot = SCNNode()
+        let arrow = SCNNode(geometry: plane)
+        arrow.eulerAngles.x = -.pi / 2
+        arrow.position = SCNVector3(0, 0, -1.6)
+        pivot.addChildNode(arrow)
+        scene.rootNode.addChildNode(pivot)
+        aimArrow = pivot
+    }
+
     /// Original ball shadow image (DataImages/Game/Ball/Ballshad) when imported.
     func useOriginalBallShadow(_ image: NSImage?) {
         guard let image, let shadow = ballShadow.geometry as? SCNCylinder else { return }
@@ -566,6 +587,12 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         aimMarker.position = SCNVector3(target.x, simulation.groundHeight(x: target.x, z: target.z, near: position.y + 30) + 0.12, target.z)
         aimMarker.isHidden = simulation.phase.inMotion || simulation.phase == .holed || simulation.phase == .roundComplete
         aimMarker.scale = simulation.club == .putter ? SCNVector3(0.4, 1, 0.4) : SCNVector3(1, 1, 1)
+        if let aimArrow {
+            aimArrow.isHidden = simulation.phase != .aiming
+            aimArrow.position = SCNVector3(position.x, ground + 0.03, position.z)
+            // SceneKit faces -Z at zero yaw; the simulation's heading is atan2(x, z).
+            aimArrow.eulerAngles.y = CGFloat(simulation.heading + .pi)
+        }
         golfer.isHidden = simulation.phase.inMotion || simulation.phase == .holed || cameraMode == 2 || content.childNodes.isEmpty
         let side = PGAVector(x: -direction.z, y: 0, z: direction.x)
         let golferPosition = position + side * 1.1 + direction * -0.15

@@ -37,6 +37,7 @@ final class PGASnapshotTests: XCTestCase {
                 renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures), hole: single.holes[0],
                                flagImage: art.courseImage("FLAG"), holeImage: art.image("hole-decal"))
                 renderer.useOriginalBallShadow(art.image("ball-shadow"))
+                renderer.useOriginalAimArrow(art.image("aim-arrow"))
                 let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
                 let snapshot = SCNRenderer(device: device, options: nil)
                 snapshot.scene = renderer.scene

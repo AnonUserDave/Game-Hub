@@ -84,8 +84,23 @@ struct PGAGameView: View {
                 stat("STROKE", "\(game.strokes + (game.phase == .holed ? 0 : 1))")
                 stat("TO PIN", game.distanceToCup < 20 ? String(format: "%.1f ft", game.distanceToCup * 3.28084) : "\(Int((game.distanceToCup * 1.09361).rounded())) yd")
                 stat("LIE", game.lieLabel)
+                if session.isOriginal { elevation }
             }
         }.padding(17).background(panel).frame(maxWidth: 350, alignment: .leading).foregroundStyle(.white)
+    }
+
+    /// Height of the pin relative to the ball, with the original up/downhill icon.
+    private var elevation: some View {
+        let feet = Int(((game.hole.cup.y - game.ball.y) * 3.28084).rounded())
+        return VStack(alignment: .leading, spacing: 4) {
+            Text("ELEV").font(.system(size: 8, weight: .semibold, design: .monospaced)).tracking(0.8).foregroundStyle(.white.opacity(0.5))
+            HStack(spacing: 4) {
+                if let icon = session.hud.image(feet >= 0 ? "uphill" : "downhill") {
+                    Image(nsImage: icon).resizable().interpolation(.high).frame(width: 26, height: 13)
+                }
+                Text(feet == 0 ? "LEVEL" : "\(feet > 0 ? "+" : "")\(feet) FT").font(.system(size: 13, weight: .semibold)).monospacedDigit()
+            }
+        }
     }
 
     private func stat(_ title: String, _ value: String) -> some View {
