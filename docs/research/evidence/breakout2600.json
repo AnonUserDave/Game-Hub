@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "title": "Breakout",
   "platform": "Atari 2600",
   "archive": "Breakout_Atari-2600_ROM_EN.zip",
@@ -12,6 +12,16 @@
   "resetVector": "0xf237",
   "BRKVector": "0xf1c6",
   "tables": {
+    "fireMasks": {
+      "address": "0xf0fe",
+      "fileOffset": 254,
+      "byteCount": 2,
+      "bytes": [
+        136,
+        68
+      ],
+      "meaning": "Team fire-input masks, also immediately preceding HUD low-nibble font"
+    },
     "paddleBounds": {
       "address": "0xf782",
       "fileOffset": 1922,
@@ -117,6 +127,34 @@
         207
       ],
       "meaning": "AND masks clearing two playfield bits per brick"
+    },
+    "colorCodes": {
+      "address": "0xf7aa",
+      "fileOffset": 1962,
+      "byteCount": 20,
+      "bytes": [
+        6,
+        0,
+        70,
+        182,
+        134,
+        198,
+        22,
+        38,
+        54,
+        70,
+        6,
+        0,
+        12,
+        10,
+        8,
+        6,
+        4,
+        8,
+        6,
+        4
+      ],
+      "meaning": "Ten color codes followed by ten monochrome codes; slots BC through C5"
     },
     "paddleGraphics": {
       "address": "0xf7d6",
@@ -234,7 +272,131 @@
   "derivedWallPoints": 432,
   "limitations": [
     "Static analysis does not verify observed gameplay, audio, or display.",
-    "Native rectangle collisions replace TIA prior-frame collision latches.",
+    "Native integer pixel contacts reproduce prior-frame update order; intra-scanline write edges remain unverified.",
+    "Selected timer modes bypass the scored second-wall branch; publisher instructions describe two walls. Original comparison is required.",
+    "No 864/wall-empty terminal branch appears in the fully covered static cartridge; gameplay continues to shared round exhaustion.",
     "Original-reference comparison, physical controller checks, and sustained M1 acceptance remain absent."
-  ]
+  ],
+  "staticCoverage": {
+    "listingSHA256": "a4c95e2a32ae46a7de7f319d5266737d14dde7661137716453055a450f2d7d1f",
+    "instructionCount": 946,
+    "instructionByteCount": 1810,
+    "classifiedDataAndPaddingBytes": 238,
+    "unclassifiedBytes": 0,
+    "uncoveredDirectTransferTargets": [],
+    "dataRanges": [
+      {
+        "start": "0xf0fe",
+        "endExclusive": "0xf132",
+        "meaning": "two input masks and ten five-row low-nibble digits"
+      },
+      {
+        "start": "0xf200",
+        "endExclusive": "0xf237",
+        "meaning": "ten companion digits and the blank five-row glyph"
+      },
+      {
+        "start": "0xf782",
+        "endExclusive": "0xf800",
+        "meaning": "game parameters and reset/BRK vectors"
+      }
+    ],
+    "BRKPaddingAddresses": [
+      "0xf255",
+      "0xf25a",
+      "0xf59b",
+      "0xf5a6",
+      "0xf5f9"
+    ],
+    "wallTransitionReferences": [
+      {
+        "address": "0xf132",
+        "instruction": "LDA 0x00de"
+      },
+      {
+        "address": "0xf18c",
+        "instruction": "LDA 0x00de"
+      },
+      {
+        "address": "0xf192",
+        "instruction": "STA 0x00de"
+      },
+      {
+        "address": "0xf1a1",
+        "instruction": "LDX 0x00de"
+      },
+      {
+        "address": "0xf1a3",
+        "instruction": "STA 0x00de"
+      },
+      {
+        "address": "0xf41e",
+        "instruction": "BIT 0x00de"
+      },
+      {
+        "address": "0xf4a2",
+        "instruction": "STA 0x00de"
+      },
+      {
+        "address": "0xf749",
+        "instruction": "STA 0x00de"
+      }
+    ],
+    "activeGameReferences": [
+      {
+        "address": "0xf0ca",
+        "instruction": "CMP #0xb4"
+      },
+      {
+        "address": "0xf2ee",
+        "instruction": "BIT 0x00b4"
+      },
+      {
+        "address": "0xf300",
+        "instruction": "LDA 0x00b4"
+      },
+      {
+        "address": "0xf35c",
+        "instruction": "LDA 0x00b4"
+      },
+      {
+        "address": "0xf377",
+        "instruction": "STY 0x00b4"
+      },
+      {
+        "address": "0xf3ba",
+        "instruction": "STY 0x00b4"
+      },
+      {
+        "address": "0xf3c0",
+        "instruction": "AND 0x00b4"
+      }
+    ],
+    "sharedRoundReferences": [
+      {
+        "address": "0xf29f",
+        "instruction": "LDA 0x00b9"
+      },
+      {
+        "address": "0xf374",
+        "instruction": "STX 0x00b9"
+      },
+      {
+        "address": "0xf3ef",
+        "instruction": "DEC 0x00b9"
+      }
+    ],
+    "boundary": "Complete byte classification and direct transfer targets are static evidence, not observed original execution or hardware timing."
+  },
+  "HUD": {
+    "lowTableAddress": "0xf100",
+    "companionTableAddress": "0xf200",
+    "digitCount": 10,
+    "rowsPerDigit": 5,
+    "logicalDigitWidth": 3,
+    "rowOrder": "Y=4..0",
+    "companionBitOrderAgreement": true,
+    "preparedPath": "Library/Imported/breakout2600/media.json",
+    "originalGlyphsCommitted": false
+  }
 }

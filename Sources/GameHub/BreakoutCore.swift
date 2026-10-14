@@ -1,8 +1,8 @@
 import Foundation
 
 /// Native reconstruction of the selected CX2622 cartridge's game rules. This
-/// contains no 6502 interpreter or TIA implementation. See BREAKOUT.md for the
-/// exact ROM tables and the remaining collision/display/control approximations.
+/// contains no processor interpreter or platform compatibility runtime. Pixel
+/// contacts are title-specific geometry derived from its authored display kernel.
 enum BreakoutVariation: Int, CaseIterable, Codable {
     case breakout = 1, steerable, catchBall, invisible
     case timed, timedSteerable, timedCatch, timedInvisible
@@ -28,9 +28,10 @@ struct BreakoutConfiguration: Codable, Equatable {
     var playerCount: Int = 1
     /// The two original console difficulty switches apply to the two teams.
     var teamDifficulties: [BreakoutDifficulty] = [.beginner, .beginner]
+    var monochrome = false
 }
 
-enum BreakoutPhase: String, Codable { case serve, playing, caught, ended }
+enum BreakoutPhase: String, Codable { case serve, playing, caught, ended, selection }
 
 enum BreakoutGeometry {
     static let width = 160.0, height = 210.0
@@ -39,6 +40,7 @@ enum BreakoutGeometry {
     static let paddleY = 180.0, paddleHeight = 4.0
     static let ballWidth = 2.0, ballHeight = 4.0
     static let leftBoundary = 8.0, rightBoundary = 152.0, ceilingY = 26.0, drainY = 208.0
+    static let ceilingTop = 12, rasterBottom = 188
     static let rowPoints = [7, 7, 4, 4, 1, 1] // $F78C..$F791
 }
 
@@ -53,6 +55,10 @@ struct BreakoutBall: Codable, Equatable {
     var y: Double { Double(y256) / 256 }
     var velocityX: Double { Double(velocityX256) / 256 }
     var velocityY: Double { Double(velocityY256) / 256 }
+    /// $F040..F046 and $F0B3..F0B9 enable the ball for four lines. The
+    /// display loop's Y takes only even values; fractional Y never enters it.
+    var rasterX: Int { (x256 >> 8) - 49 }
+    var rasterY: Int { ((y256 >> 8) + 1) & 0xfe }
 }
 
 struct BreakoutPaddle: Equatable {
@@ -70,7 +76,20 @@ struct BreakoutTeam: Codable, Equatable {
     var wallsCleared = 0
     var bricks = Array(repeating: true, count: 108)
     var awaitingSecondWall = false
-    var isFinished: Bool { ballsUsed >= 5 || wallsCleared >= 2 }
+    var isFinished: Bool { ballsUsed >= 5 }
+}
+
+struct BreakoutContacts: Codable, Equatable {
+    var paddlePlayers: [Int] = []
+    var playfield = false
+    var side = false
+}
+
+/// Authored sound parameters, not an audio-device or TIA implementation.
+struct BreakoutAudioRegisters: Codable, Equatable {
+    var control = 12
+    var frequency = 0
+    var volume = 0
 }
 
 struct BreakoutState: Codable, Equatable {
@@ -89,12 +108,32 @@ struct BreakoutState: Codable, Equatable {
     var brickCollisionLatched = false
     var invisibleFlashFrames = 0
     var caughtPlayer: Int?
+    /// Collision flags from the previous displayed frame, consumed before
+    /// the next motion update ($F428..F55D; clear at $F616).
+    var contacts = BreakoutContacts()
+    var roundsRemaining = 5
+    /// $F132 rotates 36 packed wall entries, then $F1A1 clears the request.
+    /// Native teams swap atomically; this preserves collision suspension only.
+    var transitionFrames = 37
+    var transitionRebuildsWall = true
+    var endDisplayFrame = 0
+    var audioCounter = 0
+    var brickAudioFrequency = 0
+    var audioRegisters = BreakoutAudioRegisters()
+    var renderWallVisible = true
+    /// Source F5/F6 update only on ascent with steering enabled and no side
+    /// contact; descent and team changes retain these two logical channels.
+    var steeringLefts = [0, 0]
+    /// ResetMotion at $F1E1 retains E4/E6. New serves inherit the lost ball's
+    /// fractional coordinates even when the next turn belongs to another team.
+    var serveFractionX256 = 0
+    var serveFractionY256 = 0
 
     var bricks: [Bool] { teams[activeTeam].bricks }
     var score: Int { teams[activeTeam].score }
-    var ballsRemaining: Int { max(0, 5 - teams[activeTeam].ballsUsed) }
+    var ballsRemaining: Int { roundsRemaining }
     var wallNumber: Int { min(2, teams[activeTeam].wallsCleared + 1) }
-    var wallVisible: Bool { !configuration.variation.isInvisible || phase == .ended || invisibleFlashFrames > 0 }
+    var wallVisible: Bool { renderWallVisible }
     var activePlayers: [Int] {
         switch configuration.playerCount {
         case 1: return [0]
@@ -110,6 +149,15 @@ struct BreakoutState: Codable, Equatable {
     var paddles: [BreakoutPaddle] {
         activePlayers.map { BreakoutPaddle(player: $0, x: Double(paddleLefts[$0] - 49), width: paddleWidth) }
     }
+    /// Original COLU values, top row first. RGB/NTSC display calibration is
+    /// separate; these values are read directly from $F7AA..F7BD.
+    var rowColorCodes: [Int] {
+        configuration.monochrome ? [4, 6, 8, 4, 6, 8] : [0x46, 0x36, 0x26, 0x16, 0xc6, 0x86]
+    }
+    var paddleColorCodes: [Int] {
+        let codes = configuration.monochrome ? [12, 10] : [0x46, 0xb6]
+        return activeTeam == 0 || configuration.monochrome ? codes : codes.map { $0 ^ 0x90 }
+    }
 }
 
 struct BreakoutInput {
@@ -124,10 +172,11 @@ enum BreakoutEvent: Equatable {
     case served, paddleHit, ceilingHit, sideHit, caught, ballLost, teamChanged
     case brickHit(row: Int, column: Int, points: Int)
     case wallCleared, wallRebuilt, ended
+    case selectionReturned
 }
 
 struct BreakoutSnapshot: Codable, Equatable {
-    var schemaVersion = 1
+    var schemaVersion = 2
     var sourceSHA256 = BreakoutSimulation.sourceSHA256
     var state: BreakoutState
 }
@@ -144,23 +193,35 @@ struct BreakoutSimulation {
         configuration.playerCount = min(4, max(1, configuration.playerCount))
         configuration.teamDifficulties = Array((configuration.teamDifficulties + [.beginner, .beginner]).prefix(2))
         state = BreakoutState(configuration: configuration, teams: Array(repeating: BreakoutTeam(), count: configuration.playerCount == 1 ? 1 : 2))
+        state.renderWallVisible = !configuration.variation.isInvisible
     }
 
     var snapshot: BreakoutSnapshot { BreakoutSnapshot(state: state) }
 
     init(snapshot: BreakoutSnapshot) throws {
-        guard snapshot.schemaVersion == 1, snapshot.sourceSHA256 == Self.sourceSHA256 else { throw BreakoutRestoreError.incompatibleSource }
+        guard snapshot.schemaVersion == 2, snapshot.sourceSHA256 == Self.sourceSHA256 else { throw BreakoutRestoreError.incompatibleSource }
         let state = snapshot.state, configuration = state.configuration
-        guard (1...4).contains(configuration.playerCount), configuration.teamDifficulties.count == 2,
+        guard state.frame <= 65535, (1...4).contains(configuration.playerCount), configuration.teamDifficulties.count == 2,
               state.teams.count == (configuration.playerCount == 1 ? 1 : 2), state.teams.indices.contains(state.activeTeam),
               state.paddleLefts.count == 4, state.paddleLefts.allSatisfy({ (55...191).contains($0) }),
               (0...16).contains(state.speedCounter), [0, 2].contains(state.angleIndex),
-              (0...6).contains(state.invisibleFlashFrames),
+              (0...6).contains(state.invisibleFlashFrames), (0...5).contains(state.roundsRemaining),
+              (0...37).contains(state.transitionFrames), (0...255).contains(state.endDisplayFrame),
+              (0...255).contains(state.audioCounter), (0...31).contains(state.brickAudioFrequency),
+              state.steeringLefts.count == 2, state.steeringLefts.allSatisfy({ (0...255).contains($0) }),
+              (0...255).contains(state.serveFractionX256), (0...255).contains(state.serveFractionY256),
+              state.audioRegisters.control == 12, (0...31).contains(state.audioRegisters.frequency),
+              [0, 15].contains(state.audioRegisters.volume),
+              state.contacts.paddlePlayers.count <= 2,
+              Set(state.contacts.paddlePlayers).count == state.contacts.paddlePlayers.count,
+              state.contacts.paddlePlayers.allSatisfy({ state.activePlayers.contains($0) }),
               state.caughtPlayer == nil || state.activePlayers.contains(state.caughtPlayer!),
               state.teams.allSatisfy({ $0.bricks.count == 108 && (0...864).contains($0.score) && (0...5).contains($0.ballsUsed)
-                  && (0...2).contains($0.wallsCleared) && $0.timerTicks >= 0 && $0.timerTicks <= 9999 }),
+                  && (0...2).contains($0.wallsCleared) && (0...9999).contains($0.timerTicks) }),
               (state.phase == .playing || state.phase == .caught) == (state.ball != nil),
-              state.phase != .caught || (state.caughtPlayer != nil && configuration.variation.canCatch)
+              state.phase != .caught || (state.caughtPlayer != nil && configuration.variation.canCatch),
+              state.phase != .ended || state.roundsRemaining == 0,
+              [.ended, .selection].contains(state.phase) || state.roundsRemaining > 0
         else { throw BreakoutRestoreError.invalidState }
         if let ball = state.ball {
             guard (0...65535).contains(ball.x256), (0...65535).contains(ball.y256),
@@ -179,199 +240,323 @@ struct BreakoutSimulation {
         return result
     }
 
-    /// One cartridge frame. The caller owns its 60 Hz clock; render frequency
-    /// never changes simulation speed. Bounded work: four knobs and 108 bricks.
+    /// One authored frame, independent of render frequency. A qualified original
+    /// frame duration is still required; the UI's nominal 60 Hz is development.
     mutating func tick(input: BreakoutInput = BreakoutInput()) {
-        guard state.phase != .ended else { return }
         events.removeAll(keepingCapacity: true)
         state.frame &+= 1
-        updatePaddles(input.paddlePositions)
-        state.invisibleFlashFrames = max(0, state.invisibleFlashFrames - 1)
-        // $F3C8..$F3D4: BCD +1 on every 64th active frame, including waiting/catch.
+        prepareSoundAndVisibility() // $F2AF..F326 precedes the game update.
+        // $F352..F358 -> F3B4: overflowing DA/DB returns to console selection,
+        // even from the ended scoreboard. This is not five-round completion.
+        if state.frame & 65535 == 0 {
+            returnToSelection()
+            updatePaddles(input.paddlePositions, ball: nil)
+            return
+        }
+        if state.phase == .selection {
+            advanceTransition()
+            updatePaddles(input.paddlePositions, ball: nil)
+            state.contacts = BreakoutContacts()
+            return
+        }
+        if state.phase == .ended {
+            state.endDisplayFrame = (state.endDisplayFrame + 1) & 255
+            if state.endDisplayFrame == 0, state.teams.count == 2 {
+                changeTeam(rebuild: false) // $F352..F368: compare teams every 256 frames.
+            }
+            advanceTransition()
+            updatePaddles(input.paddlePositions, ball: nil)
+            state.contacts = BreakoutContacts()
+            return
+        }
         if state.configuration.variation.isTimed, state.frame & 63 == 0 {
             state.teams[state.activeTeam].timerTicks = (state.teams[state.activeTeam].timerTicks + 1) % 10000
         }
-        if state.phase == .serve {
-            if input.serve { serve() }
-            return
+        // $F3D7..F3F3 tests the prior frame's integer Y before collisions/motion.
+        let drained = state.ball.map { $0.y256 >> 8 >= 208 } ?? false
+        if drained { loseBall() }
+        if !drained, state.phase == .serve, input.serve { serve() }
+
+        var ball = state.ball
+        if state.transitionFrames > 0 {
+            advanceTransition()
+        } else if var moving = ball {
+            consumeContacts(&moving)
+            ball = moving
         }
-        if state.phase == .caught {
-            if input.serve, let player = state.caughtPlayer {
-                state.ball?.x256 = (state.paddleLefts[player] + 4) * 256
-                state.ball?.y256 = 178 * 256 // $F5EC..$F5F4
-                return
+        // $F55F..F5A5 updates the knobs after collision response. Steering uses
+        // the resulting vertical sign, and is suppressed by a side contact.
+        updatePaddles(input.paddlePositions, ball: &ball)
+        if var moving = ball {
+            if state.configuration.variation.canCatch, input.serve,
+               let player = state.contacts.paddlePlayers.first {
+                state.phase = .caught
+                if state.caughtPlayer != player { events.append(.caught) }
+                state.caughtPlayer = player
+                // Source catch changes only integer position; the Q8 fractional
+                // bytes survive capture and release ($F5EC..F5F4).
+                moving.x256 = (state.paddleLefts[player] + 4) * 256 + (moving.x256 & 255)
+                moving.y256 = 178 * 256 + (moving.y256 & 255)
+            } else {
+                state.phase = .playing
+                state.caughtPlayer = nil
+                moving.x256 = (moving.x256 + moving.velocityX256) & 65535
+                moving.y256 = (moving.y256 + moving.velocityY256) & 65535
             }
-            state.phase = .playing
-            state.caughtPlayer = nil
-        }
-        guard var ball = state.ball else { return }
-        let oldY = ball.y
-        ball.x256 += ball.velocityX256
-        ball.y256 += ball.velocityY256
-        if state.configuration.variation.isSteerable, ball.velocityY256 < 0 {
-            // $F708..$F72B: knob movement steers by two pixels only on ascent.
-            let player = state.activePlayers[0]
-            let previous = previousPaddleLefts[player]
-            let current = state.paddleLefts[player]
-            if current > previous { ball.x256 += 512 }
-            if current < previous { ball.x256 -= 512 }
-        }
-        if ball.x < BreakoutGeometry.leftBoundary, ball.velocityX256 < 0 {
-            ball.x256 = (49 + Int(BreakoutGeometry.leftBoundary)) * 256
-            ball.velocityX256 = -ball.velocityX256
-            events.append(.sideHit)
-        } else if ball.x + BreakoutGeometry.ballWidth > BreakoutGeometry.rightBoundary, ball.velocityX256 > 0 {
-            ball.x256 = (49 + Int(BreakoutGeometry.rightBoundary - BreakoutGeometry.ballWidth)) * 256
-            ball.velocityX256 = -ball.velocityX256
-            events.append(.sideHit)
-        }
-        if ball.y < BreakoutGeometry.ceilingY, ball.velocityY256 < 0 {
-            ball.y256 = Int(BreakoutGeometry.ceilingY) * 256
-            ball.velocityY256 = -ball.velocityY256
-            state.ceilingWasHit = true
-            state.paddleCollisionLatched = false
-            state.brickCollisionLatched = false
-            events.append(.ceilingHit)
-        }
-        if ball.velocityY256 > 0, !state.paddleCollisionLatched,
-           oldY + BreakoutGeometry.ballHeight <= BreakoutGeometry.paddleY,
-           ball.y + BreakoutGeometry.ballHeight >= BreakoutGeometry.paddleY,
-           let paddle = state.paddles.first(where: { ball.x + BreakoutGeometry.ballWidth > $0.x && ball.x < $0.x + $0.width }) {
-            hitPaddle(&ball, paddle: paddle, fireHeld: input.serve)
-        }
-        if !state.brickCollisionLatched { hitBrick(&ball) }
-        if state.phase == .ended { state.ball = nil; return }
-        if state.phase == .serve { return }
-        if ball.y >= BreakoutGeometry.drainY { loseBall(); return }
-        state.ball = ball
+            state.ball = moving
+        } else { state.ball = nil }
+        // $F616 clears collision bits immediately before drawing the new frame.
+        state.contacts = Self.contacts(ball: state.ball, paddles: state.paddles, bricks: state.bricks)
     }
 
-    // These are input history, not saved gameplay state. Reset on restore; the
-    // first restored frame cannot manufacture a steering movement.
-    private var previousPaddleLefts = [123, 123, 123, 123]
+    /// Static integer pixel overlap, not a hardware graphics/CPU interpreter.
+    /// It reconstructs this title's fixed strips, PF brick bits and player masks.
+    /// Intra-scanline register-write edges still require original comparison.
+    static func contacts(ball: BreakoutBall?, paddles: [BreakoutPaddle], bricks: [Bool]) -> BreakoutContacts {
+        guard let ball else { return BreakoutContacts() }
+        let x = ball.rasterX, y = ball.rasterY
+        func overlap(_ left: Int, _ top: Int, _ width: Int, _ height: Int) -> Bool {
+            x < left + width && x + 2 > left && y < top + height && y + 4 > top
+        }
+        let players = paddles.filter { overlap(Int($0.x), 180, Int($0.width), 4) }.map(\.player)
+        let side = overlap(0, 12, 8, 176) || overlap(152, 12, 8, 176)
+        var playfield = overlap(0, 12, 160, 14)
+        if !playfield, bricks.count == 108 {
+            for row in 0..<6 where y < 56 + row * 6 && y + 4 > 50 + row * 6 {
+                for column in 0..<18 where bricks[row * 18 + column] {
+                    if overlap(8 + column * 8, 50 + row * 6, 8, 6) { playfield = true; break }
+                }
+                if playfield { break }
+            }
+        }
+        return BreakoutContacts(paddlePlayers: players, playfield: playfield, side: side)
+    }
 
-    private mutating func updatePaddles(_ positions: [Double]) {
-        previousPaddleLefts = state.paddleLefts
+    private mutating func prepareSoundAndVisibility() {
+        let counter = state.audioCounter
+        var frequency = 0
+        if counter & 63 != 0 {
+            frequency = counter & 128 != 0 ? (counter & 64 != 0 ? 2 : 8) :
+                (counter & 64 != 0 ? 4 : state.brickAudioFrequency)
+            state.audioCounter = (counter - 1) & 255
+        }
+        state.audioRegisters = BreakoutAudioRegisters(frequency: frequency, volume: counter & 63 == 0 ? 0 : 15)
+        state.invisibleFlashFrames = state.audioCounter & 192 == 0 ? min(6, state.audioCounter & 63) : 0
+        state.renderWallVisible = !state.configuration.variation.isInvisible || [.ended, .selection].contains(state.phase) || state.invisibleFlashFrames > 0
+    }
+
+    private mutating func updatePaddles(_ positions: [Double], ball: inout BreakoutBall?) {
         let players = state.activePlayers
         for (index, player) in players.enumerated() {
+            // $F5FA..F606 and $F6DB..F6E7 select one split knob for two frames.
+            if players.count == 2, index != Int((state.frame & 2) >> 1) { continue }
             let value = player < positions.count && positions[player].isFinite ? positions[player] : 0.5
             let knob = min(1, max(0, value))
-            let bounds = players.count == 1 ? (55, 191) : (index == 0 ? (55, 126) : (128, 191)) // $F782..$F787
+            let bounds = players.count == 1 ? (55, 191) : (index == 0 ? (55, 126) : (128, 191))
             state.paddleLefts[player] = bounds.0 + Int((Double(bounds.1 - bounds.0) * knob).rounded())
+            if state.configuration.variation.isSteerable, !state.contacts.side,
+               let moving = ball, moving.velocityY256 < 0 {
+                let previous = state.steeringLefts[index]
+                let current = state.paddleLefts[player]
+                state.steeringLefts[index] = current
+                if current != previous { ball?.x256 = (moving.x256 + (current > previous ? 512 : -512)) & 65535 }
+            }
         }
+    }
+
+    private mutating func updatePaddles(_ positions: [Double], ball: BreakoutBall?) {
+        var ball = ball
+        updatePaddles(positions, ball: &ball)
     }
 
     private mutating func serve() {
         let index = Int(state.frame & 3)
-        state.ball = BreakoutBall(x256: [64, 128, 128, 192][index] * 256, y256: 112 * 256,
-                                 velocityX256: [256, -256, 256, -256][index], velocityY256: 256) // $F401..$F418
+        state.ball = BreakoutBall(x256: [64, 128, 128, 192][index] * 256 + state.serveFractionX256,
+                                 y256: 112 * 256 + state.serveFractionY256,
+                                 velocityX256: [256, -256, 256, -256][index], velocityY256: 256)
         state.phase = .playing
         state.ceilingWasHit = false
         state.speedCounter = 0
         state.angleIndex = 0
         state.paddleCollisionLatched = false
         state.brickCollisionLatched = false
+        state.audioCounter = 0x48
         events.append(.served)
     }
 
     /// ROM packed speed bytes: low two bits are integral, high six fractional.
     static func velocityMagnitudes(counter: Int, angle: Int) -> (x: Int, y: Int) {
         let packed = [0x81, 0x01, 0x01, 0x81, 0x81, 0x02, 0x80, 0x02, 0x02, 0x01,
-                      0x02, 0x01, 0x02, 0x02, 0x02, 0x02, 0x02, 0x63, 0x02, 0x63] // $F7DC..$F7EF
+                      0x02, 0x01, 0x02, 0x02, 0x02, 0x02, 0x02, 0x63, 0x02, 0x63]
         let index = (min(16, max(0, counter)) & 0x3c) + (angle == 2 ? 2 : 0)
         func decode(_ value: Int) -> Int { (value & 3) * 256 + (value & 0xfc) }
         return (decode(packed[index]), decode(packed[index + 1]))
     }
 
-    private mutating func hitPaddle(_ ball: inout BreakoutBall, paddle: BreakoutPaddle, fireHeld: Bool) {
-        var offset = (state.paddleLefts[paddle.player] + Int(paddle.width / 2)) - (ball.x256 / 256)
+    private mutating func consumeContacts(_ ball: inout BreakoutBall) {
+        if !state.paddleCollisionLatched, let player = state.contacts.paddlePlayers.first {
+            hitPaddle(&ball, player: player)
+        }
+        if state.contacts.playfield {
+            if ball.y256 >> 8 < 40 {
+                state.ceilingWasHit = true
+                ball.velocityY256 = -ball.velocityY256
+                state.paddleCollisionLatched = false
+                state.brickCollisionLatched = false
+                state.audioCounter = 0x88
+                events.append(.ceilingHit)
+            } else if !state.brickCollisionLatched { hitBrick(&ball) }
+        }
+        // $F54C..F552 reflects only while moving toward that half's side.
+        // Original motion is not clamped or pushed out after any collision.
+        if state.contacts.side, ((ball.x256 >> 8 < 128) == (ball.velocityX256 <= 0)) {
+            ball.velocityX256 = -ball.velocityX256
+            if state.audioCounter & 63 == 0 { state.audioCounter = 0x46 }
+            events.append(.sideHit)
+        }
+    }
+
+    private mutating func hitPaddle(_ ball: inout BreakoutBall, player: Int) {
+        let halfWidth = Int(state.paddleWidth / 2)
+        var offset = state.paddleLefts[player] + halfWidth - (ball.x256 >> 8)
         if offset == 0 {
-            ball.x256 += ball.velocityX256 < 0 ? 1024 : -1024 // $F43E..$F44E
+            ball.x256 = (ball.x256 + (ball.velocityX256 < 0 ? 1024 : -1024)) & 65535
             offset = 1
         }
         var magnitude = min(8, abs(offset))
-        if paddle.width == 8 { magnitude *= 2 }
-        state.angleIndex = ((magnitude + 3) & 4) >> 1 // $F45C..$F479
+        if halfWidth == 4 { magnitude *= 2 }
+        state.angleIndex = ((magnitude + 3) & 4) >> 1
         if state.speedCounter < 12 { state.speedCounter += 1 }
         let speed = Self.velocityMagnitudes(counter: state.speedCounter, angle: state.angleIndex)
         ball.velocityX256 = offset > 0 ? -speed.x : speed.x
-        ball.velocityY256 = -speed.y
-        ball.y256 = 176 * 256
+        ball.velocityY256 = ball.velocityY256 >= 0 ? -speed.y : speed.y
         state.paddleCollisionLatched = true
+        // $F485 retains only the low speed bits: paddle clears the brick latch.
         state.brickCollisionLatched = false
+        state.audioCounter = 0x88
         events.append(.paddleHit)
-        if state.teams[state.activeTeam].awaitingSecondWall {
-            state.teams[state.activeTeam].bricks = Array(repeating: true, count: 108)
-            state.teams[state.activeTeam].awaitingSecondWall = false
-            events.append(.wallRebuilt)
-        }
-        if state.configuration.variation.canCatch && fireHeld {
-            state.phase = .caught
-            state.caughtPlayer = paddle.player
-            ball.x256 = (state.paddleLefts[paddle.player] + 4) * 256
-            ball.y256 = 178 * 256
-            events.append(.caught)
+        // $F490..F4A2 explicitly bypasses this path in all four timer modes.
+        // Clearing a wall is not itself a rebuild trigger in this revision.
+        if !state.configuration.variation.isTimed, state.score == 432 {
+            state.transitionFrames = 1
+            state.transitionRebuildsWall = true
         }
     }
 
     private mutating func hitBrick(_ ball: inout BreakoutBall) {
-        // Native rectangle contact replaces the TIA's prior-frame CXPFB latch.
-        // Candidate order follows direction so a shared edge removes one brick.
-        let rows = ball.velocityY256 < 0 ? Array((0..<6).reversed()) : Array(0..<6)
-        let columns = ball.velocityX256 < 0 ? Array((0..<18).reversed()) : Array(0..<18)
-        for row in rows {
-            let y = BreakoutGeometry.brickY + Double(row) * BreakoutGeometry.brickHeight
-            guard ball.y < y + BreakoutGeometry.brickHeight, ball.y + BreakoutGeometry.ballHeight > y else { continue }
-            for column in columns {
-                let index = row * 18 + column
-                guard state.teams[state.activeTeam].bricks[index] else { continue }
-                let x = BreakoutGeometry.brickX + Double(column) * BreakoutGeometry.brickWidth
-                guard ball.x < x + 8, ball.x + 2 > x else { continue }
-                state.teams[state.activeTeam].bricks[index] = false
-                let points = BreakoutGeometry.rowPoints[row]
-                state.teams[state.activeTeam].score += points
-                state.invisibleFlashFrames = 6 // $F50B..$F50D; visual fade is a native approximation.
-                if row < 3 { state.speedCounter = 16; state.angleIndex = 0 } // $F519..$F528
-                let speed = Self.velocityMagnitudes(counter: state.speedCounter, angle: state.angleIndex)
-                ball.velocityX256 = ball.velocityX256 < 0 ? -speed.x : speed.x
-                ball.velocityY256 = ball.velocityY256 < 0 ? -speed.y : speed.y
-                if !state.configuration.variation.isBreakthrough {
-                    ball.velocityY256 = -ball.velocityY256
-                    state.brickCollisionLatched = true
-                    ball.y256 = Int((ball.velocityY256 > 0 ? y + 6 : y - 4) * 256)
-                }
-                events.append(.brickHit(row: row, column: column, points: points))
-                if !state.teams[state.activeTeam].bricks.contains(true) {
-                    state.teams[state.activeTeam].wallsCleared += 1
-                    events.append(.wallCleared)
-                    if state.teams[state.activeTeam].wallsCleared == 1 {
-                        state.teams[state.activeTeam].awaitingSecondWall = true
-                    } else { finishTurn() }
-                }
-                return
-            }
+        // $F4C8..F4F1 selects from the integer ball origin, not from which
+        // rectangle actually produced the collision. SBC $39 runs with carry
+        // clear after row negation/+5, so its effective X subtraction is 58.
+        let row = max(0, (ball.y256 >> 8) - 50) / 6
+        let column = min(17, max(0, (ball.x256 >> 8) - 58) / 8)
+        guard row < 6, state.teams[state.activeTeam].bricks[row * 18 + column] else { return }
+        state.teams[state.activeTeam].bricks[row * 18 + column] = false
+        let points = BreakoutGeometry.rowPoints[row]
+        // Timed source uses these same score bytes exclusively as its BCD timer.
+        if !state.configuration.variation.isTimed { state.teams[state.activeTeam].score += points }
+        state.brickAudioFrequency = [10, 12, 16, 18, 22, 28][row]
+        state.audioCounter = 6
+        if row < 3 { state.speedCounter = 16; state.angleIndex = 0 }
+        let speed = Self.velocityMagnitudes(counter: state.speedCounter, angle: state.angleIndex)
+        ball.velocityX256 = ball.velocityX256 <= 0 ? -speed.x : speed.x
+        if state.configuration.variation.isBreakthrough {
+            ball.velocityY256 = ball.velocityY256 < 0 ? -speed.y : speed.y
+        } else {
+            ball.velocityY256 = ball.velocityY256 < 0 ? speed.y : -speed.y
+            state.brickCollisionLatched = true
         }
+        events.append(.brickHit(row: row, column: column, points: points))
+        if !state.teams[state.activeTeam].bricks.contains(true) {
+            state.teams[state.activeTeam].wallsCleared = min(2, state.teams[state.activeTeam].wallsCleared + 1)
+            state.teams[state.activeTeam].awaitingSecondWall = !state.configuration.variation.isTimed && state.score == 432
+            events.append(.wallCleared)
+            // No 864/wall-empty terminal branch exists in the selected fully
+            // covered cartridge. Ball and shared five-round schedule continue.
+        }
+    }
+
+    private mutating func advanceTransition() {
+        guard state.transitionFrames > 0 else { return }
+        state.transitionFrames -= 1
+        if state.transitionFrames == 0, state.transitionRebuildsWall {
+            state.teams[state.activeTeam].bricks = Array(repeating: true, count: 108)
+            state.teams[state.activeTeam].awaitingSecondWall = false
+            state.transitionRebuildsWall = false
+            events.append(.wallRebuilt)
+        }
+    }
+
+    private mutating func changeTeam(rebuild: Bool) {
+        state.activeTeam = 1 - state.activeTeam
+        state.transitionFrames = 37
+        state.transitionRebuildsWall = rebuild
+        state.contacts = BreakoutContacts()
+        events.append(.teamChanged)
     }
 
     private mutating func loseBall() {
-        state.teams[state.activeTeam].ballsUsed += 1
-        events.append(.ballLost)
-        finishTurn()
-    }
-
-    private mutating func finishTurn() {
+        let lostTeam = state.activeTeam
+        state.serveFractionX256 = (state.ball?.x256 ?? 0) & 255
+        state.serveFractionY256 = (state.ball?.y256 ?? 0) & 255
+        state.teams[lostTeam].ballsUsed += 1
         state.ball = nil
         state.caughtPlayer = nil
         state.ceilingWasHit = false
+        state.speedCounter = 0
+        state.angleIndex = 0
+        state.paddleCollisionLatched = false
+        state.brickCollisionLatched = false
         state.phase = .serve
-        if state.teams.allSatisfy(\.isFinished) {
+        state.contacts = BreakoutContacts()
+        events.append(.ballLost)
+        if state.teams.count == 2 { changeTeam(rebuild: false) }
+        // $F3EB..F3F3 decrements B9 only on return to team zero, after both turns.
+        if state.teams.count == 1 || state.activeTeam == 0 { state.roundsRemaining -= 1 }
+        if state.roundsRemaining == 0 {
             state.phase = .ended
+            state.frame = 0 // $F385..F387 reset DA/DB when B4 becomes zero.
+            state.endDisplayFrame = 0
+            state.renderWallVisible = true
             events.append(.ended)
-        } else if state.teams.count == 2 && !state.teams[1 - state.activeTeam].isFinished {
-            state.activeTeam = 1 - state.activeTeam
-            events.append(.teamChanged)
         }
-        // Team transitions restore their own source wall/score. Cartridge's
-        // 36-frame bit rotation is intentionally represented as an atomic swap.
+    }
+
+    private mutating func returnToSelection() {
+        if let ball = state.ball {
+            state.serveFractionX256 = ball.x256 & 255
+            state.serveFractionY256 = ball.y256 & 255
+        }
+        state.phase = .selection
+        state.frame = 0
+        state.ball = nil
+        state.caughtPlayer = nil
+        state.ceilingWasHit = false
+        state.speedCounter = 0
+        state.angleIndex = 0
+        state.paddleCollisionLatched = false
+        state.brickCollisionLatched = false
+        state.contacts = BreakoutContacts()
+        events.append(.selectionReturned)
+    }
+}
+
+/// Original bitmap HUD data is prepared locally and never embedded in Git.
+struct BreakoutMedia: Codable {
+    var schemaVersion: Int
+    var sourceSHA256: String
+    /// Ten digits, top-to-bottom five scanline pairs, three logical pixels wide.
+    var digitRows: [[Int]]
+
+    static func load(from url: URL) throws -> BreakoutMedia {
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        guard let data = try handle.read(upToCount: 16385), (1...16384).contains(data.count)
+        else { throw BreakoutRestoreError.invalidState }
+        let media = try JSONDecoder().decode(Self.self, from: data)
+        guard media.schemaVersion == 1, media.sourceSHA256 == BreakoutSimulation.sourceSHA256,
+              media.digitRows.count == 10,
+              media.digitRows.allSatisfy({ $0.count == 5 && $0.allSatisfy({ (0...7).contains($0) }) })
+        else { throw BreakoutRestoreError.incompatibleSource }
+        return media
     }
 }
