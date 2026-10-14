@@ -188,3 +188,21 @@ acceptance was performed. The all16-title goal remains unfinished.
 | Clean timing run, no captures | 9 shots (bogey, birdie); 4,897 frames, average 59.9 FPS, p50 16.7 ms, p95 17.3 ms, p99 18.2 ms, max 39 ms, 7 frames over 20 ms, no hitch over 100 ms; peak footprint 768 MB |
 
 These are M5 numbers in a window. The M1 run at fullscreen 2560 × 1600 for 30 minutes remains the acceptance gate.
+
+## Son's M5 hub redesign checkpoint (development check, not M1 acceptance)
+
+2026-10-14, M5 Pro MacBook Pro (24 GB, macOS 26.3), branch `hub-ui-redesign`. `./Tools/test.sh`: 277 Swift tests, 0 failures, 5 opt-in snapshot tests skipped. New `HubLibraryTests` cover `sourceArchive` grouping, shelf navigation across rows and shelves, controller command routing (play opens details for a title with no ready build, bumpers wrap through lists, back clears filters) and favorites per title; on the supplied catalog every build groups with its original and Original Courses leads the golf builds. `HubSnapshotTests` rendered the library offscreen at 1080 × 720, 1360 × 900 and 1440 × 900 (2× backing) plus the details, controls and integration sheets; the captures were inspected by eye. `Tools/build.sh` produced a native arm64 `-O` build; launched windowed for about 15 s, it idled at 0.3–0.5 % CPU (the existing 60 Hz controller poll) with a 55 MB footprint (156 MB peak during catalog load). The hub has no idle animation.
+
+An independent read-only review of the redesign found input and labelling gaps, all fixed before commit:
+- Alerts and open/save panels now block library input, and controller A/B dismiss alerts.
+- Shelves, Play buttons and VoiceOver labels name the build status ("Prototype", "Play prototype").
+- The Controls & devices sheet ignores controller commands again, so B and Menu stay testable.
+- The search field no longer traps arrows, Return or controller input.
+- Menu commands are disabled while a game, sheet or alert is in front, and ⌘F goes to the search field.
+- Only the sidebar controller row and the hints bar observe 60 Hz controller updates.
+- Loading status stays visible while an external game runs.
+- An imported game stays selected through the reload.
+
+The full suite was rerun after these fixes (277 tests, 0 failures) and the release build rebuilt.
+
+Not yet checked: the live window (title-bar overlap, sheet sizing, menus), the physical XB1 Fusion Pro in the new library, VoiceOver, and anything on the owner's M1.
