@@ -17,7 +17,7 @@ No title below is a completed faithful rewrite. The current development host is 
 | Breakout / Atari2600 | Native development session;26 source-core checks cover prior-frame pixel contacts, sampling/steering/fractions, timed/no-rebuild and scored/team transitions, five rounds, selection overflow; original HUD digits prepared | Intraline graphics, rotation/attract/selection art, cadence/color/audio conversion, independent split-paddle catches, original/physical comparisons and M1 acceptance |
 | Conflict2500 / AppleII | Playable native **development reconstruction** of recovered BASIC rules; scenario, map/tactical/status, commands, AI/turns and save/resume | Applesoft RNG/numeric parity, original display/animation/timing and multi-ship docking prompts; original comparison |
 | Crossfire / AppleII | Native development session with15 original masks, XOR silhouettes/anchors, independent movement/fire adapters, pauses/saves/launch/return; native/static and live M5 shot/resume evidence | Selected source startup, exact HGR field/color/font/screens, audio/cadence, all original/physical comparisons and M1 acceptance |
-| DigDug / C64 | Two bounded packed-format decoders recover24,576 source bytes, hash-fenced through intro/known relocation/trainer/game; six Python checks | Native game/interrupt scheduler, source terrain/entities/pump/rocks/bonuses/modes/art/audio/input/saves and session; all original/physical/M1 comparisons |
+| DigDug / C64 | Two packed decoders recover24KiB source body; original112 sprite slots/16 death/eleven bonus/logo assets,16 tunnel layouts/15 source-backed spawn records;16 Python checks | Native game/IRQ/terrain/entities/pump/rocks/bonus/modes/audio/input/saves/session, font/startup RAM/colors/raster; all original/physical/M1 comparisons |
 | NFLFootball / Intellivision | Selected cartridge recovered and hashed | CP1610/EXEC/GROM dependencies, original modes/rules/assets and disc/keypad/side-button controls; native session |
 | NightDriver / C64 | Native development session with original instruction/character road/car/crash/HUD/digit data, independent control/timer scheduling, keyboard/paddle adapters, pause/save/launch/return | Qualified foreground/CIA/crash timing (development120/50/0.2s are provisional), RGB/VIC crop/audio/attract/high-score sequences, source comparisons/physical input and M1 acceptance |
 | Preppie! / Atari8-bit | Plain US XEX selected; all ordered segments recovered and hashed | Source level/lane/actor/control/timing/art/audio reconstruction and native session |
@@ -61,6 +61,7 @@ python3 Tools/decode_apple_panic.py
 python3 Tools/decode_crossfire.py
 python3 Tools/decode_night_driver.py
 python3 Tools/decode_dig_dug.py
+python3 Tools/decode_dig_dug_graphics.py
 ./Tools/build.sh
 ./Tools/test.sh
 python3 -m unittest discover -s Tests -p 'test_*.py'

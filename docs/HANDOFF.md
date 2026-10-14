@@ -36,6 +36,18 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+Dig Dug original graphics/level preparation now extends its corrected two-layer
+unpack: `Tools/decode_dig_dug_graphics.py` recovers112 initialized sprite slots,
+16 death variants, eleven bonus sprites,340 logo bytes,16 tunnel layouts and15
+source-backed spawn records. Ten new tests and all16 Dig Dug Python tests pass
+on M5. Original output stays in ignored `Library/Prepared/dig-dug-graphics/`;
+the tracked receipt retains only source-window hashes/counts. The nine-bit
+sprite rotation and selected level-fold rule are independently checked. Font
+ROM/startup RAM, rendered terrain, game/IRQ/entity/pump/rock/score rules,
+calibrated colors/raster/audio and every original/physical/M1 gate remain open.
+This is **asset/record recovery, not native Dig Dug gameplay**. See
+[the ledger](research/DIG-DUG.md) and [receipt](research/evidence/dig-dug-graphics.json).
+
 Asteroids8-bit now has its own source-VBI/foreground native lifecycle, selected
 mode/four-player rules, source thrust/shots/special controls, collisions/splits/
 waves/UFO/player transitions, explosions, sound parameters and source-bound

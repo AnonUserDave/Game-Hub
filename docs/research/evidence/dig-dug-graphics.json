@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "body_sha256": "90d52fc5c20d64d033d135d16146f5da01e369681373f74756cf33c562de0cda",
+  "body_bytes": 24576,
+  "method": "bounded native format decoding of corrected body; no target execution",
+  "block_count": 60,
+  "sprite_count": 112,
+  "death_sprite_count": 16,
+  "sprite_stream_frame_counts": [
+    50,
+    2,
+    9,
+    4,
+    3
+  ],
+  "bonus_sprite_count": 11,
+  "layout_count": 16,
+  "source_backed_spawn_records": 15,
+  "spawn_record_bytes": 13,
+  "unresolved_spawn_records": 1,
+  "decoded_nibble_table_bytes": [
+    316,
+    426,
+    208,
+    224
+  ],
+  "decoded_bitmap_pattern_bytes": 287,
+  "menu_bitmap_column_bytes": 340,
+  "windows": [
+    {
+      "name": "block-pointers-and-parameters",
+      "address": "$9B1A",
+      "body_offset": 15130,
+      "bytes": 300,
+      "sha256": "05024ea524aa9755b6a83708202517c35d742c4454509876426cd5d783ba52e4"
+    },
+    {
+      "name": "block-copy-fill-functions",
+      "address": "$9ABD",
+      "body_offset": 15037,
+      "bytes": 93,
+      "sha256": "45cdf0c012dad03146d9cd53e61d56f45b0ec74834c273e05b62cce8054e9ee2"
+    },
+    {
+      "name": "sparse-sprite-decoder",
+      "address": "$8B25",
+      "body_offset": 11045,
+      "bytes": 168,
+      "sha256": "57848eeb2c5117311b9ed19244be5342e69049f9de12b7948f0f03f1bca9b982"
+    },
+    {
+      "name": "sprite-source-ends",
+      "address": "$8B1B",
+      "body_offset": 11035,
+      "bytes": 10,
+      "sha256": "8a009564fa2f67d15cc8499204541df6ea5f7eaa99108321581784e1d6a05f7c"
+    },
+    {
+      "name": "sprite-transform-functions",
+      "address": "$9371",
+      "body_offset": 13169,
+      "bytes": 307,
+      "sha256": "6c7f3e4bea302ba301b4bf2520e6ad3cad7689c8744d8fecf96f4253ca25bf16"
+    },
+    {
+      "name": "sprite-transform-descriptors",
+      "address": "$8C68",
+      "body_offset": 11368,
+      "bytes": 35,
+      "sha256": "01231ee03a6806455af7e14d9e9d4717278ca5f6e59591d6581db241e69d068e"
+    },
+    {
+      "name": "packed-nibble-decoder",
+      "address": "$A7A5",
+      "body_offset": 18341,
+      "bytes": 58,
+      "sha256": "aec011e077ffa6c47691d36d330109a70f07c783d7feb44fdbedf81b04565e48"
+    },
+    {
+      "name": "run-nibble-decoder",
+      "address": "$9537",
+      "body_offset": 13623,
+      "bytes": 69,
+      "sha256": "94b0dde8490bf5c63b0b3a2d6a130e52f26caa63056ed1baef00d5ab7f28b8e2"
+    },
+    {
+      "name": "tunnel-layout-and-spawn-tables",
+      "address": "$A481",
+      "body_offset": 17537,
+      "bytes": 388,
+      "sha256": "41138fc3bc3b23bb670b34805725cdba3e436b5535c9a643b6637b7ce860ba85"
+    },
+    {
+      "name": "layout-and-spawn-consumers",
+      "address": "$A355",
+      "body_offset": 17237,
+      "bytes": 300,
+      "sha256": "4ebd0c96355bfb15f0ecc1dc32857e7d4a95b24653161ff65ec33b6da8d24261"
+    },
+    {
+      "name": "level-index",
+      "address": "$A6D8",
+      "body_offset": 18136,
+      "bytes": 14,
+      "sha256": "abfbdf0dd552f915237f6d4aef9873239a6b1c5be1d45be523b99b69c2eb4a6c"
+    },
+    {
+      "name": "coordinate-tables",
+      "address": "$98F2",
+      "body_offset": 14578,
+      "bytes": 29,
+      "sha256": "f0770b127998a05f1256ddad6927de38ada9689fd9ca2a9d0f6c687bf91ec3a2"
+    },
+    {
+      "name": "menu-bitmap-columns",
+      "address": "$9F40",
+      "body_offset": 16192,
+      "bytes": 340,
+      "sha256": "ddc597f6327c0a0893bbdb919a9b026511c776dd5e0e111d94ed7d4d5f63a9d1"
+    }
+  ],
+  "limits": [
+    "Original character font copy $D800->$1000 needs firmware not supplied by the body.",
+    "Images use original2-bit indices, not qualified C64 RGB colors or sprite priority.",
+    "Level records are content; gameplay/dig/rock/entity timing and rendered map are not implemented.",
+    "No source CPU/device execution, original-game comparison, physical input or M1 acceptance."
+  ]
+}

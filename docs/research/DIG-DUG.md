@@ -80,6 +80,39 @@ directly in native code without running the machine code.
 
 ## Evidence, checks and next work
 
+### Original graphics and level records
+
+`Tools/decode_dig_dug_graphics.py` now fences the corrected body before any
+output and reconstructs60 source/destination/parameter descriptors, sparse
+sprite streams, nibble dictionary buffers, a run-nibble bitmap pattern and
+source tunnel/spawn records. It prepares112 initialized63-byte sprite slots,
+16 death variants, eleven bonus sprites,340 original logo bytes,16 tunnel
+layouts and15 source-backed13-byte spawn records. Original JSON and optional
+index-valued previews remain ignored in `Library/Prepared/dig-dug-graphics/`.
+
+The source's `$9436` twelve-row sprite transform rotates through a ninth carry
+bit; logical shifts corrupt its first-row pixels. An independent two-bit pixel
+rotation test checks the resulting90-degree left turn. Sprite reflection and
+prefix/column literals are checked independently. Every source level byte
+folds by subtracting4 while at least16; first-round terrain uses layouts0+1.
+Index0's enemy pointer addresses external startup RAM, so it remains unavailable
+instead of being guessed. Layout/spawn records are content, not a terrain
+renderer or monster/dig/pump/rock gameplay implementation.
+
+Ten graphics tests and the six packed-layer tests pass on the M5. The
+[graphics receipt](evidence/dig-dug-graphics.json) records thirteen original
+code/table windows by address, offset, extent and hash, plus output counts and
+explicit unknowns. A clean direct-Ghidra graphics listing uses the corrected
+body SHA with conflicting guessed code/data cleared; full listings/provenance
+stay ignored and are not REA Evidence. C64 character ROM/font at `$D800`,
+startup RAM, calibrated colors/priority/raster/audio and actual gameplay remain
+unqualified. No native game module follows from decoded original assets.
+
+```sh
+python3 Tools/decode_dig_dug_graphics.py
+python3 -m unittest Tests.test_dig_dug_decode Tests.test_dig_dug_graphics -v
+```
+
 REA opened the actual archive and identified ZIP metadata/hash. Raw6502 imports
 are not supported by this REA provider, so relocated loaders and recovered code
 were analyzed with direct Ghidra12.1.2's `6502:LE:16:default` profile and the
