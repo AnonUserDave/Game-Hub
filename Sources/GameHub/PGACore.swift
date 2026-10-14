@@ -220,8 +220,10 @@ struct PGAPlayer: Codable, Equatable {
 /// Things that happened during simulation steps, drained each frame by the
 /// session for sound (and later commentary/camera). Purely informational.
 enum PGASimulationEvent: Equatable {
-    case strike(club: PGAClub, lie: PGASurface, power: Double, accuracy: Double, fromTee: Bool)
-    case impact(position: PGAVector, surface: PGASurface, soundID: Int?, normalSpeed: Double)
+    /// `lieFlags` are the original surface-record flags at address (0 when generated).
+    case strike(club: PGAClub, lie: PGASurface, lieFlags: UInt32, power: Double, accuracy: Double, fromTee: Bool, position: PGAVector)
+    /// `normalSpeed` in m/s into the floor; `flags` are the floor's record-0 flags.
+    case impact(position: PGAVector, surface: PGASurface, soundID: Int?, flags: UInt32, normalSpeed: Double)
     case cup
     case penalty(PGASurface)
     case rest(lie: PGASurface, distanceToPin: Double, shotDistance: Double, fromTee: Bool)
@@ -261,7 +263,13 @@ struct PGASimulation {
     private(set) var currentPlayer = 0
     private(set) var heading: Double = 0
     private(set) var club: PGAClub = .driver
+    /// Meter reading for simple HUDs: live power (0…1.23) while swinging back,
+    /// then accuracy (−1…1) on the return.
     private(set) var meter = 0.0
+    /// The original tri-click meter of the current or last swing.
+    private(set) var swingMeter: PGATriClickMeter?
+    /// Difficulty of the original meter (round setup).
+    var meterLevel = PGATriClickMeter.Level.intermediate
     private(set) var shotPower = 0.0
     private(set) var shotAccuracy = 0.0
     private(set) var lastShotDistance = 0.0
@@ -276,7 +284,7 @@ struct PGASimulation {
     private var shotLie = PGASurface.tee
     /// Where and how fast the ball first touched a bunker during this shot.
     private var bunkerEntry: (position: PGAVector, speed: Double)?
-    private var meterTime = 0.0
+    private var meterMilliseconds = 0.0
     private var accumulator = 0.0
     private var shotOrigin: PGAVector = .zero
     private var lowSpeedTime = 0.0
@@ -396,29 +404,41 @@ struct PGASimulation {
     mutating func swing() {
         switch phase {
         case .aiming:
-            phase = .power; meterTime = 0; meter = 0
-            message = "Press again at your desired power."
-        case .power:
-            shotPower = max(0.04, min(1, meter)); phase = .accuracy; meterTime = 0; meter = -1
-            message = "Press as the marker crosses the center line for a straight shot."
-        case .accuracy:
-            strike(power: shotPower, accuracy: meter)
+            swingMeter = PGATriClickMeter(level: meterLevel, putter: club == .putter, missJitter: random.int(20))
+            meterMilliseconds = 0; phase = .power; meter = 0
+            message = "Click as the marker reaches 12 o'clock for full power."
+        case .power, .accuracy:
+            guard var swing = swingMeter else { return }
+            let before = swing.state
+            swing.click(); swingMeter = swing
+            if before == 2 && swing.state != 2 { message = "Click as the marker returns to 6 o'clock for a straight shot." }
+            syncMeter()
         default: break
         }
     }
 
+    private mutating func syncMeter() {
+        guard let swing = swingMeter else { return }
+        phase = swing.state <= 2 ? .power : .accuracy
+        meter = phase == .power ? max(0, min(1.25, swing.livePower))
+                                : max(-1, min(1, (swing.angle - PGATriClickMeter.rest) / PGATriClickMeter.accuracySpan))
+    }
+
     mutating func cancelSwing() {
         guard phase.swinging else { return }
-        phase = .aiming; meter = 0; message = "Swing canceled. Adjust your aim or club."
+        phase = .aiming; meter = 0; swingMeter = nil; message = "Swing canceled. Adjust your aim or club."
     }
 
     /// Deterministic launch API, also useful for replay and regression tests.
     mutating func strike(power: Double, accuracy: Double) {
         guard phase == .aiming || phase.swinging else { return }
         let launch = launchFactor
-        shotPower = max(0.04, min(1, power)); shotAccuracy = max(-1, min(1, accuracy))
+        // Overswing stores at most 104.7 % power (TriClickMeter).
+        shotPower = max(0.04, min(1.05, power)); shotAccuracy = max(-1, min(1, accuracy))
         shotFromTee = strokes == 0; shotLie = lie
-        events.append(.strike(club: club, lie: lie, power: shotPower, accuracy: shotAccuracy, fromTee: shotFromTee))
+        let address = lieSample
+        events.append(.strike(club: club, lie: lie, lieFlags: address?.properties?.lieRecord(lieIndex)?.flags ?? 0,
+                              power: shotPower, accuracy: shotAccuracy, fromTee: shotFromTee, position: ball))
         let angle = heading + shotAccuracy * (club == .putter ? 0.09 : 0.14)
         let speed = club.speed * shotPower * launch * (1 - abs(shotAccuracy) * 0.12)
         velocity = PGAVector(x: sin(angle) * speed * cos(club.loft), y: speed * sin(club.loft), z: cos(angle) * speed * cos(club.loft))
@@ -432,14 +452,15 @@ struct PGASimulation {
     mutating func update(deltaTime: Double) {
         guard deltaTime.isFinite, deltaTime > 0 else { return }
         let delta = min(deltaTime, 0.12)
-        if phase == .power {
-            meterTime += delta
-            meter = 1 - abs(1 - meterTime.truncatingRemainder(dividingBy: 2.4) / 1.2)
-            return
-        }
-        if phase == .accuracy {
-            meterTime += delta
-            meter = -cos(meterTime * .pi / 0.65)
+        if phase.swinging {
+            // Whole milliseconds per frame, like the original NextFrame.
+            guard var swing = swingMeter else { phase = .aiming; return }
+            meterMilliseconds += delta * 1000
+            let milliseconds = Int(meterMilliseconds)
+            meterMilliseconds -= Double(milliseconds)
+            swing.step(milliseconds: milliseconds); swingMeter = swing
+            syncMeter()
+            if swing.finished { strike(power: swing.power, accuracy: swing.directionPercent) }
             return
         }
         guard phase.inMotion else { return }
@@ -474,7 +495,8 @@ struct PGASimulation {
                 ball.y = floor.height + Self.ballRadius
                 let n0 = floor.normal
                 let impactSpeed = -(velocity.x * n0.x + velocity.y * n0.y + velocity.z * n0.z)
-                events.append(.impact(position: ball, surface: floor.surface, soundID: floor.properties?.soundID, normalSpeed: impactSpeed))
+                events.append(.impact(position: ball, surface: floor.surface, soundID: floor.properties?.soundID,
+                              flags: floor.properties?.flags ?? 0, normalSpeed: impactSpeed))
                 if floor.surface == .water || floor.surface == .out { applyPenalty(floor.surface); return }
                 noteBunker(floor)
                 // Reflect about the sampled triangle normal. Coefficients are

@@ -40,22 +40,39 @@ final class PGACoreTests: XCTestCase {
         var game = PGASimulation()
         game.swing()
         XCTAssertEqual(game.phase, .power)
-        for _ in 0..<6 { game.update(deltaTime: 0.1) }
-        XCTAssertEqual(game.meter, 0.5, accuracy: 0.001)
+        // Lift, then the clockwise backswing toward 12 o'clock.
+        while game.phase == .power && !(game.swingMeter!.acceptsPowerClick && game.meter >= 0.5) { game.update(deltaTime: 1.0 / 60) }
         game.swing()
         XCTAssertEqual(game.phase, .accuracy)
-        XCTAssertEqual(game.shotPower, 0.5, accuracy: 0.001)
+        XCTAssertEqual(game.swingMeter!.power, 0.5, accuracy: 0.05)
         game.cancelSwing()
         XCTAssertEqual(game.phase, .aiming)
+        XCTAssertNil(game.swingMeter)
         XCTAssertEqual(game.strokes, 0)
         game.swing()
-        for _ in 0..<12 { game.update(deltaTime: 0.1) }
+        while !(game.swingMeter!.acceptsPowerClick && game.meter >= 0.98) { game.update(deltaTime: 1.0 / 60) }
         game.swing()
-        for _ in 0..<39 { game.update(deltaTime: 1.0 / 120) }
-        XCTAssertEqual(game.meter, 0, accuracy: 0.001)
+        // Return through 6 o'clock: click on the green tick for a straight shot.
+        while !(game.swingMeter!.state == 4 && game.swingMeter!.angle >= 268) { game.update(deltaTime: 1.0 / 120) }
         game.swing()
+        XCTAssertEqual(game.swingMeter!.accuracyTick, .exact)
+        // The marker runs on to 311 degrees before the swing completes.
+        for _ in 0..<60 where game.phase.swinging { game.update(deltaTime: 1.0 / 60) }
         XCTAssertEqual(game.phase, .airborne)
         XCTAssertEqual(game.strokes, 1)
+        XCTAssertEqual(game.shotAccuracy, 0, accuracy: 1e-9)
+        XCTAssertGreaterThan(game.shotPower, 0.97)
+    }
+
+    func testMissedClicksFollowTheOriginalMeter() {
+        var game = PGASimulation()
+        game.swing()
+        for _ in 0..<600 where game.phase.swinging { game.update(deltaTime: 1.0 / 60) }
+        XCTAssertEqual(game.phase, .airborne)
+        XCTAssertTrue(game.swingMeter!.missedPower)
+        XCTAssertTrue(game.swingMeter!.missedDirection)
+        XCTAssertEqual(game.shotAccuracy, 1)
+        XCTAssertTrue((0.55...0.67).contains(game.shotPower))
     }
 
     func testAirborneShotsRejectNewSwingClubAndAim() {

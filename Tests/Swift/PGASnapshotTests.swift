@@ -80,7 +80,8 @@ final class PGASnapshotTests: XCTestCase {
         }
         var swinging = PGASimulation(course: course.course, terrains: course.terrains)
         swinging.swing()
-        for _ in 0..<72 { swinging.update(deltaTime: 0.01) }   // power meter at 60%
+        while !(swinging.swingMeter!.acceptsPowerClick && swinging.meter >= 0.8) { swinging.update(deltaTime: 1.0 / 60) }
+        swinging.swing()   // power click at 80 %, marker returning
         let swingingGame = swinging, scoredGame = game
         let directory = URL(fileURLWithPath: output, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

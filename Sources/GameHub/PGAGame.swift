@@ -5,6 +5,10 @@ import Metal
 import SceneKit
 
 /// Which course a golf session plays.
+extension PGAVector {
+    init(_ v: SCNVector3) { self.init(x: Double(v.x), y: Double(v.y), z: Double(v.z)) }
+}
+
 enum PGACourseChoice: Equatable {
     case practice
     /// Original course data prepared locally by Tools/prepare_pga2005.py.
@@ -77,6 +81,10 @@ final class PGAGameSession: ObservableObject {
     /// The view observes this instead of storing a closure on the session; a
     /// closure capturing the view retained the session through its StateObject.
     @Published private(set) var showingLab = false
+    /// Original sounds; nil when the audio has not been prepared.
+    private var audio: PGAAudioEngine?
+    private var ambientClock = 0.0
+    private var lastStrike: (club: PGAClub, flags: UInt32, fromTee: Bool, startDistance: Double, accuracy: Double, par: Int)?
     var isOriginal: Bool { if case .original = choice { return true }; return false }
 
     init(choice: PGACourseChoice = .practice, onExit: @escaping () -> Void) {
@@ -126,6 +134,7 @@ final class PGAGameSession: ObservableObject {
         let tees = checks.filter { $0.teeSurface == .tee }.count, pins = checks.filter { $0.pinSurface == .green }.count
         loadReport = String(format: "Indexes built in %.2f s · %d/%d tees on tee boxes · %d/%d pins on greens · %@",
                             indexSeconds, tees, checks.count, pins, checks.count, course.conditions.summary)
+        audio?.useCourse(code: course.data.code, transform: course.transform)
         savedRound = PGARoundStore.load(code: course.data.code)
         if let savedRound { setup = savedRound.setup }
         awaitingSetup = true
@@ -140,6 +149,7 @@ final class PGAGameSession: ObservableObject {
         var game = PGASimulation(course: course, terrains: original.terrains,
                                  playerNames: chosen.players.map { $0.trimmingCharacters(in: .whitespaces) })
         if resume, let snapshot = savedRound?.snapshot { try? game.restore(snapshot) }
+        game.meterLevel = chosen.level
         setup = chosen
         simulation = game
         awaitingSetup = false
@@ -202,6 +212,11 @@ final class PGAGameSession: ObservableObject {
         previousButtons = [:]
         lastTick = ProcessInfo.processInfo.systemUptime
         loadOriginal()
+        if audio == nil, let engine = PGAAudioEngine(root: GameStore.workspaceRoot()) {
+            audio = engine
+            engine.start()
+            if let original { engine.useCourse(code: original.data.code, transform: original.transform) }
+        }
         let timer = Timer(timeInterval: 1.0 / 60.0, repeats: true) { [weak self] timer in
             MainActor.assumeIsolated {
                 guard let self, !self.stopped else { timer.invalidate(); return }
@@ -233,6 +248,7 @@ final class PGAGameSession: ObservableObject {
         if let focusObserver { NotificationCenter.default.removeObserver(focusObserver) }; focusObserver = nil
         heldKeys.removeAll()
         view?.session = nil
+        audio?.stop(); audio = nil
     }
 
     func exit() { stop(); onExit() }
@@ -241,6 +257,7 @@ final class PGAGameSession: ObservableObject {
     func togglePause() { setPaused(!paused) }
     func setPaused(_ value: Bool) {
         if value && !paused { saveRound() }
+        if value != paused { audio?.setPaused(value) }
         paused = value
         pauseSelection = 0
         pauseStickDirection = 0
@@ -269,8 +286,12 @@ final class PGAGameSession: ObservableObject {
         isOriginal ? ["Resume", "Restart hole", "Restart round", "New round setup", "Original course lab", "Return to hub"]
                    : ["Resume", "Restart hole", "Restart round", "Original course lab", "Return to hub"]
     }
-    func selectPauseItem(_ offset: Int) { pauseSelection = (pauseSelection + offset + pauseItems.count) % pauseItems.count }
+    func selectPauseItem(_ offset: Int) {
+        pauseSelection = (pauseSelection + offset + pauseItems.count) % pauseItems.count
+        audio?.play("interface.highlight")
+    }
     func activatePauseSelection() {
+        audio?.play(pauseItems[pauseSelection] == "Resume" ? "interface.back" : "interface.select")
         switch pauseItems[pauseSelection] {
         case "Restart hole": resetHole()
         case "Restart round": restartRound()
@@ -349,12 +370,20 @@ final class PGAGameSession: ObservableObject {
             let right = heldKeys.contains(124) || heldKeys.contains(2)
             if left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
             simulation.update(deltaTime: delta)
+            if !simulation.events.isEmpty { playSounds(simulation.takeEvents()) }
         }
         if previousPhase != simulation.phase {
             if simulation.phase == .airborne || simulation.phase == .rolling { renderer.animateSwing() }
             previousPhase = simulation.phase
         }
         renderer.update(simulation, cameraMode: cameraMode, zoom: cameraZoom, delta: delta)
+        if let audio, !paused {
+            let camera = renderer.camera
+            audio.setListener(position: PGAVector(camera.worldPosition), forward: PGAVector(camera.worldFront), up: PGAVector(camera.worldUp))
+            audio.setHole(simulation.holeIndex + 1)
+            ambientClock += delta
+            if ambientClock >= 1, loadState == .ready, !awaitingSetup { ambientClock = 0; audio.backgroundTick() }
+        }
         hudTick += delta
         if hudTick > 0.25 {
             frameRate = renderer.measuredFramesPerSecond
@@ -363,6 +392,46 @@ final class PGAGameSession: ObservableObject {
             }
             hudTick = 0
         }
+    }
+
+    /// Maps simulation events onto the original sound situations: swings
+    /// (class 1), collisions (class 3), the cup and gallery reactions.
+    private func playSounds(_ events: [PGASimulationEvent]) {
+        guard let audio else { return }
+        for event in events {
+            switch event {
+            case let .strike(club, lie, lieFlags, power, accuracy, fromTee, position):
+                let flags = lieFlags != 0 ? lieFlags : PGAAudioRules.flags(for: lie)
+                let distance = simulation.distanceToCup
+                lastStrike = (club, flags | (fromTee ? 0x8000 : 0), fromTee, distance, accuracy, simulation.hole.par)
+                audio.trigger(eventClass: 1, sub: 3, facts: PGAAudioRules.swingFacts(club: club, lieFlags: flags, teed: fromTee, power: power,
+                                                                                    accuracy: accuracy, strokes: simulation.strokes, distanceToPin: distance),
+                              at: position)
+            case let .impact(position, surface, soundID, flags, normalSpeed):
+                guard let facts = PGAAudioRules.impactFacts(soundID: soundID ?? PGAAudioRules.soundID(for: surface),
+                                                            flags: flags != 0 ? flags : PGAAudioRules.flags(for: surface),
+                                                            normalSpeed: normalSpeed) else { continue }
+                audio.trigger(eventClass: 3, sub: 4, facts: facts, at: position)
+            case .cup:
+                audio.trigger(eventClass: 0, sub: 16, facts: [], at: simulation.hole.cup)
+            case let .penalty(surface):
+                react(resultFlags: PGAAudioRules.flags(for: surface), resultDistance: 0, shotDistance: 0, holed: false, penalty: surface)
+            case let .rest(lie, distanceToPin, shotDistance, _):
+                let flags = simulation.lieSample?.properties?.flags ?? PGAAudioRules.flags(for: lie)
+                react(resultFlags: flags, resultDistance: distanceToPin, shotDistance: shotDistance, holed: false, penalty: nil)
+            case let .holed(_, _, shotDistance, _):
+                react(resultFlags: 0x4000, resultDistance: 0, shotDistance: shotDistance, holed: true, penalty: nil)
+            }
+        }
+    }
+
+    private func react(resultFlags: UInt32, resultDistance: Double, shotDistance: Double, holed: Bool, penalty: PGASurface?) {
+        guard let strike = lastStrike else { return }
+        let shot = PGAAudioRules.Shot(club: strike.club, fromTee: strike.fromTee, par: strike.par, startFlags: strike.flags,
+                                      startDistance: strike.startDistance, accuracy: strike.accuracy, resultFlags: resultFlags,
+                                      resultDistance: resultDistance, shotDistance: shotDistance, holed: holed, penalty: penalty)
+        if let name = PGAAudioRules.crowdReaction(shot) { audio?.play(name) }
+        lastStrike = nil
     }
 
     private func pollController(delta: Double) {
@@ -383,11 +452,15 @@ final class PGAGameSession: ObservableObject {
         guard NSApp.isActive else { return }
         if awaitingSetup {
             // Setup: A start, Y resume, LB/RB tees, X pins, Menu/B hub.
-            if pressed("A") { startRound() }
-            else if pressed("Y"), savedRound != nil { startRound(resume: true) }
-            else if pressed("LB") { setup.teeIndex = max(0, setup.teeIndex - 1) }
-            else if pressed("RB") { setup.teeIndex = min(4, setup.teeIndex + 1) }
-            else if pressed("X") { setup.pins = setup.pins == .standard ? .varied : .standard }
+            if pressed("A") { audio?.play("interface.accept"); startRound() }
+            else if pressed("Y"), savedRound != nil { audio?.play("interface.accept"); startRound(resume: true) }
+            else if pressed("LB") { audio?.play("interface.click"); setup.teeIndex = max(0, setup.teeIndex - 1) }
+            else if pressed("RB") { audio?.play("interface.click"); setup.teeIndex = min(4, setup.teeIndex + 1) }
+            else if pressed("X") { audio?.play("interface.click"); setup.pins = setup.pins == .standard ? .varied : .standard }
+            else if pressed("Left") || pressed("Right") {
+                audio?.play("interface.click")
+                setup.difficulty = PGATriClickMeter.Level(rawValue: max(0, min(3, setup.level.rawValue + (pressed("Left") ? -1 : 1))))
+            }
             else if pressed("Menu") || pressed("B") { exit() }
             return
         }
