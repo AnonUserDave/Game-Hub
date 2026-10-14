@@ -136,6 +136,7 @@ final class PGAGameSession: ObservableObject {
         renderer.loadOriginalGolfer(root: GameStore.workspaceRoot())
         renderer.useOriginalBallShadow(hud.image("ball-shadow"))
         renderer.useOriginalEffects(root: GameStore.workspaceRoot())
+        renderer.useOriginalLensFlare(["sun", "corona", "flare1", "flare2", "flare3", "flare4", "flare-a", "flare-b", "rainbow"].map { hud.image($0) })
         renderer.useOriginalAimArrow(hud.image("aim-arrow"))
         let checks = course.validation
         let tees = checks.filter { $0.teeSurface == .tee }.count, pins = checks.filter { $0.pinSurface == .green }.count
@@ -683,6 +684,8 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         content.addChildNode(terrain)
         effects?.clearHole()
         if let tee = effects?.tee { content.addChildNode(tee) }
+        lensFlare?.use(render?.flare)
+        sunPosition = render?.flare?.position
         if let flagImage { makeOriginalPin(pin: hole.cup, flagImage: flagImage, holeImage: holeImage) }
         else { makeFlag(pin: hole.cup) }
         if let render {
@@ -740,6 +743,19 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     }
 
     /// Original ball shadow image (DataImages/Game/Ball/Ballshad) when imported.
+    /// The original lens flare, attached to the camera; nil until its art loads.
+    private(set) var lensFlare: PGALensFlare?
+    private var sunPosition: SIMD3<Double>?
+    private var sunBlocked = false
+    private var sunCheckFrame = 0
+
+    func useOriginalLensFlare(_ images: [NSImage?]) {
+        guard lensFlare == nil, images.first != nil else { return }
+        let flare = PGALensFlare(images: images)
+        camera.addChildNode(flare.node)
+        lensFlare = flare
+    }
+
     /// Original anim.stn effects; nil until the prepared art is found.
     private(set) var effects: PGAOriginalEffects?
     static let teeHeight = 0.015
@@ -873,6 +889,20 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         // overhead view. Keep the horizon upright through those cuts; the
         // one-argument SceneKit look-at can retain an inverted roll.
         Self.orientCamera(camera, toward: cameraTarget)
+        if let lensFlare, let sunPosition {
+            let direction = PGALensFlare.sunDirection(position: sunPosition, heightAboveCourseMinimum: cameraPosition.y)
+            // Terrain occlusion by a short ray march every third frame.
+            sunCheckFrame += 1
+            if sunCheckFrame % 3 == 0 {
+                sunBlocked = [6.0, 14, 30, 60, 120, 240, 480, 900].contains { distance in
+                    let p = cameraPosition + direction * distance
+                    return (simulation.ground(x: p.x, z: p.z, ceiling: .infinity)?.height ?? -.infinity) > p.y
+                }
+            }
+            let target = renderTarget.map { Double($0.width) / Double(max(1, $0.height)) } ?? 1.6
+            lensFlare.update(camera: camera, fieldOfView: Double(camera.camera?.fieldOfView ?? 60), aspect: target,
+                             sunDirection: direction, blocked: sunBlocked, delta: delta)
+        }
         originalGolfer?.update(simulation, cameraPosition: cameraPosition, delta: delta,
                                sceneReady: content.childNodes.isEmpty == false && (simulation.course.isOriginal || cameraMode != 2))
         freshCamera = false

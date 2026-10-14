@@ -353,7 +353,11 @@ final class PGAOriginalSceneryGPU: @unchecked Sendable {
         Varyings o;
         o.position = f.viewProjection * float4(p, 1.0);
         o.uv = float2(c.x * 0.5 + 0.5, 1.0 - c.y);
-        o.light = shade(f, float3(facing.x * 0.6, 1.0, facing.y * 0.6), 0.5, mix(0.8, 1.0, c.y), p);
+        // LOD3 art (obtreeXX.x.tga) is pre-rendered and already lit, and far
+        // brighter and greener than the leaf textures (mean ≈ 36,135,22): full
+        // sun and ambient on top turned distant trees lime. Draw it as lit art
+        // scaled to sit with the nearer LODs, keeping a little top-to-base shade.
+        o.light = half4(half3(f.tint.rgb * float3(0.62, 0.52, 0.62) * mix(0.82, 1.0, c.y)), fogAt(f, p));
         return o;
     }
 

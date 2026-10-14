@@ -131,6 +131,45 @@ final class PGASnapshotTests: XCTestCase {
         }
     }
 
+    /// The original lens flare on Pebble hole 7 at clear morning, camera turned toward the sun.
+    func testRenderOriginalLensFlare() async throws {
+        guard let output = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_DIR"] else {
+            throw XCTSkip("Set GAMEHUB_SNAPSHOT_DIR to capture the lens flare")
+        }
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let course = try PGAOriginalPlayableCourse.load(code: "PBL", root: root)
+        let presets = try XCTUnwrap(PGARenderPresets.load(root: root))
+        let directory = URL(fileURLWithPath: output, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try await MainActor.run {
+            _ = NSApplication.shared
+            let art = PGAHUDImages(root: root)
+            let index = 6
+            let render = presets.state(weather: 0, time: 1, hole: index + 1)
+            let flareData = try XCTUnwrap(render.flare)
+            let mesh = PGAOriginalHoleMesh.build(course: course, holeIndex: index)
+            let renderer = PGARenderer()
+            renderer.useOriginalLensFlare(["sun", "corona", "flare1", "flare2", "flare3", "flare4", "flare-a", "flare-b", "rainbow"].map { art.image($0) })
+            renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: PGAOriginalTextureCache(),
+                                                                  style: PGAOriginalSceneryStyle(state: render)),
+                           hole: course.course.holes[index], render: render)
+            let flare = try XCTUnwrap(renderer.lensFlare)
+            let eye = course.course.holes[index].tee + PGAVector(x: 0, y: 2, z: 0)
+            let sun = PGALensFlare.sunDirection(position: flareData.position, heightAboveCourseMinimum: eye.y)
+            let camera = renderer.camera
+            camera.position = SCNVector3(eye.x, eye.y, eye.z)
+            // Look 12° right of and a little below the sun so the flares spread across the frame.
+            let yaw = atan2(sun.x, sun.z) - 0.21
+            PGARenderer.orientCamera(camera, toward: eye + PGAVector(x: sin(yaw) * 100, y: sun.y * 100 - 4, z: cos(yaw) * 100))
+            flare.update(camera: camera, fieldOfView: Double(camera.camera?.fieldOfView ?? 60), aspect: 1.6, sunDirection: sun, blocked: false, delta: 1)
+            let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
+            let snapshot = SCNRenderer(device: device, options: nil)
+            snapshot.scene = renderer.scene; snapshot.pointOfView = camera
+            let image = snapshot.snapshot(atTime: 0, with: CGSize(width: 1600, height: 1000), antialiasingMode: .multisampling4X)
+            try write(image, to: directory.appendingPathComponent("lens-flare.png"))
+        }
+    }
+
     func testRenderOriginalHUD() async throws {
         guard let output = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_DIR"] else {
             throw XCTSkip("Set GAMEHUB_SNAPSHOT_DIR to capture HUD snapshots")

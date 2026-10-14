@@ -40,6 +40,10 @@ HUD_IMAGES = {
     "flare2": "Lensflare/flare2.dds",
     "flare3": "Lensflare/flare3.dds",
     "flare4": "Lensflare/flare4.dds",
+    # render*.ini list "lflarea/lflareb.dds"; the shipped files are lflare1a/1b.
+    "flare-a": "Lensflare/lflare1a.dds",
+    "flare-b": "Lensflare/lflare1b.dds",
+    "rainbow": "Lensflare/rainbow.dds",
     "ball-shadow": "Ball/Ballshad.dds",
     "hole-decal": "Ball/Hole.dds",
     "cup-interior": "Ball/CupInterior.dds",
