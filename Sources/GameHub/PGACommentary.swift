@@ -171,7 +171,6 @@ struct PGAScriptInterpreter {
     /// ForceRandomActions (probabilities ignored).
     mutating func run<R: RandomNumberGenerator>(_ name: String, script: PGAScriptBook.Script, facts: PGAScriptFacts,
                                                  now: Double, busyUntil: Double, force: Bool = false,
-                                                 durations: (String) -> Double = { _ in 0 },
                                                  using random: inout R) -> [Play] {
         // DoSituationsMatching 0x1020c1df: lowest priority byte, then most
         // conditions, then least fired, then uniform.
@@ -211,7 +210,8 @@ struct PGAScriptInterpreter {
                 files.append(file)
             }
             guard !files.isEmpty else { continue }
-            if commentary { busy = now + max(0.001, files.map(durations).reduce(0, +)) }
+            // The new sample is now the playing handle for later actions.
+            if commentary { busy = .infinity }
             output.append(Play(script: name, situation: situation.d, files: files, commentary: commentary,
                                positional: action.fl & 0x10 != 0))
         }
@@ -230,8 +230,6 @@ struct PGAScriptInterpreter {
         return pick
     }
 
-    /// Clears the "same file within 20 s" memory (a new round).
-    mutating func resetRepeatMemory() { lastFile = nil; lastStart = -.infinity; drops = 0 }
 }
 
 // MARK: - Class-2 shot values (ShotEvent fill 0x102146cb)
