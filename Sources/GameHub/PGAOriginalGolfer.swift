@@ -679,6 +679,24 @@ final class PGAOriginalGolfer {
         _surface.diffuse.rgb = mix(_surface.diffuse.rgb, decal.rgb, decal.a);
         """
 
+    static let equipmentModifier = """
+        #pragma arguments
+        float3 maskRed;
+        float3 maskGreen;
+        float3 maskBlue;
+        #pragma body
+        float3 m = _surface.diffuse.rgb;
+        _surface.diffuse.rgb = m.r * maskRed + m.g * maskGreen + m.b * maskBlue;
+        """
+
+    /// Colours for the red, green and blue channels of a generic mask.
+    static func equipmentColors(_ texture: String) -> [SIMD3<Float>]? {
+        if texture.contains("gr1") { return [SIMD3(0.55, 0.55, 0.55), SIMD3(0.75, 0.1, 0.08), SIMD3(0.07, 0.07, 0.07)] }
+        if texture.hasPrefix("fwd") { return [SIMD3(0.8, 0.8, 0.8), SIMD3(0.7, 0.08, 0.06), SIMD3(0.12, 0.12, 0.13)] }
+        if texture.contains("sh1") { return [SIMD3(0.55, 0.55, 0.57), SIMD3(0.35, 0.35, 0.37), SIMD3(0.78, 0.79, 0.8)] }
+        return nil
+    }
+
     /// Lambert (sun + ambient) like the original-course terrain; no specular.
     /// Base and decal are one pass, as in the original's two texture stages.
     private func material(base: PGAOriginalGolferAssets.Layer?, decal: PGAOriginalGolferAssets.Layer?) -> SCNMaterial {
@@ -705,6 +723,15 @@ final class PGAOriginalGolfer {
             }
         } else {
             material.diffuse.contents = NSColor(white: 0.7, alpha: 1)
+        }
+        if let base, base.texture.hasSuffix("gen"), let colors = Self.equipmentColors(base.texture) {
+            // Generic shaft/grip art is a channel mask the original tints with the
+            // player's equipment colours (.plr data not decoded). Native colours:
+            // graphite wood shafts, steel iron shafts, black grips.
+            material.shaderModifiers = [.surface: Self.equipmentModifier]
+            for (key, color) in zip(["maskRed", "maskGreen", "maskBlue"], colors) {
+                material.setValue(NSValue(scnVector3: SCNVector3(color.x, color.y, color.z)), forKey: key)
+            }
         }
         if let decal, let texture = assets.textures[decal.texture] {
             material.shaderModifiers = [.surface: Self.decalModifier]

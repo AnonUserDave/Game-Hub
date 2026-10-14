@@ -272,6 +272,7 @@ final class PGAAudioEngine: @unchecked Sendable {
     private var hole = 0
     private var listener = PGAVector.zero
     private var ticks = 0
+    private var weatherFacts = [Int64](repeating: 0, count: PGAAudioRules.factCount)
 
     private final class Voice {
         let node = AVAudioPlayerNode()
@@ -352,6 +353,14 @@ final class PGAAudioEngine: @unchecked Sendable {
         }
     }
 
+    /// Background event values for the weather bed: bit 6 hole, bit 13 wind
+    /// mph, bit 14 rain state (1 light, 2 heavy) (BackgroundNoise 0x1021502f).
+    func setWeather(hole: Int, windMPH: Int, rain: Int) {
+        queue.async {
+            self.weatherFacts[6] = Int64(hole); self.weatherFacts[13] = Int64(windMPH); self.weatherFacts[14] = Int64(rain)
+        }
+    }
+
     func setHole(_ number: Int) {
         queue.async { if number != self.hole { self.stopLoops(); self.hole = number } }
     }
@@ -397,7 +406,7 @@ final class PGAAudioEngine: @unchecked Sendable {
                     inRange[emitter.folder, default: []].append((nil, 0))
                 }
             }
-            for voice in self.voices where voice.loopKey != nil && inRange[voice.loopKey!] == nil { self.fadeOut(voice) }
+            for voice in self.voices where voice.loopKey.map({ self.folders[$0] != nil && inRange[$0] == nil }) == true { self.fadeOut(voice) }
             let now = ProcessInfo.processInfo.systemUptime
             var oneShots = self.voices.filter { $0.ambient && $0.loopKey == nil && $0.endsAt > now }.count
             for (name, candidates) in inRange.sorted(by: { $0.key < $1.key }) {
@@ -413,6 +422,15 @@ final class PGAAudioEngine: @unchecked Sendable {
                           let file = self.leastPlayed(folder.files) {
                     let spot = candidates[Int.random(in: 0..<candidates.count, using: &self.random)].position
                     if self.playFile(file, gain: folder.gain, at: spot, ambient: true) { oneShots += 1 }
+                }
+            }
+            // Sub 6 on even counts: the weather bed (rain state, wind speed, hole).
+            if self.ticks % 2 == 0 {
+                let name = self.rules.select(eventClass: 5, sub: 6, facts: self.weatherFacts, fired: self.fired, using: &self.random)
+                let playing = self.voices.first { $0.loopKey?.hasPrefix("weather.") == true }
+                if playing?.loopKey != name {
+                    if let playing { self.fadeOut(playing) }
+                    if let name { self.playEvent(name, at: nil) }
                 }
             }
             // Sub 7 fires when the counter is a multiple of 7: distant cheers.

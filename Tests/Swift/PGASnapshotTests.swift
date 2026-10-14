@@ -46,6 +46,7 @@ final class PGASnapshotTests: XCTestCase {
                 renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: course, textures: textures,
                                                                       style: render.map(PGAOriginalSceneryStyle.init(state:)) ?? .standard),
                                hole: single.holes[0], flagImage: art.courseImage("FLAG", course: code), holeImage: art.image("hole-decal"), render: render)
+                renderer.useRain(render?.rain, wind: PGAWind(mph: 8, direction: 0.5))
                 XCTAssertNotNil(renderer.scene.rootNode.childNode(withName: PGAOriginalSkyNode.nodeName, recursively: true),
                                 "Decoded sky must be present in the original-course scene")
                 let trees = renderer.scene.rootNode.childNode(withName: PGAOriginalVegetationNode.nodeName, recursively: true) as? PGAOriginalVegetationNode

@@ -77,6 +77,8 @@ final class PGAGameSession: ObservableObject {
         loadOriginal()
     }
     func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
+    /// 0 dry, 1 light rain, 2 heavy rain for the weather sound bed.
+    private var rainState = 0
     /// The 40 original weather/time presets, when prepared.
     private(set) lazy var renderPresets = PGARenderPresets.load(root: GameStore.workspaceRoot())
     /// The loaded course's INI conditions, for the setup screen.
@@ -187,6 +189,8 @@ final class PGAGameSession: ObservableObject {
         guard let original else { return }
         // Time of day advances 20 units per hole through the chosen weather's presets.
         let render = renderPresets?.state(weather: setup.weatherRow, time: setup.timeSlot, hole: mesh.holeIndex + 1)
+        rainState = render?.rain == nil ? 0 : setup.weatherRow == 7 ? 2 : 1
+        renderer.useRain(render?.rain, wind: simulation.wind)
         renderer.build(original: PGAOriginalSceneBuilder.node(for: mesh, course: original, textures: textures,
                                                               style: render.map(PGAOriginalSceneryStyle.init(state:)) ?? .standard),
                        hole: simulation.course.holes[mesh.holeIndex],
@@ -409,7 +413,11 @@ final class PGAGameSession: ObservableObject {
             audio.setListener(position: PGAVector(camera.worldPosition), forward: PGAVector(camera.worldFront), up: PGAVector(camera.worldUp))
             audio.setHole(simulation.holeIndex + 1)
             ambientClock += delta
-            if ambientClock >= 1, loadState == .ready, !awaitingSetup { ambientClock = 0; audio.backgroundTick() }
+            if ambientClock >= 1, loadState == .ready, !awaitingSetup {
+                ambientClock = 0
+                audio.setWeather(hole: simulation.holeIndex + 1, windMPH: Int(simulation.wind.mph), rain: rainState)
+                audio.backgroundTick()
+            }
         }
         hudTick += delta
         if hudTick > 0.25 {
@@ -756,6 +764,14 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         lensFlare = flare
     }
 
+    /// Rain from the light/heavy-rain presets, kept over the camera without its rotation.
+    let rain = PGARain()
+
+    func useRain(_ value: PGARenderState.Rain?, wind: PGAWind) {
+        if rain.node.parent == nil { scene.rootNode.addChildNode(rain.node) }
+        rain.use(value, wind: wind)
+    }
+
     /// Original anim.stn effects; nil until the prepared art is found.
     private(set) var effects: PGAOriginalEffects?
     static let teeHeight = 0.015
@@ -889,6 +905,9 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         // overhead view. Keep the horizon upright through those cuts; the
         // one-argument SceneKit look-at can retain an inverted roll.
         Self.orientCamera(camera, toward: cameraTarget)
+        if rain.node.parent != nil {
+            rain.node.position = SCNVector3(cameraPosition.x, cameraPosition.y + 9.5, cameraPosition.z)
+        }
         if let lensFlare, let sunPosition {
             let direction = PGALensFlare.sunDirection(position: sunPosition, heightAboveCourseMinimum: cameraPosition.y)
             // Terrain occlusion by a short ray march every third frame.
