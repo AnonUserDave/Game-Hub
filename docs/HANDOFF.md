@@ -12,6 +12,8 @@ Work on the owner's laptop is paused at his request. His son continues on an M5 
 
 The 2026-10-13 son's checkpoint added playable original Pebble Beach development gameplay (18 holes), corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and confirmed the practice forest fix visually. All of it was checked on the M5 only.
 
+The golfer branch connects the decoded Tiger 01 mesh, textures, club models and clips to original-course play through native SceneKit skinning. The asset load happens on a worker, with one rig reused across holes. An ARM64 build and a focused scene/shot test passed on the development M5 Pro. Offscreen visual capture could not run because the test process had no Metal device; live appearance, clip alignment and M1 performance still need checking. The generated golfer remains a fallback when decoded media are absent.
+
 ## Development environments
 
 **Son's M5 (current).** macOS 26.3, Xcode at `/Applications/Xcode.app` (Swift 6.3.1), Homebrew Python 3 with Pillow, Homebrew `unshield` 1.6.2 and OpenJDK 21/26. REA 6.4.0 is the global MCP server (`/opt/homebrew/bin/rea`), with a working Ghidra provider at `~/Desktop/Tools/ghidra_12.1.2`. REA's Ghidra session timed out during Engine.dll auto-analysis; direct `Tools/analyze_pga2005_ghidra.py` headless runs worked (88 s auto-analysis). Extracted DLLs are in the ignored `Library/SourceMedia/pga2005/engine/Executable`; the Ghidra database is in `Library/Research/ghidra-projects/pga2005-physics`. Git identity: the son's own.
@@ -54,7 +56,7 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
    - Visually confirm the sRGB change and the Lab's per-hole view.
 3. **Reconstruct `CBallFlight`.** Cover flight drag and lift, `Collide` (c2/c3/c8/c9, surface damping), `RollingAndSlipping` (c4/c5), `PureRolling` break (c6), cup capture and `StopBall`. Build numeric fixtures from the decompiled formulas and keep units in inches per 60 Hz tick. Then remove the provisional bounce tuning.
 4. **Rules.** Decode INI OB polygons (`[Hole N OB k]`, type 1/2), lateral water-hazard drops and the original tee/pin selection. Add hazard and drop placement from the original rules.
-5. **Visuals.** Original sky dome, fog and lighting (`render.ini`), shaders (vertex-shader resources), water, alternate LODs, vegetation and object placement (Pebble's cypresses are missing), and the golfer/ball meshes and animation.
+5. **Visuals.** Original sky dome, fog and lighting (`render.ini`), shaders (vertex-shader resources), water, alternate LODs, vegetation and object placement (Pebble's cypresses are missing). Visually validate the newly integrated golfer/club animation and establish authored size and material fidelity.
 6. **Memory and performance.** Keep the 3 GB budget. Consider memoryless MSAA/depth attachments on Apple Silicon, compressed (BC1/BC2) original DDS textures instead of RGBA8 PNGs, and whole-course buffers in the Lab.
 7. **Controller.** Validate every Pebble Beach action, held buttons across pause and hole transitions, focus loss and unplug/replug on the Fusion Pro.
 8. **More content.** Turnberry gameplay reuses the same code path once its tees and pins validate. Then the other modes, saves and audio.

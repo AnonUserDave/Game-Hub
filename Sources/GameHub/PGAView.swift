@@ -247,7 +247,7 @@ struct PGAGameView: View {
     private var bottomBar: some View {
         HStack {
             Text("NATIVE MAC RUNTIME").tracking(1.1); Text("·").padding(.horizontal, 3)
-            Text(session.isOriginal ? "Original \(game.course.holes.count)-hole geometry, materials, tees and pins · approximate physics · no original vegetation, golfer or rules yet" : session.renderer.originalTexturesLoaded ? "Generated geometry · imported PGA grass textures · provisional physics" : "No emulation · generated geometry and provisional physics")
+            Text(session.isOriginal ? "Original \(game.course.holes.count)-hole geometry, materials, tees and pins · \(session.renderer.originalGolfer == nil ? "golfer loading or unavailable" : "original golfer and swing clips") · approximate physics and rules" : session.renderer.originalTexturesLoaded ? "Generated geometry · imported PGA grass textures · provisional physics" : "No emulation · generated geometry and provisional physics")
             Spacer()
             Button(showHelp ? "Hide controls" : "Show controls") { showHelp.toggle() }.buttonStyle(.plain)
         }.font(.system(size: 8, weight: .medium, design: .monospaced)).foregroundStyle(.white.opacity(0.65))
