@@ -223,6 +223,23 @@ final class Asteroids8BitCoreTests: XCTestCase {
         XCTAssertEqual(s.state.players[4].freeShots, 3)
     }
 
+    func testColdUFOEntersThroughPendingForegroundSafeSpawn() throws {
+        var (s, samples) = try simulation()
+        XCTAssertEqual(s.state.players[4].entity.code, 255)
+        for _ in 0..<511 { try s.verticalBlank(inputs: idle, random: &samples) }
+        XCTAssertEqual(s.state.players[4].entity.code, 255)
+        try s.verticalBlank(inputs: idle, random: &samples)
+        // $6D34 changes FF to B0 after256 even callbacks. B0 intentionally
+        // remains inactive until $62E7 scans all five pending ships.
+        XCTAssertEqual(s.state.players[4].entity.code, 0xb0)
+        XCTAssertFalse(s.state.players[4].entity.active)
+        for _ in 0..<3 { try s.verticalBlank(inputs: idle, random: &samples) }
+        XCTAssertEqual(s.state.players[4].entity.code, 0)
+        XCTAssertTrue(s.state.players[4].entity.active)
+        try s.verticalBlank(inputs: idle, random: &samples)
+        XCTAssertEqual(s.state.players[4].image, 17)
+    }
+
     func testAsteroidContactDestroysBothAndStartsOriginalDeathDelay() throws {
         var (s, samples) = try simulation()
         s = try restored(s) { snapshot in

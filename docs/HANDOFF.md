@@ -111,6 +111,18 @@ entry yet**; finish original presentation/audio/clocks and session/input/save/
 launch/return integration, then every original/physical/M1 gate. See
 [the2600 ledger](research/ASTEROIDS-2600.md). Original data stays ignored.
 
+2026-10-14 update: the three Asteroids cores are now registered as separate
+native development hub entries (`asteroids2600-native-development`,
+`asteroids7800-native-development`, `asteroids8bit-native-development`) with
+their own game views and session tests. Like Apple Panic, they require
+prepared original media and recheck it before launch; restored sessions are
+capped at 256 KiB. The "no playable hub entry" notes above predate this. The
+Dig Dug graphics decoder now expands all thirteen spawn placements (slots
+21…7 by two, then 6…2), and [a static gameplay map](research/DIG-DUG-GAMEPLAY.md)
+orders the native work; Dig Dug gameplay itself is still absent. On M5:
+306 Swift tests (4 opt-in skips) and 272 Python tests pass. Live play, original
+comparison, physical controller and M1 remain unverified.
+
 Dig Dug's supplied C64 `DIG DUG+` program now has a bounded first-party two-layer
 decoder, `Tools/decode_dig_dug.py`. It recovers a23,044-byte crack intro,19,333
 known relocated packed bytes and the24,576-byte body containing the trainer

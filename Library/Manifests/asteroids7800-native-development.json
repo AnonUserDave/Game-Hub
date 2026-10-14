@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "asteroids7800-native-development",
+  "title": "Asteroids · Atari 7800 Native Development",
+  "edition": "Atari 7800 source reconstruction",
+  "platform": "Native Mac development",
+  "year": 1986,
+  "genre": "Arcade",
+  "summary": "Native four-mode source loop with original indexed object/menu/glyph graphics, source fixed-point motion, shots, splitting, waves, scores and lives. Startup, colors, sound and terminal comparisons remain unqualified.",
+  "sourceArchive": "Asteroids_Atari-7800_ROM_EN.zip",
+  "accent": "BBD4EA",
+  "artwork": "asteroids",
+  "launch": {
+    "kind": "builtin",
+    "builtin": "asteroids7800-native-development",
+    "arguments": []
+  },
+  "fidelity": "prototype",
+  "notes": [
+    "Native ARM64 development reconstruction of this selected edition; no source CPU executes. This is not a completed faithful rewrite.",
+    "Original prepared rule tables and graphics are required and remain local, excluded from Git. Missing or changed data blocks launch.",
+    "Native source/version-bound saves restore paused. Original behavior/visual/audio comparisons, physical Fusion Pro transitions and sustained M1 Air /8GB acceptance remain unfinished.",
+    "Run Tools/decode_asteroids7800.py after Tools/prepare_asteroids.py. Synthetic development RAM/timer startup is clearly labelled and saved. Development pacing uses30 main passes/sec, two source DLIs per pass."
+  ],
+  "keyboard": [
+    "Player1 arrows + Space: turn, thrust, hyperspace and fire; E: second button",
+    "Player2 W A S D + F: independent controls; G: second button",
+    "Escape: pause; setup selects four original modes and difficulty indices"
+  ],
+  "controller": [
+    "Stick / D-pad: turn and thrust; X: hyperspace",
+    "A: fire; Y: source second button; B / Menu: pause",
+    "One controller follows the alternating active player or player1 in simultaneous play"
+  ]
+}

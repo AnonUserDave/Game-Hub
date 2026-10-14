@@ -13,7 +13,7 @@
   "launch": null,
   "fidelity": "source",
   "notes": [
-    "Original archive preserved. No native implementation is available yet.",
+    "Original archive preserved. A separate native development reconstruction requires its prepared original media; fidelity and M1 gates remain open.",
     "Contains an 8192-byte .A26 cartridge image, not source code.",
     "A native rewrite must reproduce the selected cartridge revision, original game timing, collision rules, console switches, and control response."
   ],

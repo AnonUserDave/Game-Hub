@@ -15,7 +15,7 @@ enum RetroOriginalMedia {
     static let applePath = "Library/Prepared/apple-panic/apple-panic.json"
     static let crossfirePath = "Library/Imported/crossfire/crossfire.json"
     static let nightPath = "Library/SourceMedia/retro/night-driver-c64/native-media.json"
-    static let requiredIDs: Set<String> = ["apple-panic-native-development", "crossfire-native-development", "night-driver-native-development"]
+    static let requiredIDs: Set<String> = ["apple-panic-native-development", "crossfire-native-development", "night-driver-native-development", "asteroids2600-native-development", "asteroids7800-native-development", "asteroids8bit-native-development"]
 
     static func readiness(id: String, root: URL) -> String {
         do {
@@ -23,6 +23,9 @@ enum RetroOriginalMedia {
             case "apple-panic-native-development": _ = try ApplePanicPresentation.load(root: root)
             case "crossfire-native-development": _ = try CrossfirePresentation.load(root: root)
             case "night-driver-native-development": _ = try NightDriverPresentation.load(root: root)
+            case "asteroids2600-native-development": _ = try Asteroids2600Resources.load(from: root.appendingPathComponent(Asteroids2600Presentation.path))
+            case "asteroids7800-native-development": _ = try Asteroids7800Resources.load(url: root.appendingPathComponent(Asteroids7800Presentation.mediaPath))
+            case "asteroids8bit-native-development": _ = try Asteroids8BitResources.load(from: root.appendingPathComponent(Asteroids8BitPresentation.path))
             default: return ""
             }
             return ""

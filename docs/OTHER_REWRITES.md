@@ -40,8 +40,9 @@ The latest per-edition source-loop checkpoint passes **262 Swift XCTest**
 **245 Python tests** and optimized native ARM64 compilation on M5. The new
 Asteroids cores contribute58 source-core tests and16 decoder tests. Dig Dug's
 two packed formats contribute six tests and recover exactly24KiB; gameplay is
-absent. The three Asteroids editions remain unregistered native cores, with
-their own source startup/timing/presentation gaps. These results do not close
+absent. The three Asteroids editions were registered as native development hub
+entries on 2026-10-14 (see the handoff); their own source
+startup/timing/presentation gaps remain. These results do not close
 original-game, physical-controller or M1 gates.
 
 The final M5 integration checkpoint passes **192 Swift XCTest** (three expected skips), **193 Python tests** and optimized ARM64 compilation. Eleven native integration regressions cover focused/neutralized input, pending source taps, original key maps, both sticks, source stop at intersections, media recheck before launch, HUD bounds and character pixel continuity. Live checks cover Apple Panic original masks/movement/pause/save/return/paused restore (X82/Y160,15 source half-dispatches, level1/lives3/score0), Crossfire original masks/stop/shot/pause/save/return/paused restore (ammo35→34), and Night Driver original instruction/road/car/HUD, acceleration/pause/save/return/paused restore (speed16/source time98). These are native and M5 development receipts. Original behavior/visual/audio comparisons, physical controller transitions and every M1 gate remain open. The active all16-title goal is unfinished.

@@ -13,14 +13,16 @@ enum RetroSaveStore {
     static func load<T: Decodable>(_ type: T.Type, id: String) -> T? {
         let file = url(id)
         guard let bytes = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize, bytes <= 256 * 1024,
-              let data = try? Data(contentsOf: file) else { return nil }
+              let data = try? Data(contentsOf: file, options: .mappedIfSafe), data.count <= 256 * 1024 else { return nil }
         return try? JSONDecoder().decode(type, from: data)
     }
     @discardableResult static func save<T: Encodable>(_ value: T, id: String) -> Bool {
         do {
             let file = url(id)
+            let data = try JSONEncoder().encode(value)
+            guard data.count <= 256 * 1024 else { return false }
             try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try JSONEncoder().encode(value).write(to: file, options: .atomic)
+            try data.write(to: file, options: .atomic)
             return true
         } catch { return false }
     }

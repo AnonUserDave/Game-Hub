@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "asteroids8bit-native-development",
+  "title": "Asteroids · Atari 8-bit Native Development",
+  "edition": "Atari 8-bit source reconstruction",
+  "platform": "Native Mac development",
+  "year": 1981,
+  "genre": "Arcade",
+  "summary": "Native selected-US-XEX mode and multiplayer rules with original masks, alternating source callbacks, thrust, shots, splits, waves, UFOs, score/lives and source-state saves. POKEY/OS startup, colors, audio and raster timing remain unqualified.",
+  "sourceArchive": "Asteroids_Atari-8-bit_ROM_EN.zip",
+  "accent": "B7E4C1",
+  "artwork": "asteroids",
+  "launch": {
+    "kind": "builtin",
+    "builtin": "asteroids8bit-native-development",
+    "arguments": []
+  },
+  "fidelity": "prototype",
+  "notes": [
+    "Native ARM64 development reconstruction of this selected edition; no source CPU executes. This is not a completed faithful rewrite.",
+    "Original prepared rule tables and graphics are required and remain local, excluded from Git. Missing or changed data blocks launch.",
+    "Native source/version-bound saves restore paused. Original behavior/visual/audio comparisons, physical Fusion Pro transitions and sustained M1 Air /8GB acceptance remain unfinished.",
+    "Run Tools/decode_asteroids8bit.py after Tools/prepare_asteroids.py. Startup uses a visibly labelled finite synthetic sample stream and zero fractions. Development pacing is60 source callbacks/sec; it is not qualified original timing."
+  ],
+  "keyboard": [
+    "Player1 arrows + Space; player2 W A S D + F",
+    "Player3 I J K L + O; player4 T G B H + V",
+    "Up thrusts; down uses the selected special control; Escape pauses"
+  ],
+  "controller": [
+    "Stick / D-pad: turn, thrust and selected special control",
+    "A / RB: fire; X: special control; B / Menu: pause",
+    "One controller follows the alternating active player or player1; other players use keyboard adapters"
+  ]
+}
