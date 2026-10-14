@@ -87,7 +87,7 @@ struct PGAGameView: View {
                 stat("STROKE", "\(game.strokes + (game.phase == .holed ? 0 : 1))")
                 stat("TO PIN", game.distanceToCup < 20 ? String(format: "%.1f ft", game.distanceToCup * 3.28084) : "\(Int((game.distanceToCup * 1.09361).rounded())) yd")
                 stat("LIE", game.lieLabel)
-                if session.isOriginal { elevation }
+                if session.isOriginal { elevation; wind }
             }
         }.padding(17).background(panel).frame(maxWidth: 350, alignment: .leading).foregroundStyle(.white)
     }
@@ -102,6 +102,19 @@ struct PGAGameView: View {
                     Image(nsImage: icon).resizable().interpolation(.high).frame(width: 26, height: 13)
                 }
                 Text(feet == 0 ? "LEVEL" : "\(feet > 0 ? "+" : "")\(feet) FT").font(.system(size: 13, weight: .semibold)).monospacedDigit()
+            }
+        }
+    }
+
+    /// Wind relative to the aim, with the original 16-direction arrow art.
+    private var wind: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("WIND").font(.system(size: 8, weight: .semibold, design: .monospaced)).tracking(0.8).foregroundStyle(.white.opacity(0.5))
+            HStack(spacing: 3) {
+                if game.wind.mph > 0, let arrow = session.hud.image(String(format: "wind-%02d", game.wind.arrowIndex(heading: game.heading))) {
+                    Image(nsImage: arrow).resizable().interpolation(.high).frame(width: 18, height: 18)
+                }
+                Text(game.wind.mph > 0 ? "\(Int(game.wind.mph)) MPH" : "CALM").font(.system(size: 13, weight: .semibold)).monospacedDigit()
             }
         }
     }

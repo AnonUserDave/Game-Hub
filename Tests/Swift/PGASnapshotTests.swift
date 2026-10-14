@@ -110,7 +110,7 @@ final class PGASnapshotTests: XCTestCase {
                 ("hud-scorecard", AnyView(PGAOriginalScorecard(images: art, simulation: game).frame(width: 760)), CGSize(width: 760, height: 458)),
                 ("hud-loading", AnyView(PGAOriginalLoadingScreen(images: art, message: "Loading original PBL terrain…")), CGSize(width: 1280, height: 800)),
                 ("hud-meter", AnyView(PGAOriginalSwingMeter(simulation: swingingGame, images: art)), CGSize(width: 256, height: 256)),
-                ("hud-setup", AnyView(PGARoundSetupView(session: { let s = PGAGameSession(choice: .original(code: "PBL"), onExit: {}); s.setup.players = ["Dad", "Pablo"]; return s }())), CGSize(width: 1280, height: 800))
+                ("hud-setup", AnyView(PGARoundSetupView(session: { let s = PGAGameSession(choice: .original(code: "PBL"), onExit: {}); s.setup.players = ["Dad", "Pablo", "Player 3", "Player 4"]; return s }())), CGSize(width: 1280, height: 800))
             ]
             for (name, view, size) in views {
                 let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height).background(Color.black))

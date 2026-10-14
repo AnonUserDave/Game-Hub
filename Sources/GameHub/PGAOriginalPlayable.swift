@@ -101,6 +101,9 @@ final class PGAOriginalCourseData: @unchecked Sendable {
     let patches: [Patch]
     let materials: [UInt32: Material]
     let holes: [SourceHole]
+    /// The course INI's [Conditions] defaults (GreenCond, RoughLength,
+    /// WindSpeed) when the decoder recorded them; otherwise Normal/Average/Still.
+    let defaultConditions: PGAConditions
     let sourceTCRSHA256: String
 
     init(directory: URL, code: String) throws {
@@ -157,6 +160,7 @@ final class PGAOriginalCourseData: @unchecked Sendable {
         materials = Self.loadMaterials(directory: self.directory)
         let holeFile = try Self.loadHoles(directory: self.directory)
         holes = holeFile.holes; title = holeFile.title; sourceTCRSHA256 = holeFile.sha
+        defaultConditions = holeFile.conditions
         guard !holes.isEmpty, holes.count <= 32 else { throw LoadError.invalid("Course must have 1-32 holes.") }
     }
 
@@ -216,12 +220,14 @@ final class PGAOriginalCourseData: @unchecked Sendable {
             var tees: [Point]; var pins: [Point]; var aim_points: [Point]
             var yardages_by_tee: [Int]?
         }
+        struct Conditions: Decodable { var green_cond: Int?; var rough_length: Int?; var wind_speed: Int? }
         var schema_version: Int
         var course_title: String
         var source_tcr_sha256: String
         var holes: [Hole]
+        var conditions: Conditions?
     }
-    private static func loadHoles(directory: URL) throws -> (holes: [SourceHole], title: String, sha: String) {
+    private static func loadHoles(directory: URL) throws -> (holes: [SourceHole], title: String, sha: String, conditions: PGAConditions) {
         let data = try Data(contentsOf: directory.appendingPathComponent("holes.json"))
         guard data.count <= 5_000_000 else { throw LoadError.invalid("holes.json is too large.") }
         let file = try JSONDecoder().decode(HoleFile.self, from: data)
@@ -240,7 +246,13 @@ final class PGAOriginalCourseData: @unchecked Sendable {
                               tees: try hole.tees.map(vector), pins: try hole.pins.map(vector),
                               aimPoints: try hole.aim_points.map(vector), yardagesByTee: hole.yardages_by_tee)
         }
-        return (holes, file.course_title, file.source_tcr_sha256)
+        var defaults = PGAConditions()
+        if let c = file.conditions {
+            if let v = c.green_cond, (1...5).contains(v) { defaults.greenSpeed = v }
+            if let v = c.rough_length, (1...3).contains(v) { defaults.roughLength = v }
+            if let v = c.wind_speed, (1...5).contains(v) { defaults.windSpeed = v }
+        }
+        return (holes, file.course_title, file.source_tcr_sha256, defaults)
     }
 }
 
@@ -289,6 +301,7 @@ final class PGAOriginalPlayableCourse: @unchecked Sendable {
 
     let data: PGAOriginalCourseData
     let conditions: PGACourseConditions
+    var defaultConditions: PGAConditions { data.defaultConditions }
     let transform: PGACourseTransform
     let teeIndex: Int
     let pinIndex: Int
@@ -415,6 +428,8 @@ struct PGARoundSetup: Codable, Equatable {
     /// Tri-click meter difficulty; optional so older saves decode.
     var difficulty: PGATriClickMeter.Level? = nil
     var level: PGATriClickMeter.Level { difficulty ?? .intermediate }
+    /// Greens, rough and wind; nil uses the course INI defaults (older saves too).
+    var conditions: PGAConditions? = nil
 
     static let teeNames = ["Forward", "Middle", "Back", "Championship", "Tips"]
 
@@ -426,7 +441,7 @@ struct PGARoundSetup: Codable, Equatable {
     var identity: String { "t\(teeIndex)p\(pins == .standard ? "0" : "r\(seed)")-n\(players.count)" }
     var valid: Bool {
         (1...4).contains(players.count) && players.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty && $0.count <= 24 }
-            && (0...4).contains(teeIndex)
+            && (0...4).contains(teeIndex) && (conditions?.valid ?? true)
     }
 }
 

@@ -77,6 +77,8 @@ final class PGAGameSession: ObservableObject {
         loadOriginal()
     }
     func teeYards(_ index: Int) -> Int? { original?.totalYards(teeIndex: index) }
+    /// The loaded course's INI conditions, for the setup screen.
+    var defaultConditions: PGAConditions { original?.defaultConditions ?? PGAConditions() }
     private var prefetch: (index: Int, task: Task<PGAOriginalHoleMesh, Never>)?
     /// The view observes this instead of storing a closure on the session; a
     /// closure capturing the view retained the session through its StateObject.
@@ -146,12 +148,19 @@ final class PGAGameSession: ObservableObject {
     /// Starts a new round, or resumes the saved one, from the setup screen.
     func startRound(resume: Bool = false) {
         guard let original, awaitingSetup else { return }
-        let chosen = resume ? (savedRound?.setup ?? setup) : setup
+        var chosen = resume ? (savedRound?.setup ?? setup) : setup
+        if !resume || chosen.conditions == nil {
+            // Each new round draws its own wind; a resumed one keeps the saved seed.
+            var conditions = chosen.conditions ?? original.defaultConditions
+            if !resume { conditions.windSeed = UInt32.random(in: 1...999_999) }
+            chosen.conditions = conditions
+        }
         guard chosen.valid, let course = try? original.course(for: chosen) else { return }
         var game = PGASimulation(course: course, terrains: original.terrains,
                                  playerNames: chosen.players.map { $0.trimmingCharacters(in: .whitespaces) })
         if resume, let snapshot = savedRound?.snapshot { try? game.restore(snapshot) }
         game.meterLevel = chosen.level
+        game.conditions = chosen.conditions ?? original.defaultConditions
         setup = chosen
         simulation = game
         awaitingSetup = false

@@ -202,6 +202,47 @@ enum PGAClub: Int, CaseIterable {
     }
 }
 
+/// Course conditions from round setup, in the original's setting numbers
+/// (PGA2005-PHYSICS.md §10): GreenCond 1–5 → wet scale, RoughLength 1–3 →
+/// rough scale, WindSpeed 1 Still … 5 Strong. `windSeed` fixes the round's
+/// wind so a resumed round sees the same breeze.
+struct PGAConditions: Codable, Equatable {
+    /// Defaults are the engine's own (Normal, Average, Still); each course
+    /// INI's [Conditions] overrides them in round setup.
+    var greenSpeed = 3
+    var roughLength = 2
+    var windSpeed = 1
+    var windSeed: UInt32 = 1
+
+    static let greenNames = ["Very slow", "Slow", "Normal", "Fast", "Very fast"]
+    static let roughNames = ["Light", "Average", "Heavy"]
+    static let windNames = ["Still", "Calm", "Breezy", "Gusty", "Strong"]
+
+    var valid: Bool { (1...5).contains(greenSpeed) && (1...3).contains(roughLength) && (1...5).contains(windSpeed) }
+    /// Wind speed band in mph. The original's per-setting `Wind1` table is
+    /// filled at runtime and was not recovered; these bands are a native
+    /// assumption that agrees with the sound scripts' gusty (> 11 mph) and
+    /// strong (> 19 mph) thresholds.
+    var windBand: ClosedRange<Double> { [0...0, 1...5, 6...11, 12...19, 20...28][max(0, min(4, windSpeed - 1))] }
+}
+
+/// Air movement for the current hole: `direction` is the heading the air
+/// moves toward, in the same convention as the aim heading.
+struct PGAWind: Equatable {
+    var mph: Double
+    var direction: Double
+    static let still = PGAWind(mph: 0, direction: 0)
+
+    /// Original HUD arrow (wind01 points up the screen, then clockwise in
+    /// 22.5° steps) for a player aiming along `heading`.
+    func arrowIndex(heading: Double) -> Int {
+        let forward = cos(direction - heading), right = -sin(direction - heading)
+        var angle = atan2(right, forward)
+        if angle < 0 { angle += 2 * .pi }
+        return Int((angle / (2 * .pi) * 16).rounded()) % 16 + 1
+    }
+}
+
 enum PGAPhase: String {
     case aiming, power, accuracy, airborne, rolling, holed, roundComplete
     var inMotion: Bool { self == .airborne || self == .rolling }
@@ -293,6 +334,11 @@ struct PGASimulation {
     private(set) var swingMeter: PGATriClickMeter?
     /// Difficulty of the original meter (round setup).
     var meterLevel = PGATriClickMeter.Level.intermediate
+    /// Greens, rough and wind from round setup; applied from the next hole
+    /// reset (set them before the round starts).
+    var conditions = PGAConditions() { didSet { wind = holeWind() } }
+    /// Wind on the current hole (original courses only; generated practice is still).
+    private(set) var wind = PGAWind.still
     private(set) var shotPower = 0.0
     private(set) var shotAccuracy = 0.0
     private(set) var lastShotDistance = 0.0
@@ -507,9 +553,12 @@ struct PGASimulation {
                                             flags: surface.records[index].flags, index: index),
                                          difficulty: meterLevel.rawValue)
         let pin = adapter.frame.point(meters: hole.cup)
+        // Gusty wind varies shot to shot around the hole's speed (native choice).
+        let gust = conditions.windSpeed == 4 ? 0.7 + 0.6 * random.unit() : 1
+        let air = adapter.frame.direction(meters: PGAVector(x: sin(wind.direction), y: 0, z: cos(wind.direction)) * (wind.mph * gust))
         guard let started = PGABallFlight(launch: launch, terrain: adapter,
-                                          conditions: .fromSettings(greenCondition: 3, roughLength: 2,
-                                                                    difficulty: meterLevel.rawValue),
+                                          conditions: .fromSettings(greenCondition: conditions.greenSpeed, roughLength: conditions.roughLength,
+                                                                    difficulty: meterLevel.rawValue, windX: air.x, windZ: air.z),
                                           ball: .solidCore, pin: pin, random: random) else {
             phase = .aiming; message = "Unable to start the shot from this lie."
             return
@@ -832,6 +881,19 @@ struct PGASimulation {
         }
     }
 
+    /// One prevailing direction per round that shifts up to ±30° from hole to
+    /// hole, and a speed inside the setting's band. Native choices: the
+    /// original wind direction rules were not recovered.
+    private func holeWind() -> PGAWind {
+        guard course.isOriginal, conditions.windSpeed > 1 else { return .still }
+        var round = PGARandom(seed: "wind-\(course.identity)-\(conditions.windSeed)")
+        let prevailing = round.unit() * 2 * .pi
+        var local = PGARandom(seed: "wind-\(course.identity)-\(conditions.windSeed)-\(holeIndex)")
+        let band = conditions.windBand
+        let mph = (band.lowerBound + local.unit() * (band.upperBound - band.lowerBound)).rounded()
+        return PGAWind(mph: mph, direction: prevailing + (local.unit() - 0.5) * .pi / 3)
+    }
+
     mutating func restartRound() {
         holeIndex = 0
         for index in players.indices { players[index].scores = [] }
@@ -861,8 +923,14 @@ struct PGASimulation {
             players[index].heading = heading; players[index].club = club.rawValue; players[index].lieIndex = 0
         }
         currentPlayer = teeOrder.first ?? 0
+        wind = holeWind()
         message = isMultiplayer ? "\(playerName) has the honor · Space, click or A to swing" : "Aim, choose a club, then press Space, click, or A to swing."
     }
+
+    #if DEBUG
+    /// Test helper: replaces the current hole's wind.
+    mutating func overrideWindForTest(_ value: PGAWind) { wind = value }
+    #endif
 
     #if DEBUG
     /// Test helper: records a finished hole with the given strokes.

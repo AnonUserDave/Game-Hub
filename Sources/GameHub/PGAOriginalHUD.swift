@@ -213,85 +213,96 @@ struct PGARoundSetupView: View {
             if let back = session.hud.image("load-back") {
                 Image(nsImage: back).resizable().aspectRatio(contentMode: .fill).opacity(0.45).blur(radius: 2).clipped()
             }
-            VStack(spacing: 18) {
-                HStack(spacing: 16) {
-                    if session.courseCode == "PBL", let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(session.courseTitle.uppercased()).font(.system(size: 22, weight: .bold)).tracking(1.5)
-                        Text("Original course data · 18 holes · development gameplay · course \(session.courseCode)")
-                            .font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
-                    }
-                    Spacer()
+            // Eleven courses, four players and the conditions can outgrow an
+            // 800-point-tall screen: scroll only when the panel does not fit.
+            ViewThatFits(in: .vertical) {
+                panel
+                ScrollView { panel.padding(.vertical, 24) }
+            }
+        }.ignoresSafeArea()
+    }
+
+    private var panel: some View {
+        VStack(spacing: 13) {
+            HStack(spacing: 16) {
+                if session.courseCode == "PBL", let logo = session.hud.image("logo-pebble") { Image(nsImage: logo).resizable().frame(width: 72, height: 72) }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(session.courseTitle.uppercased()).font(.system(size: 22, weight: .bold)).tracking(1.5)
+                    Text("Original course data · 18 holes · development gameplay · course \(session.courseCode)")
+                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.65))
                 }
-                if session.catalog.count > 1 {
-                    section("COURSE") {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
-                            ForEach(session.catalog) { course in
-                                Button { session.selectCourse(course.code) } label: {
-                                    VStack(spacing: 2) {
-                                        Text(course.title).font(.system(size: 10.5, weight: .semibold)).lineLimit(1)
-                                        Text("Par \(course.par)").font(.system(size: 8.5, design: .monospaced)).opacity(0.75)
-                                    }.frame(maxWidth: .infinity).padding(.vertical, 6)
-                                        .background(RoundedRectangle(cornerRadius: 6).fill(session.courseCode == course.code ? gold : .white.opacity(0.08)))
-                                        .foregroundStyle(session.courseCode == course.code ? ink : .white)
-                                }.buttonStyle(.plain)
-                            }
-                        }
-                    }
-                }
-                section("PLAYERS") {
-                    VStack(spacing: 8) {
-                        ForEach(session.setup.players.indices, id: \.self) { index in
-                            HStack {
-                                Text("\(index + 1)").font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(gold).frame(width: 18)
-                                TextField("Player \(index + 1)", text: Binding(get: { session.setup.players[index] },
-                                                                                 set: { session.setup.players[index] = String($0.prefix(24)) }))
-                                    .textFieldStyle(.roundedBorder)
-                                if session.setup.players.count > 1 {
-                                    Button { session.setup.players.remove(at: index) } label: { Image(systemName: "minus.circle") }.buttonStyle(.plain)
-                                }
-                            }
-                        }
-                        if session.setup.players.count < 4 {
-                            Button { session.setup.players.append("Player \(session.setup.players.count + 1)") } label: {
-                                Label("Add player (hot-seat, up to 4)", systemImage: "plus.circle")
-                            }.buttonStyle(.plain).foregroundStyle(gold).frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                }
-                if session.setup.players.count > 1 {
-                    section("GAME") {
-                        HStack(spacing: 6) {
-                            ForEach(PGAGameType.allCases, id: \.self) { type in
-                                Button { session.setup.gameType = type } label: {
-                                    Text(type.title + (type == .match && session.setup.players.count != 2 ? " (2 players)" : ""))
-                                        .font(.system(size: 11, weight: .semibold)).frame(maxWidth: .infinity).padding(.vertical, 8)
-                                        .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.type == type ? gold : .white.opacity(0.08)))
-                                        .foregroundStyle(session.setup.type == type ? ink : .white)
-                                }.buttonStyle(.plain)
-                            }
-                        }
-                    }
-                }
-                section("TEES") {
-                    HStack(spacing: 6) {
-                        ForEach(0..<5, id: \.self) { index in
-                            Button { session.setup.teeIndex = index } label: {
-                                VStack(spacing: 3) {
-                                    Text(PGARoundSetup.teeNames[index]).font(.system(size: 11, weight: .semibold))
-                                    Text(session.teeYards(index).map { "\($0) yd" } ?? "").font(.system(size: 9, design: .monospaced)).opacity(0.75)
-                                }.frame(maxWidth: .infinity).padding(.vertical, 8)
-                                    .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.teeIndex == index ? gold : .white.opacity(0.08)))
-                                    .foregroundStyle(session.setup.teeIndex == index ? ink : .white)
+                Spacer()
+            }
+            if session.catalog.count > 1 {
+                section("COURSE") {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6), spacing: 6) {
+                        ForEach(session.catalog) { course in
+                            Button { session.selectCourse(course.code) } label: {
+                                VStack(spacing: 2) {
+                                    Text(course.title).font(.system(size: 10.5, weight: .semibold)).lineLimit(1)
+                                    Text("Par \(course.par)").font(.system(size: 8.5, design: .monospaced)).opacity(0.75)
+                                }.frame(maxWidth: .infinity).padding(.vertical, 6)
+                                    .background(RoundedRectangle(cornerRadius: 6).fill(session.courseCode == course.code ? gold : .white.opacity(0.08)))
+                                    .foregroundStyle(session.courseCode == course.code ? ink : .white)
                             }.buttonStyle(.plain)
                         }
                     }
                 }
+            }
+            section("PLAYERS") {
+                VStack(spacing: 8) {
+                    ForEach(session.setup.players.indices, id: \.self) { index in
+                        HStack {
+                            Text("\(index + 1)").font(.system(size: 12, weight: .bold, design: .monospaced)).foregroundStyle(gold).frame(width: 18)
+                            TextField("Player \(index + 1)", text: Binding(get: { session.setup.players[index] },
+                                                                             set: { session.setup.players[index] = String($0.prefix(24)) }))
+                                .textFieldStyle(.roundedBorder)
+                            if session.setup.players.count > 1 {
+                                Button { session.setup.players.remove(at: index) } label: { Image(systemName: "minus.circle") }.buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    if session.setup.players.count < 4 {
+                        Button { session.setup.players.append("Player \(session.setup.players.count + 1)") } label: {
+                            Label("Add player (hot-seat, up to 4)", systemImage: "plus.circle")
+                        }.buttonStyle(.plain).foregroundStyle(gold).frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+            if session.setup.players.count > 1 {
+                section("GAME") {
+                    HStack(spacing: 6) {
+                        ForEach(PGAGameType.allCases, id: \.self) { type in
+                            Button { session.setup.gameType = type } label: {
+                                Text(type.title + (type == .match && session.setup.players.count != 2 ? " (2 players)" : ""))
+                                    .font(.system(size: 11, weight: .semibold)).frame(maxWidth: .infinity).padding(.vertical, 8)
+                                    .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.type == type ? gold : .white.opacity(0.08)))
+                                    .foregroundStyle(session.setup.type == type ? ink : .white)
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+            section("TEES") {
+                HStack(spacing: 6) {
+                    ForEach(0..<5, id: \.self) { index in
+                        Button { session.setup.teeIndex = index } label: {
+                            VStack(spacing: 3) {
+                                Text(PGARoundSetup.teeNames[index]).font(.system(size: 11, weight: .semibold))
+                                Text(session.teeYards(index).map { "\($0) yd" } ?? "").font(.system(size: 9, design: .monospaced)).opacity(0.75)
+                            }.frame(maxWidth: .infinity).padding(.vertical, 8)
+                                .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.teeIndex == index ? gold : .white.opacity(0.08)))
+                                .foregroundStyle(session.setup.teeIndex == index ? ink : .white)
+                        }.buttonStyle(.plain)
+                    }
+                }
+            }
+            HStack(alignment: .top, spacing: 18) {
                 section("PIN POSITIONS") {
                     HStack(spacing: 6) {
                         ForEach(PGARoundSetup.Pins.allCases, id: \.self) { pins in
                             Button { session.setup.pins = pins; if pins == .varied { session.setup.seed = UInt32.random(in: 1...999_999) } } label: {
-                                Text(pins == .standard ? "Standard" : "Varied (10 authored pins per hole)").font(.system(size: 11, weight: .semibold))
+                                Text(pins == .standard ? "Standard" : "Varied (10 authored)").font(.system(size: 11, weight: .semibold))
                                     .frame(maxWidth: .infinity).padding(.vertical, 8)
                                     .background(RoundedRectangle(cornerRadius: 6).fill(session.setup.pins == pins ? gold : .white.opacity(0.08)))
                                     .foregroundStyle(session.setup.pins == pins ? ink : .white)
@@ -299,7 +310,7 @@ struct PGARoundSetupView: View {
                         }
                     }
                 }
-                section("DIFFICULTY (SWING METER AND BALL FLIGHT)") {
+                section("DIFFICULTY (METER AND FLIGHT)") {
                     HStack(spacing: 6) {
                         ForEach(PGATriClickMeter.Level.allCases, id: \.self) { level in
                             Button { session.setup.difficulty = level } label: {
@@ -313,25 +324,52 @@ struct PGARoundSetupView: View {
                         }
                     }
                 }
-                HStack(spacing: 12) {
-                    Button("Start round") { session.startRound() }
-                        .buttonStyle(.borderedProminent).tint(gold).foregroundStyle(ink).keyboardShortcut(.defaultAction)
-                        .disabled(!session.setup.valid)
-                    if let saved = session.savedRound {
-                        Button("Resume hole \(saved.snapshot.holeIndex + 1) · \(saved.setup.players.joined(separator: ", "))") { session.startRound(resume: true) }
-                            .buttonStyle(.bordered)
-                    }
-                    Spacer()
-                    Button("Return to hub") { session.exit() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.7))
-                }
-                Text("Return: start · Controller: A start · Y resume · LB/RB tees · X pins · D-pad meter level · B hub")
-                    .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
             }
-            .padding(26).frame(width: 700)
-            .background(ink.opacity(0.94), in: RoundedRectangle(cornerRadius: 14))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.12)))
-            .foregroundStyle(.white)
-        }.ignoresSafeArea()
+            section("CONDITIONS") {
+                VStack(spacing: 5) {
+                    conditionRow("WIND", PGAConditions.windNames, value: conditions.windSpeed) { conditions.windSpeed = $0 }
+                    conditionRow("GREENS", PGAConditions.greenNames, value: conditions.greenSpeed) { conditions.greenSpeed = $0 }
+                    conditionRow("ROUGH", PGAConditions.roughNames, value: conditions.roughLength) { conditions.roughLength = $0 }
+                }
+            }
+            HStack(spacing: 12) {
+                Button("Start round") { session.startRound() }
+                    .buttonStyle(.borderedProminent).tint(gold).foregroundStyle(ink).keyboardShortcut(.defaultAction)
+                    .disabled(!session.setup.valid)
+                if let saved = session.savedRound {
+                    Button("Resume hole \(saved.snapshot.holeIndex + 1) · \(saved.setup.players.joined(separator: ", "))") { session.startRound(resume: true) }
+                        .buttonStyle(.bordered)
+                }
+                Spacer()
+                Button("Return to hub") { session.exit() }.buttonStyle(.plain).foregroundStyle(.white.opacity(0.7))
+            }
+            Text("Return: start · Controller: A start · Y resume · LB/RB tees · X pins · D-pad meter level · B hub")
+                .font(.system(size: 9, design: .monospaced)).foregroundStyle(.white.opacity(0.5))
+        }
+        .padding(.horizontal, 26).padding(.vertical, 22).frame(width: 880)
+        .background(ink.opacity(0.94), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.12)))
+        .foregroundStyle(.white)
+    }
+
+    /// Setup conditions, starting from the course's INI defaults.
+    private var conditions: PGAConditions {
+        get { session.setup.conditions ?? session.defaultConditions }
+        nonmutating set { session.setup.conditions = newValue }
+    }
+
+    /// One original setting (1-based) as a row of buttons.
+    private func conditionRow(_ title: String, _ names: [String], value: Int, set: @escaping (Int) -> Void) -> some View {
+        HStack(spacing: 6) {
+            Text(title).font(.system(size: 9, weight: .bold, design: .monospaced)).foregroundStyle(.white.opacity(0.55)).frame(width: 52, alignment: .leading)
+            ForEach(Array(names.enumerated()), id: \.offset) { index, name in
+                Button { set(index + 1) } label: {
+                    Text(name).font(.system(size: 10, weight: .semibold)).frame(maxWidth: .infinity).padding(.vertical, 6)
+                        .background(RoundedRectangle(cornerRadius: 5).fill(value == index + 1 ? gold : .white.opacity(0.08)))
+                        .foregroundStyle(value == index + 1 ? ink : .white)
+                }.buttonStyle(.plain)
+            }
+        }
     }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {

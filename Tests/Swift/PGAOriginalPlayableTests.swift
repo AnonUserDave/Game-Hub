@@ -176,6 +176,49 @@ final class PGAOriginalPlayableTests: XCTestCase {
         return game
     }
 
+    func testWindArrowFollowsTheOriginalSixteenDirections() {
+        XCTAssertEqual(PGAWind(mph: 10, direction: 0.3).arrowIndex(heading: 0.3), 1, "tailwind points up the screen")
+        XCTAssertEqual(PGAWind(mph: 10, direction: 0.3 + .pi).arrowIndex(heading: 0.3), 9, "headwind points down")
+        // Our right of travel for heading h is (−cos h, 0, sin h), i.e. heading h − π/2.
+        XCTAssertEqual(PGAWind(mph: 10, direction: -.pi / 2).arrowIndex(heading: 0), 5, "left-to-right wind points right")
+        XCTAssertEqual(PGAWind(mph: 10, direction: .pi / 2).arrowIndex(heading: 0), 13)
+        XCTAssertEqual(PGAConditions().windBand, 0...0, "Still by default, as in the engine")
+        XCTAssertEqual(PGAConditions(windSpeed: 2).windBand, 1...5)
+    }
+
+    func testConditionsReachTheReconstructedFlight() throws {
+        let course = try pebbleCourse()
+        var setup = PGARoundSetup(); setup.teeIndex = 3
+        let base = try course.course(for: setup)
+        func carry(_ wind: PGAWind?, greens: Int = 3) -> Double {
+            var game = PGASimulation(course: base, terrains: course.terrains)
+            var conditions = PGAConditions(); conditions.windSpeed = wind == nil ? 1 : 5; conditions.greenSpeed = greens
+            game.conditions = conditions
+            game.resetHole()
+            game.alignToCup(); game.selectClub(.iron7)
+            if let wind { game.overrideWindForTest(PGAWind(mph: wind.mph, direction: game.heading + wind.direction)) }
+            XCTAssertEqual(game.wind.mph, wind?.mph ?? 0)
+            game.strike(power: 1, accuracy: 0)
+            for _ in 0..<3000 where game.phase.inMotion { game.update(deltaTime: 1.0 / 60) }
+            XCTAssertEqual(game.phase, .aiming)
+            return game.lastShotDistance
+        }
+        let still = carry(nil), tail = carry(PGAWind(mph: 25, direction: 0)), head = carry(PGAWind(mph: 25, direction: .pi))
+        XCTAssertGreaterThan(tail, still * 1.04, "tailwind carries further")
+        XCTAssertLessThan(head, still * 0.96, "headwind holds the ball up")
+    }
+
+    func testRoundSetupKeepsConditionsAcrossSaves() throws {
+        var setup = PGARoundSetup()
+        setup.conditions = PGAConditions(greenSpeed: 5, roughLength: 3, windSpeed: 4, windSeed: 4242)
+        let decoded = try JSONDecoder().decode(PGARoundSetup.self, from: JSONEncoder().encode(setup))
+        XCTAssertEqual(decoded.conditions, setup.conditions)
+        let old = try JSONDecoder().decode(PGARoundSetup.self, from: Data(#"{"players":["A"],"teeIndex":3,"pins":"standard","seed":1}"#.utf8))
+        XCTAssertNil(old.conditions, "rounds saved before conditions use the course defaults")
+        setup.conditions?.windSpeed = 9
+        XCTAssertFalse(setup.valid)
+    }
+
     func testSnapshotRestoresOnlyOntoMatchingCourseData() throws {
         let pebble = try pebbleCourse()
         var game = PGASimulation(course: pebble.course, terrains: pebble.terrains)
