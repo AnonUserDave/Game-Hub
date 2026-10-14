@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "sourceArchive": "Crossfire_Apple-II_ROM_EN.zip",
+  "archiveSHA256": "cb1078384d332d7edeff8516ab47d4b4d3ded9070ed8d482417497e8a8396a2e",
+  "selectedPayload": {
+    "memberChain": [
+      "Game Files/Crossfire (1981)(On-Line Systems).DO.zip",
+      "Crossfire (1981)(On-Line Systems).do"
+    ],
+    "sha256": "4b83b124dd6d71407509b0cdd2829aad2d549d2e5313803b7434640579cb8d9e",
+    "bytes": 143360
+  },
+  "program": {
+    "sha256": "d1dca8251e6b3d3114e7eeac5aaa34c1d4ed9dc338fed02a8ef6aa6d48efe6c7",
+    "bytes": 27296,
+    "loadAddress": 8192
+  },
+  "method": "Direct Ghidra and first-party static decoding, not REA Evidence",
+  "targetExecution": false,
+  "enemyGroups": [
+    {
+      "address": 23477,
+      "sourceFileOffset": 15285,
+      "x": 0,
+      "y": 48,
+      "spacingX": 0,
+      "spacingY": 64,
+      "dx": 0,
+      "dy": 2,
+      "count": 3
+    },
+    {
+      "address": 23484,
+      "sourceFileOffset": 15292,
+      "x": 224,
+      "y": 80,
+      "spacingX": 0,
+      "spacingY": 64,
+      "dx": 0,
+      "dy": -2,
+      "count": 2
+    },
+    {
+      "address": 23491,
+      "sourceFileOffset": 15299,
+      "x": 48,
+      "y": 0,
+      "spacingX": 32,
+      "spacingY": 0,
+      "dx": 2,
+      "dy": 0,
+      "count": 6
+    }
+  ],
+  "spriteLocations": [
+    {
+      "name": "player",
+      "address": 26624,
+      "sourceFileOffset": 18432,
+      "width": 21,
+      "height": 9,
+      "sha256": "bb5ad9c01f3b7b14a335d27fcf215ef6763d1fa06f924a57becfcc49878b2277"
+    },
+    {
+      "name": "enemy-0",
+      "address": 31424,
+      "sourceFileOffset": 23232,
+      "width": 21,
+      "height": 11,
+      "sha256": "85300e59e3459eb07e2543e8885ba8b4aada22b87ecad7a7a7ee2e91e9d1a8e1"
+    },
+    {
+      "name": "enemy-1",
+      "address": 30720,
+      "sourceFileOffset": 22528,
+      "width": 21,
+      "height": 12,
+      "sha256": "4680710a05c0f3065807e62134fcac6025a82f465c5125eb70f306bcb4a39ee6"
+    },
+    {
+      "name": "enemy-2",
+      "address": 31680,
+      "sourceFileOffset": 23488,
+      "width": 21,
+      "height": 13,
+      "sha256": "2ef250d8f91a915d4feaa921621c345f8d8ad477b3d44562641b265604fa7b41"
+    },
+    {
+      "name": "enemy-3",
+      "address": 31104,
+      "sourceFileOffset": 22912,
+      "width": 21,
+      "height": 13,
+      "sha256": "98b8cd51ca0d240b8d46a81d6fed98c0e8e93f84f8dc415ef9ed059d6bec9686"
+    },
+    {
+      "name": "explosion-0",
+      "address": 32384,
+      "sourceFileOffset": 24192,
+      "width": 21,
+      "height": 11,
+      "sha256": "67fd992f11fac54b2c86d8456205796217071210817a341daefdb26cbf65e999"
+    },
+    {
+      "name": "explosion-1",
+      "address": 26880,
+      "sourceFileOffset": 18688,
+      "width": 21,
+      "height": 12,
+      "sha256": "a706cdd528d50013742b3788bd23f62469b87505e1c18a963de3bd827ce1e5e6"
+    },
+    {
+      "name": "explosion-2",
+      "address": 32640,
+      "sourceFileOffset": 24448,
+      "width": 21,
+      "height": 12,
+      "sha256": "f42b4da7eb456db5983670140d803c91046a698a6e8ea74af0f933a1bcd75f7d"
+    },
+    {
+      "name": "ammo",
+      "address": 32000,
+      "sourceFileOffset": 23808,
+      "width": 21,
+      "height": 13,
+      "sha256": "8502059dd710c0f8813c6dc309b76ecff9d36cf90c9b23a0ae375b493750a9b8"
+    },
+    {
+      "name": "projectile",
+      "address": 28416,
+      "sourceFileOffset": 20224,
+      "width": 14,
+      "height": 1,
+      "sha256": "591c8216ede80676a5afe038ff5f8a069dff8ebddd4c09cc2ac5ee4e148c3309"
+    },
+    {
+      "name": "bonus-0",
+      "address": 33024,
+      "sourceFileOffset": 24832,
+      "width": 28,
+      "height": 6,
+      "sha256": "677f476a6ad12bc9b379e895a187cc5f7831141651189470f41fef7fe0872439"
+    },
+    {
+      "name": "bonus-1",
+      "address": 33280,
+      "sourceFileOffset": 25088,
+      "width": 28,
+      "height": 6,
+      "sha256": "29c3e82edd56f2d9d6e4bc0eb34b93df27276e6889cbda245f9a44f22c7d9326"
+    },
+    {
+      "name": "bonus-2",
+      "address": 33536,
+      "sourceFileOffset": 25344,
+      "width": 28,
+      "height": 6,
+      "sha256": "a5eeb94abbd95419e1277241f186313d90836c19ff627cefe82553fc1f883725"
+    },
+    {
+      "name": "bonus-3",
+      "address": 33792,
+      "sourceFileOffset": 25600,
+      "width": 28,
+      "height": 6,
+      "sha256": "3fb9041f50f233c3d929c0c5225f3186fe3dd44626c2ee4eb59d119b213de14b"
+    }
+  ],
+  "claims": [
+    {
+      "addresses": [
+        "$5000-$509F",
+        "$0400-$042A (copied from $2400)"
+      ],
+      "finding": "I/J/K/L move up/left/down/right; Space stops; E/S/D/F shoot up/left/down/right."
+    },
+    {
+      "addresses": [
+        "$4447-$44BD",
+        "$45CC-$45DA"
+      ],
+      "finding": "Player step is 2; coordinates X32..192,Y32..160; axis changes only on 32-unit intersections."
+    },
+    {
+      "addresses": [
+        "$4054-$40A5",
+        "$4200-$438F"
+      ],
+      "finding": "Round-robin projectile update each loop, actor update every8 loops, player every32, resupply blink128."
+    },
+    {
+      "addresses": [
+        "$4399-$439C",
+        "$5255-$526B",
+        "$4900-$49C3"
+      ],
+      "finding": "Enemy kill stages award 10/20/40/80; respawn until fourth kill. Middle-byte BCD carry plus a 4-to-5 thousands transition award an extra life every 5000 points."
+    },
+    {
+      "addresses": [
+        "$5999-$59EC",
+        "$5BB5-$5BC9",
+        "$5AC9",
+        "$5D5F-$5D6C"
+      ],
+      "finding": "Seven-by-six 16x16 obstacle blocks; eleven source enemy spawns; 35 initial ammo decreasing by 5 per wave to 15."
+    }
+  ],
+  "unresolved": [
+    "Loader's final $0800 transfer appears to reach graphics data; the observed $4000 game startup is statically valid, but loader completion is not established.",
+    "Original CPU-loop-to-wall-clock timing, HGR artifact colors, sound waveform and original runtime comparison are unresolved.",
+    "M1 Air acceptance and physical Fusion Pro controls have not been tested."
+  ]
+}
