@@ -13,7 +13,7 @@ No title below is a completed faithful rewrite. The current development host is 
 | Apple Panic / Apple II | Native development session with original sprites and supplied hole/slot/capture/crush/chain rules; controls/pause/Ctrl-R/saves/launch/return; 25 core/seven decoder checks plus integration tests and live M5 smoke | Original art/colors/font/audio/screens/visible drop sequences, ROM randomness/source clocks, complete controls/source comparisons and M1 acceptance |
 | Asteroids / Atari2600 | Native66-variation playing dispatcher, packed entities/source movement/collisions/splits/waves/score/lives/controls/alternating players and snapshots;21 tables/29 masks;25 Swift/seven Python checks | Native session/UI, original TIA art/composition/colors/audio/cadence, source comparisons/physical input and M1 acceptance |
 | Asteroids / Atari7800 | Native four-mode33-object loop with source controls/motion/shots/collisions/splits/score/lives/waves/UFO/phases/snapshots;44 tables/813 graphics;16 Swift/five Python checks | Real boot RAM/timer/optional firmware, pair-order/terminal reconciliation, complete graphics/audio/cadence and native session; original/physical/M1 gates |
-| Asteroids / Atari8-bit | Selected US XEX; source motion/wrap/reflection/spawn/control/collision/score primitives | Complete scheduler and entities, thrust/hyperspace, waves/UFOs/hit effects, sprites/audio and session |
+| Asteroids / Atari8-bit | Native source-VBI/foreground lifecycle, selected modes/four-player rules, thrust/shots/shield/relocation/collisions/splits/waves/UFO/explosions/sound parameters/snapshots and hash-fenced original tables/masks;17 Swift/four Python checks | Explicit RANDOM/startup fractions, OS/font/menu/attract/high scores, raster order/death carry/POKEY/region/audio and native session; original/physical/M1 gates |
 | Breakout / Atari2600 | Native development session;26 source-core checks cover prior-frame pixel contacts, sampling/steering/fractions, timed/no-rebuild and scored/team transitions, five rounds, selection overflow; original HUD digits prepared | Intraline graphics, rotation/attract/selection art, cadence/color/audio conversion, independent split-paddle catches, original/physical comparisons and M1 acceptance |
 | Conflict2500 / AppleII | Playable native **development reconstruction** of recovered BASIC rules; scenario, map/tactical/status, commands, AI/turns and save/resume | Applesoft RNG/numeric parity, original display/animation/timing and multi-ship docking prompts; original comparison |
 | Crossfire / AppleII | Native development session with15 original masks, XOR silhouettes/anchors, independent movement/fire adapters, pauses/saves/launch/return; native/static and live M5 shot/resume evidence | Selected source startup, exact HGR field/color/font/screens, audio/cadence, all original/physical comparisons and M1 acceptance |
@@ -35,6 +35,15 @@ No title below is a completed faithful rewrite. The current development host is 
 
 ## Current checkpoint verification
 
+The latest per-edition source-loop checkpoint passes **262 Swift XCTest**
+(five expected skips: four opt-in golf captures and no CoreAudio output),
+**245 Python tests** and optimized native ARM64 compilation on M5. The new
+Asteroids cores contribute58 source-core tests and16 decoder tests. Dig Dug's
+two packed formats contribute six tests and recover exactly24KiB; gameplay is
+absent. The three Asteroids editions remain unregistered native cores, with
+their own source startup/timing/presentation gaps. These results do not close
+original-game, physical-controller or M1 gates.
+
 The final M5 integration checkpoint passes **192 Swift XCTest** (three expected skips), **193 Python tests** and optimized ARM64 compilation. Eleven native integration regressions cover focused/neutralized input, pending source taps, original key maps, both sticks, source stop at intersections, media recheck before launch, HUD bounds and character pixel continuity. Live checks cover Apple Panic original masks/movement/pause/save/return/paused restore (X82/Y160,15 source half-dispatches, level1/lives3/score0), Crossfire original masks/stop/shot/pause/save/return/paused restore (ammo35→34), and Night Driver original instruction/road/car/HUD, acceleration/pause/save/return/paused restore (speed16/source time98). These are native and M5 development receipts. Original behavior/visual/audio comparisons, physical controller transitions and every M1 gate remain open. The active all16-title goal is unfinished.
 
 Reproduction:
@@ -43,6 +52,9 @@ Reproduction:
 python3 Tools/prepare_retro_media.py
 python3 Tools/prepare_breakout2600.py
 python3 Tools/prepare_asteroids.py
+python3 Tools/prepare_asteroids2600.py
+python3 Tools/decode_asteroids7800.py
+python3 Tools/decode_asteroids8bit.py
 python3 Tools/prepare_other_windows.py
 python3 Tools/decode_thps2.py --all-levels
 python3 Tools/decode_apple_panic.py

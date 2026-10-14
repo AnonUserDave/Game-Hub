@@ -147,3 +147,30 @@ No physical Fusion Pro, multi-controller, original behavior/visual/audio compari
 | Tests | 201 Swift XCTest (4 opt-in or environment skips) and the Python suite pass |
 
 Not checked: live play of these features in the native UI, M1 anything.
+
+## Asteroids edition loops and Dig Dug source recovery
+
+2026-10-13, son's M5 Pro /24GB /macOS26.3 /ARM64 development only.
+`./Tools/test.sh` passes262 XCTest with five expected skips (four opt-in golf
+captures and no CoreAudio output); Python discovery passes245 tests; optimized
+`./Tools/build.sh` passes. Logs remain local at
+`/tmp/gamehub-asteroids-native-{swift,python,build}.log`.
+
+The new separate2600/7800/8-bit cores pass25/16/17 Swift cases and7/5/4 decoder
+cases, respectively. Checks include source schedules, motion/control arithmetic,
+finite entity/shot pools, split/score/life/wave/player consequences, startup
+dependencies, source-fenced snapshots and canonical rule/graphics tamper
+rejection. The2600 also passes660,000 source-frame steps over66 variations;
+the7800 checks196,608 damping states and10,000 passes per mode. All original
+packages were available locally; they stay out of Git.
+
+Dig Dug's two bounded packed byte formats recover23,044 intro bytes,19,333
+known relocated packed bytes and24,576 body bytes at `$6000..$BFFF`, retaining
+the trainer and game boundary and leaving optional patches unapplied. Six
+Python tests pass. The short-zero path retains both source increments and emits
+two zeros; the regression/hash/extent receipt reflects that correction.
+
+These are static reconstruction/native consistency checks. No original was
+executed or emulated, no new playable Asteroids/Dig Dug registry entry was
+added, no live UI/physical controller comparison occurred and no sustained M1
+acceptance was performed. The all16-title goal remains unfinished.
