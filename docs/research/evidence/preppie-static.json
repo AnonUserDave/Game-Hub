@@ -1,0 +1,1480 @@
+{
+  "schema": 1,
+  "archiveSHA256": "c9a99331845fd13d6ea3aea30127f759369a29e6b6b204a545f66500d97395be",
+  "sourceSHA256": "802fd22e3b866f001ab1bffae7422c62e906461e6460540761bead260ed710f5",
+  "knownRelocationSHA256": "e01ad59aee16357addb667483917cded5a490e443e97d9e38fde37b73bcd5ac7",
+  "packageSHA256": "1d3c0d11989d1fddda44d02db70a130e06e73e1a665a6cbd7d9d54cf0838fd28",
+  "packageBytes": 158860,
+  "loadRecords": [
+    {
+      "loadAddress": 12288,
+      "endAddressInclusive": 20480,
+      "fileOffset": 6,
+      "bytes": 8193,
+      "sha256": "812342c3725c1b2878d7227d503ad1040f6d3b58767438732180cbe6d9aea52f"
+    },
+    {
+      "loadAddress": 738,
+      "endAddressInclusive": 739,
+      "fileOffset": 8203,
+      "bytes": 2,
+      "sha256": "db3426e878068d28d269b6c87172322ce5372b65756d0789001d34835f601c03"
+    },
+    {
+      "loadAddress": 21760,
+      "endAddressInclusive": 36864,
+      "fileOffset": 8209,
+      "bytes": 15105,
+      "sha256": "e188ab8c7401f849bea7e0a5fa08c1e518c08dba82c43a56fb3f023ed89fbbf1"
+    },
+    {
+      "loadAddress": 736,
+      "endAddressInclusive": 737,
+      "fileOffset": 23318,
+      "bytes": 2,
+      "sha256": "591bdf4fd2b31af09e924b39ca09634f97484568e069ba0d91cad5d05fcb55ac"
+    }
+  ],
+  "windows": [
+    {
+      "image": "relocated-known",
+      "address": 10828,
+      "bytes": 6,
+      "sha256": "063f8c37c4375f3a2a57d3450ef63354a75a7aea6b0310b2454181a5e1d5d424",
+      "uses": [
+        "level0-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10888,
+      "bytes": 6,
+      "sha256": "b0f66adc83641586656866813fd9dd0b8ebb63796075661ba45d1aa8089e1d44",
+      "uses": [
+        "level0-group1",
+        "level1-group1",
+        "level2-group1",
+        "level3-group1",
+        "level4-group1",
+        "level5-group1",
+        "level6-group1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10900,
+      "bytes": 4,
+      "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+      "uses": [
+        "level0-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10940,
+      "bytes": 3,
+      "sha256": "5ae7e6a42304dc6e4176210b83c43024f99a0bce9a870c3b6d2c95fc8ebfb74c",
+      "uses": [
+        "level0-group3",
+        "level1-group3",
+        "level2-group3",
+        "level3-group3",
+        "level4-group3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10949,
+      "bytes": 19,
+      "sha256": "adc05f321c3f1ff6d09697e44f3071ef758763dc5f6cf5e98b3ce266aa841ad3",
+      "uses": [
+        "level0-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11527,
+      "bytes": 48,
+      "sha256": "870a8e8ef84a2fc822af4f6cb0b3f87ddfda27c5b697cb30f4c81a521c2e0f12",
+      "uses": [
+        "level0-lane0",
+        "level0-lane2",
+        "level0-lane4",
+        "level1-lane0",
+        "level1-lane2",
+        "level1-lane4",
+        "level2-lane0",
+        "level2-lane4",
+        "level3-lane0",
+        "level3-lane4",
+        "level4-lane0",
+        "level5-lane0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11575,
+      "bytes": 48,
+      "sha256": "f252d6fed29c2184499f31ee850cd8f60770f4b13ea246fc7eb9cd3bb063e8d7",
+      "uses": [
+        "level0-lane1",
+        "level0-lane3",
+        "level0-lane5",
+        "level1-lane1",
+        "level1-lane3",
+        "level1-lane5",
+        "level2-lane1",
+        "level2-lane5",
+        "level3-lane1",
+        "level3-lane5",
+        "level4-lane1",
+        "level5-lane1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12007,
+      "bytes": 48,
+      "sha256": "e8716d739fd42695f83b8710e08adab1847bd5040190fa37159d9888c392e51d",
+      "uses": [
+        "level0-lane6",
+        "level0-lane10",
+        "level1-lane6",
+        "level1-lane10",
+        "level2-lane6",
+        "level3-lane6",
+        "level4-lane6",
+        "level5-lane6",
+        "level6-lane6",
+        "level7-lane6",
+        "level8-lane6",
+        "level9-lane6"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12055,
+      "bytes": 48,
+      "sha256": "feb84fc4ff0b0f0c3c58896d017ca32274bec3f308708e50ad92aaf711de2232",
+      "uses": [
+        "level0-lane7",
+        "level0-lane11",
+        "level1-lane7",
+        "level1-lane11",
+        "level2-lane7",
+        "level3-lane7",
+        "level4-lane7",
+        "level5-lane7",
+        "level6-lane7",
+        "level7-lane7",
+        "level8-lane7",
+        "level9-lane7"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12103,
+      "bytes": 48,
+      "sha256": "80ee0f4c648d7066c9e7a8a1e3b3a12c039e37be7a2151950cfeebd524a574d1",
+      "uses": [
+        "level0-lane8",
+        "level1-lane8",
+        "level2-lane8",
+        "level3-lane8"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12151,
+      "bytes": 48,
+      "sha256": "77c8d18bf14d5e5d9f785b786c1a301081fad6e01eae38bae7acab42746faaae",
+      "uses": [
+        "level0-lane9",
+        "level1-lane9",
+        "level2-lane9",
+        "level3-lane9"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10834,
+      "bytes": 6,
+      "sha256": "79468d6a8c47452480a085e2ec8ef719becf281515d55b02ba97e6c8cac94831",
+      "uses": [
+        "level1-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10904,
+      "bytes": 4,
+      "sha256": "191949ff18d4ffd269d06c4b0bcd641257c885d3ea94c7556134740595c2d3fc",
+      "uses": [
+        "level1-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10968,
+      "bytes": 19,
+      "sha256": "3b11ec2bb438020cf9b62c3d0415697bdb1ad4af59b0966340ee961cfeace922",
+      "uses": [
+        "level1-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10840,
+      "bytes": 6,
+      "sha256": "69c81f52394a3deda0bd8434daf6e2348dacdc37120e2d5964841d50eac61eb7",
+      "uses": [
+        "level2-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10908,
+      "bytes": 4,
+      "sha256": "3c3351dc1dedcd627419e02de4fc8202e2d507d786c26f142b767fd9859d0cb4",
+      "uses": [
+        "level2-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10987,
+      "bytes": 19,
+      "sha256": "6029b1ec3f1becc2ef4adefcd7fe47e2add1629ba2c0071eaa49a3e81a18d171",
+      "uses": [
+        "level2-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11623,
+      "bytes": 48,
+      "sha256": "ebfd91d5c552800a73693e633af27fa87c683e73fa5aeed7fed5594c26a10b4c",
+      "uses": [
+        "level2-lane2",
+        "level3-lane2",
+        "level4-lane2",
+        "level5-lane2",
+        "level6-lane2",
+        "level7-lane2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11671,
+      "bytes": 48,
+      "sha256": "9f0d2b473519508a86f0ddefabbe903b754cccef37ca3b5ab3bcc64ab7173607",
+      "uses": [
+        "level2-lane3",
+        "level3-lane3",
+        "level4-lane3",
+        "level5-lane3",
+        "level6-lane3",
+        "level7-lane3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12295,
+      "bytes": 48,
+      "sha256": "1b56548e313f7c86cd2c65e39de1acadad763cbd779a8c139e26205155cf0c70",
+      "uses": [
+        "level2-lane10",
+        "level3-lane10",
+        "level4-lane10",
+        "level5-lane10",
+        "level6-lane10",
+        "level7-lane10",
+        "level8-lane10",
+        "level9-lane10"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12343,
+      "bytes": 48,
+      "sha256": "a04506690617e04668eac2536b3c1cbbb45497e883fea4dc946b3fd0488f61f1",
+      "uses": [
+        "level2-lane11",
+        "level3-lane11",
+        "level4-lane11",
+        "level5-lane11",
+        "level6-lane11",
+        "level7-lane11",
+        "level8-lane11",
+        "level9-lane11"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10846,
+      "bytes": 6,
+      "sha256": "30da77ee81261938ef2a512b56157ba449951b22285b85370d9490f1192bced8",
+      "uses": [
+        "level3-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10912,
+      "bytes": 4,
+      "sha256": "9260e0f5403ab231a007aeed6a687375c06424d387a320d52359af3e3d1c597b",
+      "uses": [
+        "level3-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11006,
+      "bytes": 19,
+      "sha256": "bf46b9093a630c8c17df7fea2f048e354a92990e8694311871d74582a2075613",
+      "uses": [
+        "level3-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10852,
+      "bytes": 6,
+      "sha256": "7a5a2a510c5d1f97004c63e0684570d667a12cafc383732d05f68d9ba98a27fd",
+      "uses": [
+        "level4-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10916,
+      "bytes": 4,
+      "sha256": "b514a3cfc50864c4c26a42bd917b12f332e272b3329550dd7504f23d0bbb1e0b",
+      "uses": [
+        "level4-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11025,
+      "bytes": 19,
+      "sha256": "459e9fe4dc947188ebcf7bdcfefd26c1f12ef7eee595e5e5ba2ceccee68e109b",
+      "uses": [
+        "level4-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11815,
+      "bytes": 48,
+      "sha256": "06e9808a1ceebb6ab2c0d6e85dae1c6e57df7860f96d13f43b04b58fdd35b6d2",
+      "uses": [
+        "level4-lane4",
+        "level5-lane4",
+        "level6-lane4",
+        "level7-lane4",
+        "level8-lane4",
+        "level9-lane0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11863,
+      "bytes": 48,
+      "sha256": "21d6b96dc6532efa711653992de8cb60ba92c8a9edd4936cbee7ce6dbca20ad3",
+      "uses": [
+        "level4-lane5",
+        "level5-lane5",
+        "level6-lane5",
+        "level7-lane5",
+        "level8-lane5",
+        "level9-lane1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12199,
+      "bytes": 48,
+      "sha256": "dcbce864e7444d51394bda1851ed112cc4caff8604d555bcaa3e46fdfea4c420",
+      "uses": [
+        "level4-lane8",
+        "level5-lane8",
+        "level6-lane8",
+        "level7-lane8",
+        "level8-lane8",
+        "level9-lane8"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 12247,
+      "bytes": 48,
+      "sha256": "fb4da2f9b828fa60f444b39696310345c5092ba10b361cbe7f4244ffe24cb497",
+      "uses": [
+        "level4-lane9",
+        "level5-lane9",
+        "level6-lane9",
+        "level7-lane9",
+        "level8-lane9",
+        "level9-lane9"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10858,
+      "bytes": 6,
+      "sha256": "82217814db013d4a738bc2196c751117b8d49e52fc280e774b8caca608fb55fe",
+      "uses": [
+        "level5-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10920,
+      "bytes": 4,
+      "sha256": "920865bec03c8c95cae2fdbf7e82823892ac6ab03b5337d1f9b6eae1158cbd85",
+      "uses": [
+        "level5-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10943,
+      "bytes": 3,
+      "sha256": "7951f9866246942566985c82c9363da4674caa673f3c4f7919927330aba37404",
+      "uses": [
+        "level5-group3",
+        "level6-group3",
+        "level7-group3",
+        "level8-group3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11044,
+      "bytes": 19,
+      "sha256": "2927fe5a8f33fca7802feda6616f2432fea8f259df0773c44b96cab90fe6d4a2",
+      "uses": [
+        "level5-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10864,
+      "bytes": 6,
+      "sha256": "ca8447236ba5960557bbc20622dde5980f60142cb2379627626fa8461354b11e",
+      "uses": [
+        "level6-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10924,
+      "bytes": 4,
+      "sha256": "92d4fd4dbe362e25dbbb9f18fd730454aba5244745b9699fccbc5b790dda5e76",
+      "uses": [
+        "level6-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11063,
+      "bytes": 19,
+      "sha256": "9cb78e096792ef73fb208b052f21566dc2584e805658d9669dd91bec1022b19d",
+      "uses": [
+        "level6-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11719,
+      "bytes": 48,
+      "sha256": "68b8c2c3ca54722d7e8564e398354f1142d73e703ff950fd065c295877fa9246",
+      "uses": [
+        "level6-lane0",
+        "level7-lane0",
+        "level8-lane0",
+        "level8-lane2",
+        "level9-lane2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11767,
+      "bytes": 48,
+      "sha256": "951899e195725e7df1e5831cda47d9ec98b69d2089968c11c4e648214e52bd94",
+      "uses": [
+        "level6-lane1",
+        "level7-lane1",
+        "level8-lane1",
+        "level8-lane3",
+        "level9-lane3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10870,
+      "bytes": 6,
+      "sha256": "075930619145afb6a05cb27a57042acb8bb76bc6b6144247da211be237f55c66",
+      "uses": [
+        "level7-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10894,
+      "bytes": 6,
+      "sha256": "a476bf4614b7f4c1c99252ee7080bb7101a99be0c2ae118c2d386a6c000711b7",
+      "uses": [
+        "level7-group1",
+        "level8-group1",
+        "level9-group1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10928,
+      "bytes": 4,
+      "sha256": "588b17d1d412f1ed40b350c43d5f5f4ae321fb7daca9cecece10f4cd3447469b",
+      "uses": [
+        "level7-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11082,
+      "bytes": 19,
+      "sha256": "b77c6f335d0c8b842841421607583241d08a9beb5571cda9ca725f32e3c5855a",
+      "uses": [
+        "level7-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10876,
+      "bytes": 6,
+      "sha256": "62ea693c300f3f1ef08d4c92ac9a27865ddff4df0ce46908ee0d0ef28bed0a86",
+      "uses": [
+        "level8-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10932,
+      "bytes": 4,
+      "sha256": "a2a88131be7b79372c111883b3fe09731a077bd36d8cf928fbd9a822b899966c",
+      "uses": [
+        "level8-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11101,
+      "bytes": 19,
+      "sha256": "fd3b216ddffa9301ed9b9622e388ff82fd4e3af52ec654b0927e824eca6ff9c1",
+      "uses": [
+        "level8-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10882,
+      "bytes": 6,
+      "sha256": "ef39ec7bcdcede0401c8429bf2908a45ef0159b92f3f6389081553e0cda3ac56",
+      "uses": [
+        "level9-group0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10936,
+      "bytes": 4,
+      "sha256": "44cca409bb0c34ca6c0629717563c645ccb7e443978c2d6a668f3476d49440a8",
+      "uses": [
+        "level9-group2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 10946,
+      "bytes": 3,
+      "sha256": "074d99c983072816cbc8d980c4a2fd441f6036aca06f83ee14e05cab5afbed85",
+      "uses": [
+        "level9-group3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11120,
+      "bytes": 19,
+      "sha256": "78dd518317b15ef21bf0bbe52d50e38a045ed04d8a5f4cf5d5999d9bc95fc801",
+      "uses": [
+        "level9-group4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11911,
+      "bytes": 48,
+      "sha256": "74cdbb9d1f0d159522a7da7f75face398ac7bda9fb1e86ac68e1f834ca8da87f",
+      "uses": [
+        "level9-lane4"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 11959,
+      "bytes": 48,
+      "sha256": "e2d498cfe2766c4ee039e28940424edf3094d7edeb67d39fd92287eb0c7c51ef",
+      "uses": [
+        "level9-lane5"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 6144,
+      "bytes": 1024,
+      "sha256": "120a84731200a6f53e1417ef9bcac5419c8a0e9452cf599e5bb634ad93c7dc12",
+      "uses": [
+        "character-bank-$1800"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 7168,
+      "bytes": 1024,
+      "sha256": "9b47ccfceccc6a65c73aaedf98c2ea7abdd607a7aecf97b40495c373c71533ce",
+      "uses": [
+        "character-bank-$1C00"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 15360,
+      "bytes": 1024,
+      "sha256": "76f5010091333b43649e12dae3a5a087d068e089bff2dd7355c9eda65975e56a",
+      "uses": [
+        "character-bank-$3C00"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5567,
+      "bytes": 10,
+      "sha256": "bd537b72041413a7d853057b9d8edfe839a995184c29fac33f436a775d847773",
+      "uses": [
+        "actor-part0-direction0-frame0",
+        "actor-part0-direction0-frame3",
+        "actor-part0-direction1-frame0",
+        "actor-part0-direction1-frame3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5576,
+      "bytes": 10,
+      "sha256": "a069447c71ce6279bb80abf265611687f7da81422682924da50eaf36211b9413",
+      "uses": [
+        "actor-part0-direction0-frame1",
+        "actor-part0-direction1-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5585,
+      "bytes": 10,
+      "sha256": "7bf340e25845d1b67dd8ed12831efb6f958f5dbb92bfa97c58dd907eadd994ff",
+      "uses": [
+        "actor-part0-direction0-frame2",
+        "actor-part0-direction1-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5618,
+      "bytes": 10,
+      "sha256": "c3976f90f57177010b1bcfbc93fc8f49dc17f5cd7cb95ebb40d42793869e5195",
+      "uses": [
+        "actor-part0-direction2-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5602,
+      "bytes": 10,
+      "sha256": "8ac2c8da3e73795b282c0753c49b6e8cae7285ad0198aec3ffad332d6a85e559",
+      "uses": [
+        "actor-part0-direction2-frame1",
+        "actor-part0-direction3-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5610,
+      "bytes": 10,
+      "sha256": "1ae13e912a8644c35863f052a0e734f2646737c1f6d179273207950c2a66c3e3",
+      "uses": [
+        "actor-part0-direction2-frame2",
+        "actor-part0-direction3-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5594,
+      "bytes": 10,
+      "sha256": "ad07c192644fcc9f16f6e1e2600d9d4f41f86297ddc6deb5cca8e8498fe0c4bf",
+      "uses": [
+        "actor-part0-direction3-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5627,
+      "bytes": 10,
+      "sha256": "5caa18ee24751deda1a7505e9a39eca629d4b06989e121355f3d12fbd39eab1e",
+      "uses": [
+        "actor-part1-direction0-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5636,
+      "bytes": 10,
+      "sha256": "35abc9ec6f8846be5a9e4946fe7c5836305b6862c361923e25969cc1cba027ea",
+      "uses": [
+        "actor-part1-direction0-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5645,
+      "bytes": 10,
+      "sha256": "8eefa2d1aedb4a67df19b20eb8d9fe6e14aacf6f4cf5ced25eec2ce61fdd23b6",
+      "uses": [
+        "actor-part1-direction0-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5654,
+      "bytes": 10,
+      "sha256": "e8dc5d3f78659ee3842a33417f40dd4fbea0091a106ea5ffdc06594599cfd676",
+      "uses": [
+        "actor-part1-direction0-frame3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5680,
+      "bytes": 10,
+      "sha256": "5d6f8b2cfbda0d11d70f8052929daf8171eeda75a04249c945b6e5bbb99a05e1",
+      "uses": [
+        "actor-part1-direction1-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5689,
+      "bytes": 10,
+      "sha256": "5e382b3631f379818d2e2f5399e5b394880659181e81ba84e8d795ebff5c6992",
+      "uses": [
+        "actor-part1-direction1-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5698,
+      "bytes": 10,
+      "sha256": "bedc148a2f050abfb9a7c71a5da659b09691f72e5d9d8e0a5f443736545501bd",
+      "uses": [
+        "actor-part1-direction1-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5707,
+      "bytes": 10,
+      "sha256": "7cc309d0f72612d03bd37ada41fa1445881a5e577aa0ff7c1f80c1109d634084",
+      "uses": [
+        "actor-part1-direction1-frame3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5756,
+      "bytes": 10,
+      "sha256": "da930c8bfdfdd08b4b6e95dd5f00a8c1dd961482cb96a03180bc9c5509ecbcde",
+      "uses": [
+        "actor-part1-direction2-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5764,
+      "bytes": 10,
+      "sha256": "c73a1df01a689257bbb9602c9c0a80fd9aa312c56cdf79a6df300445c07319d0",
+      "uses": [
+        "actor-part1-direction2-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5772,
+      "bytes": 10,
+      "sha256": "998efaaacc1e8bb110792f3401b58a3e54882c6f7d76449dd70e9cdab4746f9e",
+      "uses": [
+        "actor-part1-direction2-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5824,
+      "bytes": 10,
+      "sha256": "379c68a9593bca4c8f9fa6809c8f712704b6ff896ba523708348622ae47e93d2",
+      "uses": [
+        "actor-part1-direction3-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5832,
+      "bytes": 10,
+      "sha256": "0d89219a4ccb87ef7e765f3b4067ef095f90b74f12cd3a550aa66fb95605d4b4",
+      "uses": [
+        "actor-part1-direction3-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5840,
+      "bytes": 10,
+      "sha256": "bcd036f9aacd88f511c75f105bcc1fd865d87fb311f94ad69a04601ff88f0770",
+      "uses": [
+        "actor-part1-direction3-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5664,
+      "bytes": 10,
+      "sha256": "00d66a94bc02dd6c12ac8fd46e2a19076b3fbbb252edf2e0784259492766a2e0",
+      "uses": [
+        "actor-part2-direction0-frame0",
+        "actor-part2-direction0-frame1",
+        "actor-part2-direction0-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5663,
+      "bytes": 10,
+      "sha256": "dd5d11a752dd8d96f13114f158eb17e98f253a069d3ce1967899f3006ae262da",
+      "uses": [
+        "actor-part2-direction0-frame3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5717,
+      "bytes": 10,
+      "sha256": "52a115dffbc00d206fae8c1c93f18540943d01406498cd66e45b09ae16231a55",
+      "uses": [
+        "actor-part2-direction1-frame0",
+        "actor-part2-direction1-frame1",
+        "actor-part2-direction1-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5716,
+      "bytes": 10,
+      "sha256": "42bbf76ca779e13fe086ad31839a5f31e48f6fd990cdbc1cc8e9dbc88868893e",
+      "uses": [
+        "actor-part2-direction1-frame3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5780,
+      "bytes": 10,
+      "sha256": "dd604349f1b0328e8b30f5bc2bf25cfeafdfeb4f0d433d13e75a6cd808825bd1",
+      "uses": [
+        "actor-part2-direction2-frame0",
+        "actor-part2-direction2-frame1",
+        "actor-part2-direction2-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5848,
+      "bytes": 10,
+      "sha256": "31e47da55837a29f3223144a0b3007277f53ed2e4003593116b6f8758e63e53c",
+      "uses": [
+        "actor-part2-direction3-frame0",
+        "actor-part2-direction3-frame1",
+        "actor-part2-direction3-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5671,
+      "bytes": 10,
+      "sha256": "a843155b6179c3a3de360e43a03cca4b8fc09347328e2d75b44c0858f89dc8a0",
+      "uses": [
+        "actor-part3-direction0-frame0",
+        "actor-part3-direction0-frame1",
+        "actor-part3-direction0-frame2",
+        "actor-part3-direction1-frame0",
+        "actor-part3-direction1-frame1",
+        "actor-part3-direction1-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5670,
+      "bytes": 10,
+      "sha256": "fc9806ef634a7bc699e9a473c49bd4f67cdebbba5853855eca8c42ab2e0b8242",
+      "uses": [
+        "actor-part3-direction0-frame3",
+        "actor-part3-direction1-frame3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5789,
+      "bytes": 10,
+      "sha256": "f19f1926f38848ee67d0e9fd49e31f30e06573ca895f22e5d5ce8b806b252fce",
+      "uses": [
+        "actor-part3-direction2-frame0",
+        "actor-part3-direction2-frame1",
+        "actor-part3-direction2-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5857,
+      "bytes": 10,
+      "sha256": "24e1e3283fa4be67ea4ada09268176d154fe9555ec866d937ca67ff2be5ff027",
+      "uses": [
+        "actor-part3-direction3-frame0",
+        "actor-part3-direction3-frame1",
+        "actor-part3-direction3-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5725,
+      "bytes": 10,
+      "sha256": "909be5ca6581f1197db787326a29920fe4305f8426ff3f489d5dc61985ebe789",
+      "uses": [
+        "actor-part4-direction0-frame0",
+        "actor-part4-direction1-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5733,
+      "bytes": 10,
+      "sha256": "adaa735b25b6c31d5611986532632712b18ea66a19bacd4bee062d86fe99aac5",
+      "uses": [
+        "actor-part4-direction0-frame1",
+        "actor-part4-direction1-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5741,
+      "bytes": 10,
+      "sha256": "7a0a58b1540aa0ebc8f4b5ad49dcdba554d3c206d5c5045bee7f21529793bb6b",
+      "uses": [
+        "actor-part4-direction0-frame2",
+        "actor-part4-direction1-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5749,
+      "bytes": 10,
+      "sha256": "a526fb2cb4ac33797aeade944eedfbd774d515bf131f53bc24f799ee19905bd3",
+      "uses": [
+        "actor-part4-direction0-frame3",
+        "actor-part4-direction1-frame3"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5797,
+      "bytes": 10,
+      "sha256": "bd627f8421c410c62c29ee82c7b6af5c2ae965ffa47b04f3a634a3eb81f543a8",
+      "uses": [
+        "actor-part4-direction2-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5806,
+      "bytes": 10,
+      "sha256": "9b15f88455c0bb8b8dbaf9c201744e4a6203b7468c4ebc0c6051a23815d29df7",
+      "uses": [
+        "actor-part4-direction2-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5815,
+      "bytes": 10,
+      "sha256": "063d61138c765612c1aef1f148a9794ccc0345a299255a154c176569911516dc",
+      "uses": [
+        "actor-part4-direction2-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5865,
+      "bytes": 10,
+      "sha256": "4d81e09561baf3847f4b2a667ce00b9ce276599ee9e10224c8f0320a3ba4ab83",
+      "uses": [
+        "actor-part4-direction3-frame0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5874,
+      "bytes": 10,
+      "sha256": "5e217827e0e103bab101e3f0a9940c16e9797f28942757120e4bbc4238409c09",
+      "uses": [
+        "actor-part4-direction3-frame1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 5883,
+      "bytes": 10,
+      "sha256": "de3a208c09a7485fd2ab3eb9c8d76ee9617cd4e25f77d12d1577fe5837a2cd8d",
+      "uses": [
+        "actor-part4-direction3-frame2"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8231,
+      "bytes": 16,
+      "sha256": "aebd4e0eb5c05d0b9efa9dcc96c3e40116a1820e03e9000cc1bcfc429d3871ab",
+      "uses": [
+        "joystickDirection"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8242,
+      "bytes": 4,
+      "sha256": "bb206bf9a08b5cbafe7df96a9ea48000f0683437ba503a34ea6fbba01bc75020",
+      "uses": [
+        "playerOffsetsX0"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8246,
+      "bytes": 4,
+      "sha256": "d38a28f9341802a26b9e1539fbee3f676f5971021feacc537f0b5c560a8e7a03",
+      "uses": [
+        "playerOffsetsX1"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8250,
+      "bytes": 5,
+      "sha256": "48c1ee3e04fbbe2345b5dd1b28e6466de40b3c2a451bb441b5ac3707b509efb9",
+      "uses": [
+        "playerMemoryPages"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8255,
+      "bytes": 5,
+      "sha256": "901621c048eb3a2407f8f2e77dae66ebf4f4b1277f1d0bc9aa696b4e99bf083f",
+      "uses": [
+        "playerMemoryOffsets"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8260,
+      "bytes": 6,
+      "sha256": "bd1a3545fd85355fe585b0665e6297386b3a7c9bb09550e0c4de9868ffb727c5",
+      "uses": [
+        "lanePhaseRegisters"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8296,
+      "bytes": 6,
+      "sha256": "c338240ce4e72f8d45cd704f0e7398689eb7405308d5c9cc673c133de19fec4f",
+      "uses": [
+        "laneScreenOrigins"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8302,
+      "bytes": 6,
+      "sha256": "58b72761b517f575796eb8860ba32204195891bbff03492d620e05eacb48c8a9",
+      "uses": [
+        "laneDisplayListOffsets"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8308,
+      "bytes": 40,
+      "sha256": "f449daf44d6330b025fd4bc1d27db0da3470164d5cf18584d7cf8de282f120c0",
+      "uses": [
+        "fontClearPatch"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8348,
+      "bytes": 40,
+      "sha256": "634a945877130d92a49eecd6a1c0ccdc801628c6fc6a21999cbe2fb937d6e59b",
+      "uses": [
+        "fontEffectPatch"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8388,
+      "bytes": 40,
+      "sha256": "d3b863e8d3be2446b24f219bd8a0f5b5b43f789400cf1d1b41d09a853f16120a",
+      "uses": [
+        "animatedFontParts"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8428,
+      "bytes": 20,
+      "sha256": "863cabeb961676d4137b34a0ddfc9927b0c652e4add671ed99d26c2147f0df36",
+      "uses": [
+        "movableGlyphRows"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8448,
+      "bytes": 160,
+      "sha256": "3ea34041d24bc99e5dc01e418955966caa5408382ddd7fdb05a404b40b7c0100",
+      "uses": [
+        "playerFramePointers"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8622,
+      "bytes": 4,
+      "sha256": "d77a29d0e1c05d498e939a6d7426b5a3748033db185720ba67323575c01a7565",
+      "uses": [
+        "jumpRows"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8626,
+      "bytes": 19,
+      "sha256": "32ec2487e75b1bf2c554949593ffc65aa74286b35201f973e5472c0b4cb27188",
+      "uses": [
+        "jumpAnimation"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8645,
+      "bytes": 19,
+      "sha256": "c2636a7e9c4b368a29a92af2c565e892fd815b018da784d0b41935e674e36e06",
+      "uses": [
+        "jumpVelocity"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8682,
+      "bytes": 10,
+      "sha256": "42115e0a60298621e80f75a7969527e2213da44bb9a17426d26fd49cb1fc69db",
+      "uses": [
+        "initialScoreGlyphs"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 8700,
+      "bytes": 37,
+      "sha256": "bcaadf62c8cc56875c20a26fc57c5ae04e223f9f72d82fce353f3becfb7c813a",
+      "uses": [
+        "soundPeriods"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13053,
+      "bytes": 10,
+      "sha256": "9365463740d1f069f098d902a0d41806774ec36e37cefea5420a1aa7f01c1cf9",
+      "uses": [
+        "levelLaneDelays"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13063,
+      "bytes": 10,
+      "sha256": "9541292f6352482c828ff31b206de42ad33fea53c5515c71abf108f54651c452",
+      "uses": [
+        "levelEffectEnable"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13073,
+      "bytes": 10,
+      "sha256": "5f286bc2b7b9c7cf3e0796e009807df578392a790d33bb7821d7a461f398e2df",
+      "uses": [
+        "levelPlayerDelay"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13083,
+      "bytes": 10,
+      "sha256": "9b1225aee4f896b6c2f9f0c1e19da948fb60ee07581d306626dbf8a1b9c514af",
+      "uses": [
+        "levelGoalCount"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13093,
+      "bytes": 10,
+      "sha256": "a99cdd0ff9a66a750b501a8a0897b76f8cf2bfab71b2a0e35e5f1d4f9e111920",
+      "uses": [
+        "levelRandomEventBase"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13103,
+      "bytes": 10,
+      "sha256": "d719d7e1815d3e1ac7170acd5953142f82eef49df3b1b33703189d0aa34261b0",
+      "uses": [
+        "levelRandomActorBase"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13113,
+      "bytes": 12,
+      "sha256": "e2b82351947ac83d8981b741cf9336ca16266a562e60b1209e5e48beab687199",
+      "uses": [
+        "laneClearedCells"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 14668,
+      "bytes": 52,
+      "sha256": "1e2b4e41b059adb924b0754817ece3d42c21712b0b4f250c8f0326d700c9b826",
+      "uses": [
+        "dliHandlerPointers"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 2795,
+      "bytes": 29,
+      "sha256": "610f24014b1d5a91fbb4ba7a1600bd8ff8a59ac1d876bc103d5f834ee8761cfb",
+      "uses": [
+        "static-display-list"
+      ]
+    },
+    {
+      "image": "relocated-known",
+      "address": 13312,
+      "bytes": 78,
+      "sha256": "db71492edee10d3a959f50410aa350e9656a4e819e661ea5fc531833cd13652a",
+      "uses": [
+        "static-display-list"
+      ]
+    },
+    {
+      "image": "initial-segment",
+      "address": 12544,
+      "bytes": 202,
+      "sha256": "59da7a395392a3f47d37f80d03a2e55c9075d4fae12c363918d37cdcd61f5240",
+      "uses": [
+        "loading display descriptor"
+      ]
+    }
+  ],
+  "counts": {
+    "levels": 10,
+    "laneRows": 120,
+    "laneRowBytes": 48,
+    "fontBanks": 3,
+    "fontCharacters": 384,
+    "actorCompositeRecords": 80,
+    "actorKnownPointers": 70,
+    "actorDistinctKnownFrames": 41,
+    "actorUnknownPointerRecords": 10,
+    "displayLists": 3,
+    "gameDLIs": 26
+  },
+  "unknownMemory": [
+    {
+      "address": 16385,
+      "bytes": 255,
+      "reason": "Relocation reads beyond supplied XEX segment"
+    },
+    {
+      "address": 0,
+      "bytes": 10,
+      "reason": "Ten composite-pointer records read zero-page RAM"
+    }
+  ],
+  "callbacks": {
+    "xexInit": 12288,
+    "xexRun": 21888,
+    "loaderCallback": 21760,
+    "gameEntry": 6913,
+    "resetMenu": 6998,
+    "newGame": 1743,
+    "immediateVBI": 4705,
+    "menuDeferredVBI": 5094,
+    "gameDeferredVBI": 4783,
+    "displayListInterrupt": 12800,
+    "countdownTimer1": 4114,
+    "musicTimer2": 4487
+  },
+  "method": "Direct selected-byte source parsing; no execution or emulation",
+  "codeWindows": [
+    {
+      "purpose": "game initializer and foreground loop",
+      "address": 1743,
+      "bytes": 804,
+      "sha256": "7b8df2a86e66f3f69efb559afbac1b6e14409475b5b484fe8272114185352774"
+    },
+    {
+      "purpose": "menu graphics and input waits",
+      "address": 2548,
+      "bytes": 190,
+      "sha256": "19dec0aabd3aa2201840517e3c01c2cc620996c3bb7f05c58673de5f1908aba5"
+    },
+    {
+      "purpose": "collision score and death paths",
+      "address": 3078,
+      "bytes": 883,
+      "sha256": "32e16a70a628e8c4f07d745a246c3fbaa49d279f1a911b9e7579d8ea7731f58a"
+    },
+    {
+      "purpose": "source timer1 and dynamic actors",
+      "address": 4114,
+      "bytes": 351,
+      "sha256": "2356c5346d609f0657103d375ad759aadec4400d1601662688164eea09296733"
+    },
+    {
+      "purpose": "music command callback",
+      "address": 4487,
+      "bytes": 218,
+      "sha256": "fdb1e560f452b1dc2413214df410f96d33b6581e12a21a40b38f0af5add4a40f"
+    },
+    {
+      "purpose": "immediate VBI and OS chain",
+      "address": 4705,
+      "bytes": 78,
+      "sha256": "5230add1f6241fdbdf123d396420dabf781edc76b6ff1ed9f904f935599e0098"
+    },
+    {
+      "purpose": "deferred VBI lanes and carry",
+      "address": 4783,
+      "bytes": 389,
+      "sha256": "d3a56561e00834e116cd35ec8ed8e0ab6c0c09e40280c7cf5c587fa8386ff978"
+    },
+    {
+      "purpose": "player input motion frames jump",
+      "address": 5172,
+      "bytes": 395,
+      "sha256": "1ce7c83c09498d116a6159523f43f5dd0301086bd33ba3ea58eca32133caf178"
+    },
+    {
+      "purpose": "menu lifecycle and options",
+      "address": 6913,
+      "bytes": 214,
+      "sha256": "054f9537369fd4773e39d7a158ecf1b4888c124e5b2b83e82fb8b8c000440aa8"
+    },
+    {
+      "purpose": "highscore turn and timer assignment",
+      "address": 12391,
+      "bytes": 277,
+      "sha256": "9c778b5b10863646fa622a9109e0d9913ebde9691e289349ef20887d1aa126c3"
+    },
+    {
+      "purpose": "self-modified DLI dispatcher and handlers",
+      "address": 12800,
+      "bytes": 196,
+      "sha256": "99feec7aecd68ad0cd34950f3cae597e4ea5a719ac72c637f70bfdf1ad6e4826"
+    }
+  ],
+  "reaArchiveEvidence": "ev_67f7358b36654dd77d5129fa36312f052b3e405aa017439319333f6ba17fd6d6",
+  "directGhidra": [
+    {
+      "profile": "loader",
+      "exit": 0,
+      "method": "Direct Ghidra 6502 static import; not REA Evidence",
+      "base": "0x5500",
+      "entries": [
+        21760,
+        21850,
+        21888,
+        21920,
+        21936
+      ],
+      "listingSHA256": "a9b4e5b4299a081492a4c91feb5cbaa21198859327ee9d2ba3472582a7548f91"
+    },
+    {
+      "profile": "game",
+      "exit": 0,
+      "method": "Direct Ghidra 6502 static import; not REA Evidence",
+      "base": "0x600",
+      "entries": [
+        1542,
+        1605,
+        1743,
+        4114,
+        4487,
+        4705,
+        4783,
+        5094,
+        12800,
+        6913
+      ],
+      "listingSHA256": "60c5cd94fb6e0111889b5c63baf94c18e9546df942ecb4e115b0e098abd9466f"
+    }
+  ],
+  "verification": {
+    "hardware": "M5 Pro MacBook Pro,24GB; not M1 acceptance",
+    "pythonTests": 10,
+    "failures": 0,
+    "sourceExecution": false,
+    "nativeGameplayImplemented": false,
+    "originalBehaviorCompared": false,
+    "M1Accepted": false
+  },
+  "openGates": [
+    "Native complete rules and session are not implemented.",
+    "Unknown final255 relocation bytes and10 zero-page actor reads are not filled.",
+    "OS firmware, POKEY RANDOM and RTC/timer order are not qualified.",
+    "ANTIC/GTIA/DLI collision/priority/color/line timing and audio need source comparison.",
+    "Physical Fusion Pro and sustained M1 acceptance are unverified."
+  ]
+}

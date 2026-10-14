@@ -36,6 +36,20 @@ The combined checkpoint passes192 Swift XCTest (3 expected skips),193 Python tes
 
 ## Development environments
 
+2026-10-14 Preppie! source foundation: `Tools/decode_preppie.py` verifies the
+selected US XEX/archive, preserves ordered INIT/RUN, and prepares ten source
+level records,120 lane rows,384 raw characters,80 composite sprite pointers,
+authored display descriptors and callbacks in an ignored158,860-byte package.
+Ten Python tests pass on M5. The59-page copy reaches source RAM beyond the
+supplied record; final255 relocated bytes remain unknown. Ten zero pointers
+refer to OS/RAM masks rather than authored blanks. Actual game entry is `$1B01`
+and new-game entry `$06CF`; immediate/deferred VBI, DLI and two software timers
+remain separate native reconstruction contracts. **No Preppie gameplay module
+yet**. Follow [the source map and native-core plan](research/PREPPIE.md) for
+lane/carry/player/jump/contact/ball/goal/death/turn/score rules; close source
+OS/RNG/contact/timing/art/audio, session/input/save/launch/return and every
+original/physical/M1 gate. Original arrays/listings remain ignored.
+
 2026-10-14 combined-check follow-up: the added PGA speech/music player nodes had
 stored-property initializers that ran before the failable engine's no-output
 guard. This threw an AudioUnit exception even on the intended nil fallback.

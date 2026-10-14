@@ -20,7 +20,7 @@ No title below is a completed faithful rewrite. The current development host is 
 | DigDug / C64 | Two packed decoders recover24KiB source body; original112 sprite slots/16 death/eleven bonus/logo assets,16 tunnel layouts/15 source-backed spawn records;16 Python checks | Native game/IRQ/terrain/entities/pump/rocks/bonus/modes/audio/input/saves/session, font/startup RAM/colors/raster; all original/physical/M1 comparisons |
 | NFLFootball / Intellivision | Selected cartridge recovered and hashed | CP1610/EXEC/GROM dependencies, original modes/rules/assets and disc/keypad/side-button controls; native session |
 | NightDriver / C64 | Native development session with original instruction/character road/car/crash/HUD/digit data, independent control/timer scheduling, keyboard/paddle adapters, pause/save/launch/return | Qualified foreground/CIA/crash timing (development120/50/0.2s are provisional), RGB/VIC crop/audio/attract/high-score sequences, source comparisons/physical input and M1 acceptance |
-| Preppie! / Atari8-bit | Plain US XEX selected; all ordered segments recovered and hashed | Source level/lane/actor/control/timing/art/audio reconstruction and native session |
+| Preppie! / Atari8-bit | Bounded selected-US-XEX relocation; ten levels/120 lane rows/384 raw characters/80 composite pointers and source callback/control map; ten Python checks | Unknown final255 relocation bytes/zero-page masks/OS/RNG, native lane/player/jump/contact/ball/goal/death/score/turn rules, graphics/audio/modes/input/saves/session and all gates |
 | SpaceInvaders / intended 1978 Taito shooter | Supplied archive mismatch confirmed; contains Bally pinball firmware | Correct shooter reference/media; source reconstruction and complete native runtime. Pinball firmware cannot establish shooter fidelity |
 
 ## Completion gates for every row
@@ -62,6 +62,7 @@ python3 Tools/decode_crossfire.py
 python3 Tools/decode_night_driver.py
 python3 Tools/decode_dig_dug.py
 python3 Tools/decode_dig_dug_graphics.py
+python3 Tools/decode_preppie.py
 ./Tools/build.sh
 ./Tools/test.sh
 python3 -m unittest discover -s Tests -p 'test_*.py'
