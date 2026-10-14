@@ -10,7 +10,7 @@ Executable byte identity across x86 Windows and ARM64 macOS is impossible. Track
 
 Work on the owner's laptop is paused at his request. His son continues on an M5 MacBook Pro with 24 GB RAM. The mandatory runtime target remains the owner's M1 Air, 8 GB, 2560 × 1600. Read [the binding hardware constraint](M1_TARGET_CONSTRAINT.md) and [status](STATUS.md). Do not start background work on the owner's laptop.
 
-The 2026-10-13 son's checkpoint added playable original Pebble Beach development gameplay (18 holes), corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and confirmed the practice forest fix visually. All of it was checked on the M5 only.
+The 2026-10-13 son's checkpoint added playable original gameplay on all 11 courses, corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and added round setup, hot-seat multiplayer, match play and skins. The second wave added native original audio, the exact original tri-click meter, and static decodes of the ball flight, trees and sky, the golfer, and the camera director. All of it was checked on the M5 only.
 
 ## Development environments
 
@@ -24,18 +24,19 @@ The 2026-10-13 son's checkpoint added playable original Pebble Beach development
 | --- | --- |
 | Hub UI, library and native launch | `Sources/GameHub/HubView.swift`, `GameModel.swift`, `DetailSheets.swift` |
 | Controller discovery/navigation | `Sources/GameHub/ControllerManager.swift`, `FusionController.swift`, `Sources/FusionUSB/` |
-| Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-pebble-beach-development`) |
-| Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, snapshots), `PGATerrain.swift` (terrain protocol, original surface properties) |
-| Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round store), `PGAOriginalCollision.swift` (CSR floor index) |
-| Golf rendering and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAView.swift`, `PGAMetalView.swift` |
+| Built-in module registry | `Sources/GameHub/NativeGame.swift` (`pga2005-native-development`, `pga2005-original-courses`) |
+| Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, multiplayer turns, game types, snapshots, event queue), `PGATerrain.swift` (terrain protocol, original surface properties and sound ids), `PGASwingMeter.swift` (original tri-click meter) |
+| Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round setup and store, course catalog), `PGAOriginalCollision.swift` (CSR floor index) |
+| Golf rendering, HUD and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAOriginalHUD.swift` (original HUD art, meter dial, scorecard, loading screen, round setup), `PGAView.swift`, `PGAMetalView.swift` |
+| Audio | `PGAAudio.swift` (rules from `audio.json`, AVAudioEngine playback, ambience) |
 | Original Course Lab | `PGAOriginalCourse.swift` |
 | Game metadata | `Library/Manifests/*.json` |
-| Media and decoders | `Tools/inspect_pga2005.py`, `import_pga2005.py`, `decode_pga2005_{terrain,library,holes}.py`, `prepare_pga2005.py` |
-| Research | `Tools/analyze_pga2005_{rea,ghidra}.py`, `ExportGameFunctions.java`, `docs/research/PGA2005-REA.md`, `docs/research/evidence/` |
+| Media and decoders | `Tools/prepare_pga2005.py` (one command), `installshield_cab.py`, `inspect_pga2005.py`, `import_pga2005{,_hud,_audio}.py`, `decode_pga2005_{terrain,library,holes,objects,golfer,cameras}.py`, `pga2005_xfile.py` |
+| Research references | `Tools/pga2005_ballflight_reference.py` (ball flight), `Tools/decode_pga2005_cameras.py` (director and meter reference), `Tools/make_pga2005_meter_fixture.py`, `Tools/analyze_pga2005_{rea,ghidra}.py`, `docs/research/*.md`, `docs/research/evidence/` |
 
 ## Original data and evidence
 
-Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` regenerates `Library/Imported/pga2005/{PBL,TUR}` in about 15 s on the M5.
+Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` extracts the install cabinets in pure Python and regenerates `Library/Imported/pga2005/` (all 11 courses, HUD art, audio) in about 70 s on the M5. The objects, golfer and camera decoders run separately for now (`decode_pga2005_objects.py --course PBL`, `decode_pga2005_golfer.py`, `decode_pga2005_cameras.py`); their branches wire them into prepare.
 
 - **GHPC v3** (`terrain.ghpc`) keeps v2's vertex and triangle records, adds a 48-byte header with a patch count, and ends with one 20-byte record per source patch: layer field, first vertex, vertex count, first triangle, triangle count.
 - **Patch layers.** The layer field is `tagPatch::PatchLayerInfoS`. Its low five bits are the owning hole; the higher bits are course-condition variants. Holes are separate overlapping worlds, so play and the Lab show one hole at a time. The standard selector is `0x420` (CHole::Load). See the ledger.
@@ -48,16 +49,13 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
 ## Next work, in order
 
 1. **Publish the checkpoint.** The son's GitHub account has read-only access, so local commits are not on GitHub yet. Either the owner adds `Pablo-Rogers` as a collaborator, or the son pushes to a fork and opens a pull request. Then `git push origin main`.
-2. **M1 acceptance of this checkpoint**, when the owner makes the laptop available:
-   - Pebble Beach at fullscreen 2560 × 1600 for a 30-minute run.
-   - Record FPS, p95/p99 frame time, footprint, swap, thermals and load time.
-   - Visually confirm the sRGB change and the Lab's per-hole view.
-3. **Reconstruct `CBallFlight`.** Cover flight drag and lift, `Collide` (c2/c3/c8/c9, surface damping), `RollingAndSlipping` (c4/c5), `PureRolling` break (c6), cup capture and `StopBall`. Build numeric fixtures from the decompiled formulas and keep units in inches per 60 Hz tick. Then remove the provisional bounce tuning.
-4. **Rules.** Decode INI OB polygons (`[Hole N OB k]`, type 1/2), lateral water-hazard drops and the original tee/pin selection. Add hazard and drop placement from the original rules.
-5. **Visuals.** Original sky dome, fog and lighting (`render.ini`), shaders (vertex-shader resources), water, alternate LODs, vegetation and object placement (Pebble's cypresses are missing), and the golfer/ball meshes and animation.
-6. **Memory and performance.** Keep the 3 GB budget. Consider memoryless MSAA/depth attachments on Apple Silicon, compressed (BC1/BC2) original DDS textures instead of RGBA8 PNGs, and whole-course buffers in the Lab.
-7. **Controller.** Validate every Pebble Beach action, held buttons across pause and hole transitions, focus loss and unplug/replug on the Fusion Pro.
-8. **More content.** Turnberry gameplay reuses the same code path once its tees and pins validate. Then the other modes, saves and audio.
+2. **Merge the running branches** (each in `.worktrees/`, git-ignored via `.git/info/exclude`): `physics-port` (Swift `CBallFlight`), `vegetation` (trees and sky), `golfer` (animated Tiger Woods), `cameras` (original director). Integrate the physics port into `PGASimulation`, expand the bag to the original clubs, and add wind.
+3. **Weather and time of day.** The original blends two of 40 `renderN.ini` presets (`RenderCommand::renderIni1/2`); research is in progress. Then fog, global diffuse, terrain/tree contrast, sky type and the original lens flare per preset, and a setup choice.
+4. **M1 acceptance**, when the owner makes the laptop available: every course at fullscreen 2560 × 1600 for 30 minutes; FPS, p95/p99 frame time, footprint, swap, thermals and load time.
+5. **Rules.** INI OB polygons (`[Hole N OB k]`), lateral water-hazard drops, the original tee/pin selection.
+6. **Presentation.** Replays (`Replay.stn` chances are decoded; filming is not), effects from `anim.stn` (sand, splash, divots), commentary and music.
+7. **Memory and performance.** Keep the 3 GB budget. Consider memoryless MSAA/depth attachments, compressed (BC1/BC2) textures instead of RGBA8 PNGs.
+8. **Controller.** Validate every action, held buttons across pause and hole transitions, focus loss and unplug/replug on the Fusion Pro.
 9. **Remaining titles**, individually. PGA 2004 has only disc 1. The intended Space Invaders is the Taito shooter, but the archive holds Bally pinball firmware.
 
 ## Verification commands

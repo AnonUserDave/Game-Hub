@@ -43,3 +43,18 @@ Remaining physical-input checks include shoulders/D-pad/menu, every gameplay map
 | Tests | 32 Swift (snapshot test opt-in) and 19 Python tests pass |
 
 Not checked here: fullscreen 2560 × 1600 on the M1, sustained 30-minute statistics, thermals, controller input in the Pebble module (gameplay input pauses while the app is inactive, so background automation cannot exercise it), and Turnberry gameplay.
+
+## Son's M5 checkpoint, second wave (development checks, not M1 acceptance)
+
+2026-10-13, same M5 and build settings. Static research results were never checked against a running original game.
+
+| Check | Evidence and outcome |
+| --- | --- |
+| Audio rules | Swift tests: script operators, swing sounds by club/lie/power priority (e.g. driver off the tee ≥ 90 % → "tee perfect"), collision sounds by surface id and impact strength (soft/hard green, gated below 0.1), gallery mapping, every referenced file prepared |
+| Audio engine | Smoke test on the M5 starts AVAudioEngine, preloads gameplay sounds, plays a swing plus Pebble hole 7 ambience at the tee, stays under the 40 MB cache cap and frees buffers on stop |
+| Tri-click meter | Swift port matches the Python reference angle and state every 16 ms frame across eight scenarios (all levels, putter, overswing, missed clicks, two-click) |
+| Meter dial | Offscreen HUD render: lit art from 4:30 to the marker, white power tick at 80 %; round setup shows the four difficulty speeds |
+| Research decoders | Ball flight (21), objects (16), golfer (22), cameras/meter (22) Python tests pass with and without media |
+| Tests | 45 Swift (2 opt-in snapshot tests skipped) and 140 Python tests pass |
+
+Not checked in this wave: live play with sound in the native UI, M1 anything.
