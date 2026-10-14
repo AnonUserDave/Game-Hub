@@ -224,6 +224,22 @@ final class GameStore: ObservableObject {
         return cached.isEmpty ? nil : cached
     }
 
+    /// Catalog readiness is cached for responsive browsing. Check again before
+    /// launch because an external build can move or change after Refresh.
+    nonisolated static func externalBuildReadiness(_ launch: NativeLaunch, root: URL) -> String {
+        guard let path = launch.path else { return "Native build not found" }
+        let target = path.hasPrefix("/") ? URL(fileURLWithPath: path) : root.appendingPathComponent(path).standardizedFileURL
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: target.path) else { return "Native build not found" }
+        if launch.kind == "app" {
+            guard let executable = Bundle(url: target)?.executableURL,
+                  fm.isExecutableFile(atPath: executable.path),
+                  isNativeMachO(executable) else { return "App needs an executable Apple Silicon build" }
+            return ""
+        }
+        return fm.isExecutableFile(atPath: target.path) && isNativeMachO(target) ? "" : "An executable Apple Silicon build is required"
+    }
+
     func chooseLibraryFolder() {
         let panel = NSOpenPanel()
         panel.title = "Choose your Game Hub folder"
@@ -279,6 +295,12 @@ final class GameStore: ObservableObject {
         }
         guard let launch = game.launch else { return }
         if launch.kind == "builtin" { recordPlay(game); activeGame = game; return }
+        let currentReadiness = Self.externalBuildReadiness(launch, root: root)
+        guard currentReadiness.isEmpty else {
+            nativeReadiness[game.id] = currentReadiness
+            issue = HubIssue(title: "Native build changed", message: "\(game.title): \(currentReadiness). Refresh the library after updating the build.")
+            return
+        }
         let url = resolve(launch.path!)
         if launch.kind == "app" {
             launchingGameID = game.id
@@ -398,17 +420,7 @@ private enum CatalogLoader {
                 guard !result.games.contains(where: { $0.id == game.id }) else { throw ManifestError.invalid("Duplicate game ID: \(game.id)") }
                 result.games.append(game)
                 if let launch = game.launch, launch.kind != "builtin" {
-                    let path = launch.path ?? ""
-                    let target = path.hasPrefix("/") ? URL(fileURLWithPath: path) : root.appendingPathComponent(path).standardizedFileURL
-                    let reason: String
-                    if !fm.fileExists(atPath: target.path) { reason = "Native build not found" }
-                    else if launch.kind == "app" {
-                        if let executable = Bundle(url: target)?.executableURL, GameStore.isNativeMachO(executable) { reason = "" }
-                        else { reason = "App needs an Apple Silicon build" }
-                    } else {
-                        reason = fm.isExecutableFile(atPath: target.path) && GameStore.isNativeMachO(target) ? "" : "An Apple Silicon executable is required"
-                    }
-                    result.readiness[game.id] = reason
+                    result.readiness[game.id] = GameStore.externalBuildReadiness(launch, root: root)
                 }
             } catch { result.errors.append("\(url.lastPathComponent): \(error.localizedDescription)") }
         }

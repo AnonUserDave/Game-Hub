@@ -86,6 +86,7 @@ final class PGAGameSession: ObservableObject {
     private var ambientClock = 0.0
     private var lastStrike: (club: PGAClub, flags: UInt32, fromTee: Bool, startDistance: Double, accuracy: Double, par: Int)?
     var isOriginal: Bool { if case .original = choice { return true }; return false }
+    private var ownsInputFocus: Bool { NSApp.isActive && view?.window?.isKeyWindow == true }
 
     init(choice: PGACourseChoice = .practice, onExit: @escaping () -> Void) {
         renderer = PGARenderer(assetRoot: GameStore.workspaceRoot().appendingPathComponent("Library/Imported/pga2005/PBL"))
@@ -364,12 +365,15 @@ final class PGAGameSession: ObservableObject {
         let now = ProcessInfo.processInfo.systemUptime
         let delta = max(0.001, min(0.1, now - lastTick))
         lastTick = now
+        // Key-up may be delivered to a different window. Do not carry a held
+        // aim key back into this game when its window becomes key again.
+        if !ownsInputFocus { heldKeys.removeAll() }
         pollController(delta: delta)
         guard !stopped else { return }
         if !paused && NSApp.isActive && loadState == .ready && !awaitingSetup {
             let left = heldKeys.contains(123) || heldKeys.contains(0)
             let right = heldKeys.contains(124) || heldKeys.contains(2)
-            if left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
+            if ownsInputFocus && left != right { simulation.aim((right ? 1 : -1) * delta * 0.42) }
             simulation.update(deltaTime: delta)
             if !simulation.events.isEmpty { playSounds(simulation.takeEvents()) }
         }
@@ -450,7 +454,9 @@ final class PGAGameSession: ObservableObject {
         if previousButtons.isEmpty { previousButtons = buttons; return }
         func pressed(_ name: String) -> Bool { buttons[name] == true && previousButtons[name] != true }
         defer { previousButtons = buttons }
-        guard NSApp.isActive else { return }
+        // Track button state while unfocused, but never turn a held button
+        // into an action when focus returns to this game window.
+        guard ownsInputFocus else { return }
         if awaitingSetup {
             // Setup: A start, Y resume, LB/RB tees, X pins, Menu/B hub.
             if pressed("A") { audio?.play("interface.accept"); startRound() }

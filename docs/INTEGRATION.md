@@ -1,6 +1,6 @@
 # Integrating a native game
 
-Game Hub is a native SwiftUI application for Apple Silicon, running on macOS 14 or later. Native games can be separate `.app` bundles or Mach-O executables; they do not need to be compiled into the hub. The launcher checks for an arm64 slice, accepts Universal builds, passes arguments without a shell, and returns to the library after the game exits. It does not load ROMs, mount disc images, run Windows binaries, or provide an emulator.
+Game Hub is a native SwiftUI application for Apple Silicon, running on macOS 14 or later. Native games can be separate `.app` bundles or Mach-O executables; they do not need to be compiled into the hub. The launcher checks for an executable arm64 slice when the library loads and again immediately before launch, accepts Universal builds, passes arguments without a shell, and returns to the library after the game exits. If a build is moved or replaced, press **Refresh** to update its library status. It does not load ROMs, mount disc images, run Windows binaries, or provide an emulator.
 
 ## Add an existing native game
 
@@ -78,7 +78,7 @@ The controls sheet shows actual controller recognition, live buttons and sticks,
 4. Create a `prototype` manifest using `{"kind":"builtin","builtin":"your-id"}`.
 5. Add meaningful rules/physics/input tests, build, and validate real hardware before changing its status.
 
-Current built-in identifiers: `pga2005-native-development` (generated practice holes and the Original Course Lab) and `pga2005-pebble-beach-development` (18 original Pebble Beach holes from locally prepared data).
+Current built-in identifiers: `pga2005-native-development` (generated practice holes and the Original Course Lab) and `pga2005-original-courses` (18 holes on each prepared original course, with incomplete original-game fidelity).
 
 ## Build
 

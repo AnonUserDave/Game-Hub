@@ -72,6 +72,51 @@ final class GameHubTests: XCTestCase {
         }
     }
 
+    func testExternalBuildIsCheckedAgainBeforeLaunch() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let catalog = root.appendingPathComponent("Library/Manifests")
+        try FileManager.default.createDirectory(at: catalog, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let binary = root.appendingPathComponent("native-game")
+        let arm64Header = Data([0xcf, 0xfa, 0xed, 0xfe, 0x0c, 0, 0, 1])
+        try arm64Header.write(to: binary)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+        let game = manifest(id: "changed-" + UUID().uuidString.lowercased(), launch: NativeLaunch(kind: "executable", path: "native-game"), fidelity: "native")
+        try JSONEncoder().encode(game).write(to: catalog.appendingPathComponent("native-game.json"))
+
+        try await MainActor.run {
+            let store = GameStore(root: root, loadSynchronously: true, observeExternalApplications: false)
+            XCTAssertNil(store.readiness(game), "The catalog initially sees an arm64 executable")
+
+            // The file changed after catalog loading; the cached ready state is stale.
+            let intelHeader = Data([0xcf, 0xfa, 0xed, 0xfe, 0x07, 0, 0, 1])
+            try intelHeader.write(to: binary)
+            store.launch(game)
+            XCTAssertEqual(store.issue?.title, "Native build changed")
+            XCTAssertNotNil(store.readiness(game))
+            XCTAssertNil(store.externalGame)
+            XCTAssertNil(store.lastPlayed[game.id])
+        }
+    }
+
+    func testAppReadinessRequiresExecutableArm64BundleBinary() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let contents = root.appendingPathComponent("Demo.app/Contents")
+        let macOS = contents.appendingPathComponent("MacOS")
+        try FileManager.default.createDirectory(at: macOS, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let info: [String: Any] = ["CFBundleExecutable": "Demo", "CFBundleIdentifier": "example.demo", "CFBundlePackageType": "APPL"]
+        let plist = try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+        try plist.write(to: contents.appendingPathComponent("Info.plist"))
+        let executable = macOS.appendingPathComponent("Demo")
+        try Data([0xcf, 0xfa, 0xed, 0xfe, 0x0c, 0, 0, 1]).write(to: executable)
+        let launch = NativeLaunch(kind: "app", path: "Demo.app")
+
+        XCTAssertFalse(GameStore.externalBuildReadiness(launch, root: root).isEmpty)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+        XCTAssertEqual(GameStore.externalBuildReadiness(launch, root: root), "")
+    }
+
     func testDuplicateIDsAreReportedAndFiltersStayConsistent() async throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let catalog = directory.appendingPathComponent("Library/Manifests")
