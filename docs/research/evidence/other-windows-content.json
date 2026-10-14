@@ -1,0 +1,2345 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-13",
+  "hardware": "M5 Pro / 24 GB development; M1 performance and input unverified",
+  "method": "Offline ZIP/ISO/InstallShield/MS CAB/PRE3/PKR2 reads; no original code execution",
+  "titles": [
+    {
+      "title": "pga2004",
+      "archive": {
+        "bytes": 461768205,
+        "path": "Tiger_Woods_PGA_Tour_2004_Disc1_Win_ISO_EN.zip",
+        "sha256": "766697614c22bbd9ddb1a4c84cda514b7d3262f6a9b78998f4d6b7c9a56ce4d1"
+      },
+      "media": [
+        {
+          "bytes": 653498368,
+          "file": "PGA Tour 2004 CD 1.iso",
+          "sha256": "faa68b516136a81e2c1119f7f88f42d5d850ccdf6727375e9946f5baa837d3c6",
+          "zip_crc32": "72ed7fce",
+          "zip_path": "Tiger_Woods_PGA_Tour_2004_Disc1_Win_ISO_EN/Game Files/PGA Tour 2004 CD 1.iso"
+        }
+      ],
+      "completion_status": "unfinished native rewrite",
+      "receipt_sha256": "bcf534492c58ccdc1356bc45c5c71825488533eeb3b343711853f584b215a61e",
+      "discs": [
+        {
+          "image": "PGA Tour 2004 CD 1.iso",
+          "payload_offset": 0,
+          "sector_bytes": 2048,
+          "volume_id": "INSTALL_DISC",
+          "file_count": 153
+        }
+      ],
+      "preparation": {
+        "cabinet_version": 6,
+        "files": 5739,
+        "header_file_slots": 5792,
+        "available_volumes": [
+          1,
+          2
+        ],
+        "required_volumes": [
+          1,
+          2,
+          3
+        ],
+        "missing_volumes": [
+          3
+        ],
+        "selected_files": [
+          {
+            "bytes": 217088,
+            "cabinet_index": 516,
+            "path": "CourseData.dll",
+            "sha256": "085446558b39984996ce6e22961de7edb3bdce1264547aaa7312ca7cc8a90c55",
+            "volume": 2
+          },
+          {
+            "bytes": 3731456,
+            "cabinet_index": 521,
+            "path": "Engine.dll",
+            "sha256": "b4d73b76b0133153714b2b89997a07bace7d6e94361526d2afb6645700f8add0",
+            "volume": 2
+          },
+          {
+            "bytes": 20549310,
+            "cabinet_index": 2813,
+            "path": "PBL/pbl.tcl",
+            "sha256": "3009299ea5712b9137991b3a36cdd53887b0a502bc171d58eca082ce29d59354",
+            "volume": 2
+          },
+          {
+            "bytes": 29262071,
+            "cabinet_index": 2814,
+            "path": "PBL/pbl.tcr",
+            "sha256": "46f1d746c9c91c7704113c48ef719412e328ce620f66522dd03602bba6b219ea",
+            "volume": 2
+          },
+          {
+            "bytes": 16283,
+            "cabinet_index": 2823,
+            "path": "PBL/pbl.ini",
+            "sha256": "8fa023ef85afeb5bb36e9a230d014de43a87e4770eb34bc156ec9e32886831f9",
+            "volume": 2
+          },
+          {
+            "bytes": 19614696,
+            "cabinet_index": 2858,
+            "path": "SAW/saw.tcl",
+            "sha256": "31a8e7dce402582c80959be4c7e14b1752c70361ba1ab357965e02fe94e2267a",
+            "volume": 2
+          },
+          {
+            "bytes": 44974298,
+            "cabinet_index": 2859,
+            "path": "SAW/saw.tcr",
+            "sha256": "5dd6a4288977537741e699200ffe1eade24d58670743a637be5c1aa08f885485",
+            "volume": 2
+          },
+          {
+            "bytes": 25491,
+            "cabinet_index": 2866,
+            "path": "SAW/saw.ini",
+            "sha256": "a0efff4638702607b681917993b67ff3aeaa32ff1dc3e3432f2c82889a8d9a49",
+            "volume": 2
+          },
+          {
+            "bytes": 15286348,
+            "cabinet_index": 2889,
+            "path": "STA/sta.tcl",
+            "sha256": "db659ac820a4a9acb4e0403a6a330d9e06a6c6756d2884965d42ac37af14621d",
+            "volume": 2
+          },
+          {
+            "bytes": 27011928,
+            "cabinet_index": 2890,
+            "path": "STA/sta.tcr",
+            "sha256": "f21a997ab01029d830db4bd53881205f1c5d011de0a4b530a67eb3984062fa6a",
+            "volume": 2
+          },
+          {
+            "bytes": 11478,
+            "cabinet_index": 2894,
+            "path": "STA/sta.ini",
+            "sha256": "b652e9842ca4e820fe2d04d125ea2e8f6d135d7f8ab08837bece7d4b92ac23ad",
+            "volume": 2
+          }
+        ],
+        "tcr_versions": {
+          "PBL": 4,
+          "SAW": 4,
+          "STA": 4
+        },
+        "limitations": [
+          "Only disc1 supplied; cabinet volume3 unavailable",
+          "PGA2004 TCR v4 is not supported by the PGA2005 v7 terrain decoder",
+          "No PGA2004 runtime or behavior reconstruction yet"
+        ]
+      }
+    },
+    {
+      "title": "thps2",
+      "archive": {
+        "bytes": 543723047,
+        "path": "Tony_Hawks_Pro_Skater_2_Win_ISO_EN.zip",
+        "sha256": "fc3fcde2565e284e62a25925e9a1586df3621b601fc3253dfadcb4c089e329a8"
+      },
+      "media": [
+        {
+          "bytes": 623593472,
+          "file": "Tony Hawk's Pro Skater 2.iso",
+          "sha256": "abf03ad97e4e7fb7083ecacfe4d51deec5b17f14889cd6da33c494b5b385bff0",
+          "zip_crc32": "2133231c",
+          "zip_path": "Tony_Hawks_Pro_Skater_2_Win_ISO_EN/Game Files/Tony Hawk's Pro Skater 2.iso"
+        }
+      ],
+      "completion_status": "unfinished native rewrite",
+      "receipt_sha256": "0fe90aa543cbf0e7c1dfe38d505975c7867a725ae9ca9c7792acec46353030eb",
+      "discs": [
+        {
+          "image": "Tony Hawk's Pro Skater 2.iso",
+          "payload_offset": 0,
+          "sector_bytes": 2048,
+          "volume_id": "THPS2",
+          "file_count": 383
+        }
+      ],
+      "preparation": {
+        "entries": 3771,
+        "extensions": {
+          "bin": 25,
+          "bmp": 2850,
+          "fnt": 26,
+          "hed": 1,
+          "hep": 1,
+          "het": 1,
+          "nt": 1,
+          "pre": 19,
+          "prk": 50,
+          "psh": 106,
+          "psx": 282,
+          "rec": 11,
+          "sbl": 1,
+          "seq": 1,
+          "sfx": 25,
+          "tag": 1,
+          "tdf": 1,
+          "trg": 32,
+          "ts": 1,
+          "tst": 1,
+          "txt": 22,
+          "wad": 1,
+          "wav": 312
+        },
+        "format": "PKR2",
+        "inventory_sha256": "99631e12899077309c883aeb2e3d48442486f28ea0f14103f28f2bcf7b2464ab",
+        "limitations": [
+          "Original pack decoded; level PSX mesh/material and TRG behavior loaders unfinished",
+          "No THPS2 native gameplay implementation yet"
+        ],
+        "pack_sha256": "7e2ae173577c41598dc644824b52f7eaf9664ea478e177a8703f77c0185207da"
+      },
+      "disc_files": [
+        {
+          "bytes": 197886331,
+          "image": "Tony Hawk's Pro Skater 2.iso",
+          "path": "SETUP/DATA/ALL.PKR",
+          "sha256": "7e2ae173577c41598dc644824b52f7eaf9664ea478e177a8703f77c0185207da"
+        },
+        {
+          "bytes": 2193512,
+          "image": "Tony Hawk's Pro Skater 2.iso",
+          "path": "SETUP/DATA/THAWK2.EXE",
+          "sha256": "a8f1a65de4129b92007e4554db6323815b89717a9fee041d7afe4be41d61f761"
+        }
+      ]
+    },
+    {
+      "title": "thug",
+      "archive": {
+        "bytes": 853555535,
+        "path": "THUG_Win_ROM_EN.zip",
+        "sha256": "4fe2a63409030877c6c52b42f582a71276a47ad5d35fadb77143a8e039379139"
+      },
+      "media": [
+        {
+          "bytes": 75448,
+          "file": "CAS_BEDROOMcol.pre",
+          "sha256": "1adbecc9e2c1bf79d416ddd0399b097473b9aa71003a4252572c361e41b12ab8",
+          "zip_crc32": "599239d6",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/CAS_BEDROOMcol.pre"
+        },
+        {
+          "bytes": 1237012,
+          "file": "CAS_BEDROOMscn.pre",
+          "sha256": "2c082cd71ee16dcfe031ac8a4e1f4bbba97118f8a022b55c2dcbe9a263947da6",
+          "zip_crc32": "107fcda4",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/CAS_BEDROOMscn.pre"
+        },
+        {
+          "bytes": 95576,
+          "file": "DJcol.pre",
+          "sha256": "ba60b5cc5b7986ae3e4ede8ff434d8c84c549fe99282e3eddadb7d2968db5137",
+          "zip_crc32": "2d121abb",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/DJcol.pre"
+        },
+        {
+          "bytes": 1147784,
+          "file": "DJscn.pre",
+          "sha256": "ff7ca002006292d443e9086c7100c1cf1116955496b5f2709b0df4bcc7325d4c",
+          "zip_crc32": "20bbffa3",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/DJscn.pre"
+        },
+        {
+          "bytes": 544484,
+          "file": "FLcol.pre",
+          "sha256": "91f731ce0a4bbc1ec8427cdfaa63f7153eaed6d62813561175e8355d236691af",
+          "zip_crc32": "51ce2373",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/FLcol.pre"
+        },
+        {
+          "bytes": 5004128,
+          "file": "FLscn.pre",
+          "sha256": "07e4c71aa569fa6b54cdd071c83c7018607a86a1a01c7082a6d48bb74676d7e2",
+          "zip_crc32": "274865af",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/FLscn.pre"
+        },
+        {
+          "bytes": 651488,
+          "file": "HIcol.pre",
+          "sha256": "67626ff9dd646aa4c52dda640c81da45fff675fa7ef083bd0edd3661d2b4435a",
+          "zip_crc32": "9f8d380b",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/HIcol.pre"
+        },
+        {
+          "bytes": 4917764,
+          "file": "HIscn.pre",
+          "sha256": "8222c5c4ae1d4ac3bee68dd6c1bcffb7e234db7ba7da5180f10c40faa83aa29f",
+          "zip_crc32": "ba0207d3",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/HIscn.pre"
+        },
+        {
+          "bytes": 61712,
+          "file": "HNcol.pre",
+          "sha256": "96c7bfe4e1d3bfd0bafcd06d7ca2582721ab562310e9c2c4f8bfcb9b925a7ae0",
+          "zip_crc32": "af8153fa",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/HNcol.pre"
+        },
+        {
+          "bytes": 1386868,
+          "file": "HNscn.pre",
+          "sha256": "93dce12dc4a731dfad393066f4ed12d95f40e0e8963d5df45eb17f3e5d85efda",
+          "zip_crc32": "249ee808",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/HNscn.pre"
+        },
+        {
+          "bytes": 5148,
+          "file": "mainmenucol.pre",
+          "sha256": "e140513cb72a7fbd6becd5e2bee234be32b457256b1fc21b7500bf7da5f98222",
+          "zip_crc32": "54697a7f",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/mainmenucol.pre"
+        },
+        {
+          "bytes": 74508,
+          "file": "mainmenuscn.pre",
+          "sha256": "1946a523fb9c7494c875347379c22bb989052bf0b838c843cdea6b9547fa01dd",
+          "zip_crc32": "3692ac7c",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/mainmenuscn.pre"
+        },
+        {
+          "bytes": 565004,
+          "file": "NJcol.pre",
+          "sha256": "9a708182baf72eb05c725e34d6bf14e9d191a67f7174abddf453dd3b8a37da68",
+          "zip_crc32": "a2b11552",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/NJcol.pre"
+        },
+        {
+          "bytes": 5125356,
+          "file": "NJscn.pre",
+          "sha256": "106b0d2f840aaf3c67f39ed629e52ab0b5bbf76405064fb382ec2a39b505c100",
+          "zip_crc32": "39ad0be9",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/NJscn.pre"
+        },
+        {
+          "bytes": 43532,
+          "file": "NJ_Skateshopcol.pre",
+          "sha256": "96b13d52530d179a169d57395a856357428429e77827eee7b71af4debe95e7ab",
+          "zip_crc32": "b2dd8917",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/NJ_Skateshopcol.pre"
+        },
+        {
+          "bytes": 696364,
+          "file": "NJ_Skateshopscn.pre",
+          "sha256": "3e560ff8bc51f91d8711c8699562c640f6232ab49b184778b6e673f30abc6b23",
+          "zip_crc32": "d5cd1929",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/NJ_Skateshopscn.pre"
+        },
+        {
+          "bytes": 599016,
+          "file": "NYcol.pre",
+          "sha256": "97bbc23dd99f2652873db82f504672c706ea69ca6cc7725807223292a90e4234",
+          "zip_crc32": "5ebcf64a",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/NYcol.pre"
+        },
+        {
+          "bytes": 4995156,
+          "file": "NYscn.pre",
+          "sha256": "450ec11c4d0920b5f93ecd97716027ff637c35587f680e238c190e7d52ce7628",
+          "zip_crc32": "ad595deb",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/NYscn.pre"
+        },
+        {
+          "bytes": 118712,
+          "file": "PHcol.pre",
+          "sha256": "5b58c5bd4d1e746929004ae70e6474194f06b1be8a51996ee2a32612d1419f22",
+          "zip_crc32": "50263ac0",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/PHcol.pre"
+        },
+        {
+          "bytes": 1322416,
+          "file": "PHscn.pre",
+          "sha256": "32a0669900e5234162fc5ef5a174eb342140f9b133643873a53e08cadf958049",
+          "zip_crc32": "6a911bd6",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/PHscn.pre"
+        },
+        {
+          "bytes": 1294684,
+          "file": "qb.pre",
+          "sha256": "1997f29a3bccb3b526fe5b70a693fb24d54388a501bba4a5469507226076073e",
+          "zip_crc32": "f27393cd",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/qb.pre"
+        },
+        {
+          "bytes": 713496,
+          "file": "RUcol.pre",
+          "sha256": "e44be9b18aa6691bac715c97a9823b829d65222d48c5400bd546db94cbe4b350",
+          "zip_crc32": "455eed4b",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/RUcol.pre"
+        },
+        {
+          "bytes": 4975872,
+          "file": "RUscn.pre",
+          "sha256": "e153c72272eaa05c222fcfbba96618273f803b029eb77eb929182b7bac827deb",
+          "zip_crc32": "9ba8ebf0",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/RUscn.pre"
+        },
+        {
+          "bytes": 134528,
+          "file": "SC2col.pre",
+          "sha256": "a94b90a5ded368bd74214da39308382e03ad64b5b39a41859c4e35f26eb0238e",
+          "zip_crc32": "77fbb592",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SC2col.pre"
+        },
+        {
+          "bytes": 2199556,
+          "file": "SC2scn.pre",
+          "sha256": "934cb69b55e65f529c4c91a6f1026134b924b73e1ded8a3f7a28409b99a50a4b",
+          "zip_crc32": "ea0e3628",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SC2scn.pre"
+        },
+        {
+          "bytes": 159092,
+          "file": "SCcol.pre",
+          "sha256": "af920cf1e07f007c0dd8ced20fce814d1c87aed91a85d3eb341b2da8d095bf82",
+          "zip_crc32": "35356460",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SCcol.pre"
+        },
+        {
+          "bytes": 1786040,
+          "file": "SCscn.pre",
+          "sha256": "7cf61bb9bcd66801043e24f52b1c7b51a12eda459d86911176fd94581c5ca917",
+          "zip_crc32": "d4b581b3",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SCscn.pre"
+        },
+        {
+          "bytes": 604804,
+          "file": "SDcol.pre",
+          "sha256": "0468ecb53cf9891d60db32da402f468454fd14f57d2d15a11804cc207efbaf7d",
+          "zip_crc32": "c889bbff",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SDcol.pre"
+        },
+        {
+          "bytes": 5350928,
+          "file": "SDscn.pre",
+          "sha256": "900cbe1c60b033eb81465161c3a862f1c7baa86de713d3c205b4e0705c7f6e14",
+          "zip_crc32": "87d223e2",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SDscn.pre"
+        },
+        {
+          "bytes": 328708,
+          "file": "SEcol.pre",
+          "sha256": "20849e72fd32360d8182aac9da8fa80c6cb7ef8e0214b708599f74df52b09e0e",
+          "zip_crc32": "1b07faf7",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SEcol.pre"
+        },
+        {
+          "bytes": 2805140,
+          "file": "SEscn.pre",
+          "sha256": "c45fad285e51f1e6d1dd7fcfb22b346e864ca1b7d7a9fb769f326ae57cb841b3",
+          "zip_crc32": "0f9cc189",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SEscn.pre"
+        },
+        {
+          "bytes": 299908,
+          "file": "SJcol.pre",
+          "sha256": "4149890ca162dddee933d8762dfeb8d222033bd65d2e352431b814511f97e664",
+          "zip_crc32": "14eb903b",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SJcol.pre"
+        },
+        {
+          "bytes": 3993916,
+          "file": "SJscn.pre",
+          "sha256": "9927763e72d0a4f9c61163a120d5794cc420707868070ea7f2ca399ef14d1de8",
+          "zip_crc32": "215be2e9",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SJscn.pre"
+        },
+        {
+          "bytes": 4772728,
+          "file": "sk5ed2scn.pre",
+          "sha256": "ec6d16fdc27702864468bb18c06871ee19b348dada10ff7ac86aef3899cdde46",
+          "zip_crc32": "345799a7",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed2scn.pre"
+        },
+        {
+          "bytes": 29008,
+          "file": "sk5ed2_shellcol.pre",
+          "sha256": "e045ebf1680e35de83e4d3d62e9a08b4e9eebe8bddf7bf1847ef4bee85fb41c8",
+          "zip_crc32": "1398812a",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed2_shellcol.pre"
+        },
+        {
+          "bytes": 573136,
+          "file": "sk5ed2_shellscn.pre",
+          "sha256": "5c32a98e664194ff0e50e719e74952cb2876aaa807e72da3ce72e2d3690bbc6a",
+          "zip_crc32": "d0e7c922",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed2_shellscn.pre"
+        },
+        {
+          "bytes": 4394268,
+          "file": "sk5ed3scn.pre",
+          "sha256": "4a32560fd3e521869c33bb22c8497c4bdb3aa6b2b646241407c529daad0a94b6",
+          "zip_crc32": "15e8c66d",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed3scn.pre"
+        },
+        {
+          "bytes": 31160,
+          "file": "sk5ed3_shellcol.pre",
+          "sha256": "9308ae85ba1146f5fde299ac5bed64992ff1c3cd0766297ff59dc01df2e73301",
+          "zip_crc32": "1137d117",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed3_shellcol.pre"
+        },
+        {
+          "bytes": 192920,
+          "file": "sk5ed3_shellscn.pre",
+          "sha256": "4f58f15bfb661e34eec455449e6035f582896a3c57db871fbbcf1defc656c694",
+          "zip_crc32": "42949677",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed3_shellscn.pre"
+        },
+        {
+          "bytes": 4576188,
+          "file": "sk5ed4scn.pre",
+          "sha256": "5d869d5e7b7d438947bdcb7ab04d2a5b38db87d62ee12d718e39c27e53f74af5",
+          "zip_crc32": "364d8413",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed4scn.pre"
+        },
+        {
+          "bytes": 113068,
+          "file": "sk5ed4_shellcol.pre",
+          "sha256": "05cd9723e7c7af626b33559f389d48a07e5d43207c36e6c8519901892b443b7b",
+          "zip_crc32": "64d3f8b9",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed4_shellcol.pre"
+        },
+        {
+          "bytes": 388836,
+          "file": "sk5ed4_shellscn.pre",
+          "sha256": "5ff528ee441edf9c872029a3e14757400027fab343a427d00c871a5dcb83c614",
+          "zip_crc32": "e25521d0",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed4_shellscn.pre"
+        },
+        {
+          "bytes": 4655636,
+          "file": "sk5ed5scn.pre",
+          "sha256": "a42e62d463e2e2c23a2d22f1b2452bf27e56f4dcf4bb797f61abe87f6ff5551f",
+          "zip_crc32": "75c0b587",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed5scn.pre"
+        },
+        {
+          "bytes": 54164,
+          "file": "sk5ed5_shellcol.pre",
+          "sha256": "d0fcd01f60e1bafab36e3a89f8bf6830bb79989357661ee16ffef4795567baac",
+          "zip_crc32": "66be96bf",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed5_shellcol.pre"
+        },
+        {
+          "bytes": 448848,
+          "file": "sk5ed5_shellscn.pre",
+          "sha256": "dc1f04ebb7968f3e829961626a3efaef0c247b5d93baefaafecbbdc5e3b8c251",
+          "zip_crc32": "6d64e592",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed5_shellscn.pre"
+        },
+        {
+          "bytes": 327000,
+          "file": "sk5edcol.pre",
+          "sha256": "527dde326be89f28be6e25c916cef1161455aab78da3bcce9a7a62d51529a832",
+          "zip_crc32": "13596711",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5edcol.pre"
+        },
+        {
+          "bytes": 5118584,
+          "file": "sk5edscn.pre",
+          "sha256": "a2393e919b1fba4dbc5e2e622cc2866acd7396ced489e0b2016543bc20b2351c",
+          "zip_crc32": "d145b1e8",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5edscn.pre"
+        },
+        {
+          "bytes": 71428,
+          "file": "sk5ed_shellcol.pre",
+          "sha256": "d83617c64ed5498eb83a7f1aed3a3acb3cf408be2afa7367f01e8944c1dcd703",
+          "zip_crc32": "ab49ba07",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed_shellcol.pre"
+        },
+        {
+          "bytes": 701676,
+          "file": "sk5ed_shellscn.pre",
+          "sha256": "030e8cd3e1af58cf3179344dc50914a95f4b707c61f34c305c3af0c33584aeb5",
+          "zip_crc32": "5bdfff94",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/sk5ed_shellscn.pre"
+        },
+        {
+          "bytes": 231120,
+          "file": "skateshopcol.pre",
+          "sha256": "28bd3ebc09d1cad21da09e56ee5d7649468a56e31dd2f72da3169b31cc5215c5",
+          "zip_crc32": "aaa2dfee",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/skateshopcol.pre"
+        },
+        {
+          "bytes": 2417276,
+          "file": "skateshopscn.pre",
+          "sha256": "dd8d75e90d3e89d8b93a88109740a00dd2daae232048f8ba164e80a38cc51aa3",
+          "zip_crc32": "798be429",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/skateshopscn.pre"
+        },
+        {
+          "bytes": 3216,
+          "file": "SPcol.pre",
+          "sha256": "8830c8ec0b50d5abbea441f095ef6616fc6d30637a8310fb0f914e59edd7dd8a",
+          "zip_crc32": "c344a80c",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SPcol.pre"
+        },
+        {
+          "bytes": 211168,
+          "file": "SPscn.pre",
+          "sha256": "1cc9fdcde0743b69dacf5f39e5c8b751bce89567534dd0d4bc2b4b0a9c2a248b",
+          "zip_crc32": "7c11b64a",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/SPscn.pre"
+        },
+        {
+          "bytes": 17816,
+          "file": "TestLevelcol.pre",
+          "sha256": "da5bedae9f2f0a064e5c34ec88b1f8529c8e2ba146c9849933a04c160d80a56b",
+          "zip_crc32": "11734f12",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/TestLevelcol.pre"
+        },
+        {
+          "bytes": 605156,
+          "file": "TestLevelscn.pre",
+          "sha256": "da803465321c060ff27c8cca464541cd22d2d850d2f2cb917bdb5b7a9469011b",
+          "zip_crc32": "e2901e02",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/TestLevelscn.pre"
+        },
+        {
+          "bytes": 634480,
+          "file": "VCcol.pre",
+          "sha256": "5a763cb5eea592144233650c32a82bc40bffab8bc86dfa5af94416725c413f92",
+          "zip_crc32": "45b08dd6",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/VCcol.pre"
+        },
+        {
+          "bytes": 5239484,
+          "file": "VCscn.pre",
+          "sha256": "8bf7af61a4c926efdb8a49cf0c7bd5df6b916d63402891dad98d4ae25f1962d2",
+          "zip_crc32": "63bb2f6b",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/VCscn.pre"
+        },
+        {
+          "bytes": 117128,
+          "file": "VNcol.pre",
+          "sha256": "c77fa48b48c5900c706d7b5d4b9a01a586827754ee45f8b78415c135e2159884",
+          "zip_crc32": "32435fd0",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/VNcol.pre"
+        },
+        {
+          "bytes": 2143564,
+          "file": "VNscn.pre",
+          "sha256": "94def97e3859057fc24a4f68fe1c6721b3a0f61fe516eaf0d52c625486e5b0bb",
+          "zip_crc32": "98dab380",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/Data/pre/VNscn.pre"
+        },
+        {
+          "bytes": 2727936,
+          "file": "THUG.exe",
+          "sha256": "7dd979a2b3adb2013c2158364e5d7022fc72297ad39209262b47adb99c50b413",
+          "zip_crc32": "3be3f4ac",
+          "zip_path": "THUG_Win_ROM_EN/Game Files/Game/THUG.exe"
+        }
+      ],
+      "completion_status": "unfinished native rewrite",
+      "receipt_sha256": "6ff158fdff305567fcff5affacc22ac267550ff43a113416b3f4bc28c73de9d9",
+      "preparation": {
+        "pre3_archives": 60,
+        "unique_collision_assets": 47,
+        "level_collision_assets": 27,
+        "vertices": 588741,
+        "triangles": 477659,
+        "scenes_retained": 45,
+        "texture_dictionaries_retained": 60,
+        "qb_scripts_retained": 210,
+        "collision_assets": [
+          {
+            "collision_version": 9,
+            "native_bytes": 168712,
+            "native_path": "collision/bdd6b9d8411ed43b4ec6a7d6e0704a36f816e59f2575bd01505d0b268a06068d.ghsc",
+            "native_sha256": "65c2cddb0f6e634e0891a2a2eb31776175a771c0575fae85f72d6b976eb1b652",
+            "objects": 134,
+            "path": "Levels/CAS_BEDROOM/CAS_BEDROOM.col.xbx",
+            "source_sha256": "bdd6b9d8411ed43b4ec6a7d6e0704a36f816e59f2575bd01505d0b268a06068d",
+            "triangles": 5099,
+            "vertices": 6991
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 217368,
+            "native_path": "collision/055424253062e327c9c38d8c37f153e21ea6097782b3c2c3d2fad7130039c6e3.ghsc",
+            "native_sha256": "112e95eabac937f999c34f533720f3b5fca9e8a5dec9e74ec27cb38560f3f4e3",
+            "objects": 580,
+            "path": "Levels/DJ/DJ.col.xbx",
+            "source_sha256": "055424253062e327c9c38d8c37f153e21ea6097782b3c2c3d2fad7130039c6e3",
+            "triangles": 7120,
+            "vertices": 7459
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1215136,
+            "native_path": "collision/8cb9707724c9ea991e592ad1b674ae2634e2da16fa3be6a4aa67f6001ce6d1ab.ghsc",
+            "native_sha256": "be7f59bc37458215e24cb4a09f0c4f06ed9636694b88ce58f4db0ac805938f4c",
+            "objects": 1668,
+            "path": "Levels/FL/FL.col.xbx",
+            "source_sha256": "8cb9707724c9ea991e592ad1b674ae2634e2da16fa3be6a4aa67f6001ce6d1ab",
+            "triangles": 38636,
+            "vertices": 46409
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1440992,
+            "native_path": "collision/80757c63f9e88d6fe3277acf81abf6b2b2863329f5369f17bedbbd4b89d0b981.ghsc",
+            "native_sha256": "b5b9ec22eaeed6b4cf7c6f4b99624763a8993793172741dbf248bc3c8394db97",
+            "objects": 1408,
+            "path": "Levels/HI/HI.col.xbx",
+            "source_sha256": "80757c63f9e88d6fe3277acf81abf6b2b2863329f5369f17bedbbd4b89d0b981",
+            "triangles": 44418,
+            "vertices": 58041
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 140684,
+            "native_path": "collision/9204fb0041e493c648b1199434770613a57231b990ea5ee060d0e7264c686759.ghsc",
+            "native_sha256": "21fba0e08cad5d56c08e6d6e08aaf0a51f447ba0a91183dea08a84812a39e0da",
+            "objects": 416,
+            "path": "Levels/HN/HN.col.xbx",
+            "source_sha256": "9204fb0041e493c648b1199434770613a57231b990ea5ee060d0e7264c686759",
+            "triangles": 4350,
+            "vertices": 5090
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 2092,
+            "native_path": "collision/4a52bac59e52a056e7fd8d583f9e873c3b941a35dbe29fdbc20c45bdea658eac.ghsc",
+            "native_sha256": "40faf953cbbb6b688737980f9ca91a19c829a3366c4f97a0c2f2cd63167fa3a2",
+            "objects": 11,
+            "path": "Models/veh/veh_custom/veh_custom.col.xbx",
+            "source_sha256": "4a52bac59e52a056e7fd8d583f9e873c3b941a35dbe29fdbc20c45bdea658eac",
+            "triangles": 68,
+            "vertices": 60
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 11344,
+            "native_path": "collision/1285b9e432a756a4e5d607ab917c4a6af8b3aff7a8252279f8684e00116522ae.ghsc",
+            "native_sha256": "3abf60d27389c686c76dbcc67658ad322c16b1ace496544e9919506dbbf523f8",
+            "objects": 1,
+            "path": "Models/evilarrow/evilarrow.col.xbx",
+            "source_sha256": "1285b9e432a756a4e5d607ab917c4a6af8b3aff7a8252279f8684e00116522ae",
+            "triangles": 512,
+            "vertices": 259
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1452,
+            "native_path": "collision/24d1a049850f5dbbaa39b35a839de6a8463bb4d781ca0cd40b95f6899f24db6a.ghsc",
+            "native_sha256": "a5dde86776f1257eb2de5b7648da060f252fceebc4418998e5789844962a7f48",
+            "objects": 11,
+            "path": "Models/veh/nj/veh_policecar_nj/veh_policecar_nj.col.xbx",
+            "source_sha256": "24d1a049850f5dbbaa39b35a839de6a8463bb4d781ca0cd40b95f6899f24db6a",
+            "triangles": 46,
+            "vertices": 36
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1668,
+            "native_path": "collision/1f57fbdd40852dda302d57742d42f9b5df1f45b6aab4bd24442598eeb4c430e6.ghsc",
+            "native_sha256": "c4c07c5ea60d2ec754295410751e8f3b75f9a4ea7e7c869458405652ded88581",
+            "objects": 11,
+            "path": "Models/veh/veh_suv_drg/veh_suv_drg.col.xbx",
+            "source_sha256": "1f57fbdd40852dda302d57742d42f9b5df1f45b6aab4bd24442598eeb4c430e6",
+            "triangles": 52,
+            "vertices": 46
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1668,
+            "native_path": "collision/2ca30f8c5de8df013b42b093ee8ab623308c95e29ec819cc1f2e38c43fee80ea.ghsc",
+            "native_sha256": "c8519725fbaf1b5c4d9f6a3e79e745beff1ceb2d0641e24e1f90f1451d2c1e26",
+            "objects": 11,
+            "path": "Models/veh/veh_suv_musk/veh_suv_musk.col.xbx",
+            "source_sha256": "2ca30f8c5de8df013b42b093ee8ab623308c95e29ec819cc1f2e38c43fee80ea",
+            "triangles": 52,
+            "vertices": 46
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 44,
+            "native_path": "collision/d683823a620eaab1d18eb1112fb1e647fb630fac28ee81b70a4a8015448aacd9.ghsc",
+            "native_sha256": "e98de3a94082c0a6e73354d40c0c5dddc7b5e4ac6743f26f355ef16378225fa1",
+            "objects": 1,
+            "path": "Models/veh/veh_skitchnode/veh_skitchnode.col.xbx",
+            "source_sha256": "d683823a620eaab1d18eb1112fb1e647fb630fac28ee81b70a4a8015448aacd9",
+            "triangles": 0,
+            "vertices": 0
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1916,
+            "native_path": "collision/5b8c985bafd732d70f6231e60b1993da326d6540b8007eaaa16ac20837e22710.ghsc",
+            "native_sha256": "d23afebc1e6633ff032f49eed756cc08ebd78a8f1d51e48d665805583cd81c44",
+            "objects": 1,
+            "path": "Models/goalarrow/goalarrow.col.xbx",
+            "source_sha256": "5b8c985bafd732d70f6231e60b1993da326d6540b8007eaaa16ac20837e22710",
+            "triangles": 84,
+            "vertices": 44
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 384,
+            "native_path": "collision/d940d6c0c1d0407790e3ef6dbd175d5b0ca0174ee9da816dce2220c9c42b8fe3.ghsc",
+            "native_sha256": "5ae5f69224b8f08a58d1319b5d549788bf6ef5b6b14a0b5220a09523d3a4ee3a",
+            "objects": 2,
+            "path": "Models/gameobjects/nj/skatewheel_pickup/skatewheel_pickup.col.xbx",
+            "source_sha256": "d940d6c0c1d0407790e3ef6dbd175d5b0ca0174ee9da816dce2220c9c42b8fe3",
+            "triangles": 10,
+            "vertices": 13
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 384,
+            "native_path": "collision/a823610f6bd85617e8fc4ed96f1cbf27294a00ff1d1fae687e5a782ff38f2eac.ghsc",
+            "native_sha256": "5c763935ef8f1fb55aef169a22d5e01c9a59d0314d102d7cfbd234e712430e5a",
+            "objects": 2,
+            "path": "Models/gameobjects/nj/truck_pickup/truck_pickup.col.xbx",
+            "source_sha256": "a823610f6bd85617e8fc4ed96f1cbf27294a00ff1d1fae687e5a782ff38f2eac",
+            "triangles": 10,
+            "vertices": 13
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 860,
+            "native_path": "collision/a0e4183a4af92794bd272d4fa6fd59b979bf789325f2902278664ce4c91d4f7a.ghsc",
+            "native_sha256": "a156bd597eace4ed6bc2c8128be83630d594578c1875f4a34208d267fa15d4da",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_blue/flag_blue.col.xbx",
+            "source_sha256": "a0e4183a4af92794bd272d4fa6fd59b979bf789325f2902278664ce4c91d4f7a",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 584,
+            "native_path": "collision/52a5a8212dbe358e4d943b4a2de794abf71ce3484bc9957a60aba2ad547c3ee8.ghsc",
+            "native_sha256": "14581d820e76b22776abe4fd77cb1648ac164edbfdf197ee2ff52189f8e4e3a3",
+            "objects": 5,
+            "path": "Models/gameobjects/flags/flag_blue_base/flag_blue_base.col.xbx",
+            "source_sha256": "52a5a8212dbe358e4d943b4a2de794abf71ce3484bc9957a60aba2ad547c3ee8",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 584,
+            "native_path": "collision/22778f5319d094befd1d1973d07066441f3f9610e2ac7b5953615ff459f2fc3f.ghsc",
+            "native_sha256": "8b8d9c97ca8ce0c3b01c65baf1a17a2eda15acd2d7461825840adef883e43406",
+            "objects": 5,
+            "path": "Models/gameobjects/flags/flag_red_base/flag_red_base.col.xbx",
+            "source_sha256": "22778f5319d094befd1d1973d07066441f3f9610e2ac7b5953615ff459f2fc3f",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 860,
+            "native_path": "collision/6b8a33be0b39809eaeb286619186b64e26a3e24d8d13a9c1c684c0926cbc5735.ghsc",
+            "native_sha256": "733e04b45d55b3fc9bd4b3a883a467bf268a7ac810890fa504945201d84e00f7",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_red/flag_red.col.xbx",
+            "source_sha256": "6b8a33be0b39809eaeb286619186b64e26a3e24d8d13a9c1c684c0926cbc5735",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 584,
+            "native_path": "collision/f0112b91912b77adbac0b3544e77683050de6f18d904cc3d5fb1cdb41f51c6bf.ghsc",
+            "native_sha256": "037092e39c88af12d9d9be4b6752612586207bd363952ccca7d322661693aa52",
+            "objects": 5,
+            "path": "Models/gameobjects/flags/flag_yellow_base/flag_yellow_base.col.xbx",
+            "source_sha256": "f0112b91912b77adbac0b3544e77683050de6f18d904cc3d5fb1cdb41f51c6bf",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 860,
+            "native_path": "collision/b95c80b2cef71489b6a00d7cb75945fdbee7310a615bcef973b77ad2b72f2afc.ghsc",
+            "native_sha256": "46cabcd12ddb279217e67f8b0989309d6efcc98da62b8612335fe7f3b6591b36",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_yellow/flag_yellow.col.xbx",
+            "source_sha256": "b95c80b2cef71489b6a00d7cb75945fdbee7310a615bcef973b77ad2b72f2afc",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 584,
+            "native_path": "collision/d938fe292c9a0086d28606e95b4e9953adf6789e87cb10d68cf337369453120f.ghsc",
+            "native_sha256": "9236989f118e565038ec6cbdea1d079214b042326ca6a5daba498186d9d626a0",
+            "objects": 5,
+            "path": "Models/gameobjects/flags/flag_green_base/flag_green_base.col.xbx",
+            "source_sha256": "d938fe292c9a0086d28606e95b4e9953adf6789e87cb10d68cf337369453120f",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 860,
+            "native_path": "collision/edfc39103fda184fe397f331bee10cb13bb53452f07da225c1a394132ce86a02.ghsc",
+            "native_sha256": "f89b95b378d470c5dc34d6d1c8ddd3b688204b54066e4650d581301801a3013d",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_green/flag_green.col.xbx",
+            "source_sha256": "edfc39103fda184fe397f331bee10cb13bb53452f07da225c1a394132ce86a02",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 384,
+            "native_path": "collision/eecaa78e33f0cf2963fc1968f818afcf53fb6de442f106579f9b825530b8ba00.ghsc",
+            "native_sha256": "11ebd73beceefe7b2643ff44b689565033db83affc4c25b9afd11c37c436e637",
+            "objects": 2,
+            "path": "Models/gameobjects/nj/scrapmetal_pickup/scrapmetal_pickup.col.xbx",
+            "source_sha256": "eecaa78e33f0cf2963fc1968f818afcf53fb6de442f106579f9b825530b8ba00",
+            "triangles": 10,
+            "vertices": 13
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 580,
+            "native_path": "collision/1d3d0dfe149023f8dcf8fc1b60fab6c86734aa1c44483b63cc14cc14f886f96b.ghsc",
+            "native_sha256": "f4fb5df72629719c3f2a3be15373b0fe973775498ac643a9c8264c8de17e7fa8",
+            "objects": 2,
+            "path": "Models/THPS2_Case/THPS2_Case.col.xbx",
+            "source_sha256": "1d3d0dfe149023f8dcf8fc1b60fab6c86734aa1c44483b63cc14cc14f886f96b",
+            "triangles": 14,
+            "vertices": 24
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 468,
+            "native_path": "collision/d80fabfff7b0dfb38e6b5ccde4e83874e7275b7b61c3193cfc42aff76acb1ffb.ghsc",
+            "native_sha256": "1054412b6495e3139eb27fa8a19d0bf2e874f37cd9541e6f015ec960f43062d2",
+            "objects": 2,
+            "path": "Models/gameobjects/secret_tape/secret_tape.col.xbx",
+            "source_sha256": "d80fabfff7b0dfb38e6b5ccde4e83874e7275b7b61c3193cfc42aff76acb1ffb",
+            "triangles": 16,
+            "vertices": 12
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 103732,
+            "native_path": "collision/3fc54e0d1b9fe7c7752be32da9a6738af0bae4768dc5cb8bb467b3fe74c033d5.ghsc",
+            "native_sha256": "b9dc33f987970cb4445099f253a2344170addae92abd4d9a0bb1c841d5547fe3",
+            "objects": 72,
+            "path": "Levels/NJ_Skateshop/NJ_Skateshop.col.xbx",
+            "source_sha256": "3fc54e0d1b9fe7c7752be32da9a6738af0bae4768dc5cb8bb467b3fe74c033d5",
+            "triangles": 2930,
+            "vertices": 4592
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1237184,
+            "native_path": "collision/2a407b04f76335c659a30c1d90e2d6ef3a48368e179e03ae7130fa0fbf15bb40.ghsc",
+            "native_sha256": "b375207b1cf705e0fccb650314a33409d808dbceb5a2b8e4aa3383546f8519a6",
+            "objects": 1700,
+            "path": "Levels/NJ/NJ.col.xbx",
+            "source_sha256": "2a407b04f76335c659a30c1d90e2d6ef3a48368e179e03ae7130fa0fbf15bb40",
+            "triangles": 38202,
+            "vertices": 48761
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1399388,
+            "native_path": "collision/cb6438aff6bd456fedbdf6c65cb6a81462c87ca5d8c3717ce55b6d26f439eb58.ghsc",
+            "native_sha256": "3190e09a34f768e2e438af23e532e4a822ab47fe28c322313ff31488ef59fee5",
+            "objects": 1660,
+            "path": "Levels/NY/NY.col.xbx",
+            "source_sha256": "cb6438aff6bd456fedbdf6c65cb6a81462c87ca5d8c3717ce55b6d26f439eb58",
+            "triangles": 43395,
+            "vertices": 55434
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 344820,
+            "native_path": "collision/cd71f4518e49f28307113469a4d771ec28eaa3a9b415162af838d2b369cd8de6.ghsc",
+            "native_sha256": "a2db899f06cacb926b97d8a74145f578e7a3e3e9f80c668e002b6f7f939fb80e",
+            "objects": 955,
+            "path": "Levels/PH/PH.col.xbx",
+            "source_sha256": "cd71f4518e49f28307113469a4d771ec28eaa3a9b415162af838d2b369cd8de6",
+            "triangles": 10120,
+            "vertices": 13330
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1553756,
+            "native_path": "collision/6320482977367ec019ee622ef7f5899fb49699ee0d5a8c66ae23654458613724.ghsc",
+            "native_sha256": "17687684268efd84d75d4849fff1a3201ae5e5d3dde38243f29771fc5f93bcc7",
+            "objects": 1173,
+            "path": "Levels/RU/RU.col.xbx",
+            "source_sha256": "6320482977367ec019ee622ef7f5899fb49699ee0d5a8c66ae23654458613724",
+            "triangles": 50100,
+            "vertices": 60332
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 359416,
+            "native_path": "collision/56c3c9ac6a3152d264541bd7fbd3b3662861fad9c8d8833fdeab94af9359dfd5.ghsc",
+            "native_sha256": "286d9dc5a132a62bc76902d016666d37834e17bde0318ba92c419f5583ca1fd7",
+            "objects": 1128,
+            "path": "Levels/SC2/SC2.col.xbx",
+            "source_sha256": "56c3c9ac6a3152d264541bd7fbd3b3662861fad9c8d8833fdeab94af9359dfd5",
+            "triangles": 10055,
+            "vertices": 14287
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 395424,
+            "native_path": "collision/fffa3d4f35f64541b608f3e66c5c2ec7112627896bef47be53d6178f97bcbad2.ghsc",
+            "native_sha256": "eb0e35850ee1343447ecb7c5ec95d6cfebd0cf874dd9c638c19e4249238a802e",
+            "objects": 570,
+            "path": "Levels/SC/SC.col.xbx",
+            "source_sha256": "fffa3d4f35f64541b608f3e66c5c2ec7112627896bef47be53d6178f97bcbad2",
+            "triangles": 13114,
+            "vertices": 14325
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1394104,
+            "native_path": "collision/39af1a4313ebd6f21d1c8a4f2aa8469d94cf147159ef1bfed91c31a9ee02bc3c.ghsc",
+            "native_sha256": "1afc46af76f6404fb71428f566c58b1a6fbd55f3397f6f298d2f11dfe89662ba",
+            "objects": 2015,
+            "path": "Levels/SD/SD.col.xbx",
+            "source_sha256": "39af1a4313ebd6f21d1c8a4f2aa8469d94cf147159ef1bfed91c31a9ee02bc3c",
+            "triangles": 44735,
+            "vertices": 52497
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 718872,
+            "native_path": "collision/e0173778db113cc7c5ed95aa2264035fdc769860eb591df8e4d07e6447e2012d.ghsc",
+            "native_sha256": "2fdb1f536431fccca7fa4e728ffb696f9fdba9f9084494ac7bdc6fe0e385c5ca",
+            "objects": 1100,
+            "path": "Levels/SE/SE.col.xbx",
+            "source_sha256": "e0173778db113cc7c5ed95aa2264035fdc769860eb591df8e4d07e6447e2012d",
+            "triangles": 22336,
+            "vertices": 27923
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 755132,
+            "native_path": "collision/90b58e7a09516dcc11b9aaaa1cec23915c4f45165e57460d47473acd07895b08.ghsc",
+            "native_sha256": "31bc6e6362e230df04b00def6172aabc224cd4f3dfb4da5a0f3dc2a27e54a8d0",
+            "objects": 1526,
+            "path": "Levels/SJ/SJ.col.xbx",
+            "source_sha256": "90b58e7a09516dcc11b9aaaa1cec23915c4f45165e57460d47473acd07895b08",
+            "triangles": 22479,
+            "vertices": 29902
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 6640,
+            "native_path": "collision/833415e233d31de55427d386a405bb120d0b21355098cfe1ef3f53520a6d5cb6.ghsc",
+            "native_sha256": "1e2a4e022d6931c0472cbcbf84789dd1138c2cf838564d2f9c9ba0a8691eb50e",
+            "objects": 2,
+            "path": "Levels/SP/SP.col.xbx",
+            "source_sha256": "833415e233d31de55427d386a405bb120d0b21355098cfe1ef3f53520a6d5cb6",
+            "triangles": 251,
+            "vertices": 213
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 48308,
+            "native_path": "collision/51de17d233dcefa9bcbdcabc8d99df8ce6e23d1c04ad430d81b96d15234d124a.ghsc",
+            "native_sha256": "c158c175541f0c63cee6c7c8aabbadfcf904164f54556fd602557c000ec96e56",
+            "objects": 78,
+            "path": "Levels/TestLevel/TestLevel.col.xbx",
+            "source_sha256": "51de17d233dcefa9bcbdcabc8d99df8ce6e23d1c04ad430d81b96d15234d124a",
+            "triangles": 1449,
+            "vertices": 1936
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 1419108,
+            "native_path": "collision/d2b9fe0ad4957e5ac34c9563d02101f94f4f8a9ae5e2f9a5095ad98c2f15010d.ghsc",
+            "native_sha256": "3aa5d0989a4d7f7517154dc7a26f369233b2ddbfdeebf473aa93ebe1e53d263d",
+            "objects": 1925,
+            "path": "Levels/VC/VC.col.xbx",
+            "source_sha256": "d2b9fe0ad4957e5ac34c9563d02101f94f4f8a9ae5e2f9a5095ad98c2f15010d",
+            "triangles": 43792,
+            "vertices": 56018
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 317108,
+            "native_path": "collision/1e8937e565c1130e0308df8d6470d44fbc8acb64f9ad335cc90e550b789df8a3.ghsc",
+            "native_sha256": "a0417c1a180de1e8bb6ac7fcace96c9a5d96b2d102f7f041ddcf676b603347c7",
+            "objects": 987,
+            "path": "Levels/VN/VN.col.xbx",
+            "source_sha256": "1e8937e565c1130e0308df8d6470d44fbc8acb64f9ad335cc90e550b789df8a3",
+            "triangles": 9261,
+            "vertices": 12102
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 14340,
+            "native_path": "collision/669b7ec25ad2500f6237b63b71bc3993f4afa40352010ef8cfa5a0ccab027e48.ghsc",
+            "native_sha256": "cfaf7bdb2d74555f5e3fc27327d2ee2037a7b5377866a9289e1c2601d43d2609",
+            "objects": 6,
+            "path": "Levels/mainmenu/mainmenu.col.xbx",
+            "source_sha256": "669b7ec25ad2500f6237b63b71bc3993f4afa40352010ef8cfa5a0ccab027e48",
+            "triangles": 604,
+            "vertices": 376
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 72432,
+            "native_path": "collision/839477834b8ea910f212a1d8b2662f185c43d0cf4c37e6a454b19822ae56bd64.ghsc",
+            "native_sha256": "49a19a3853dfa99f5d947863a33618fc3bf4429bc1929d948904ece97d66e4f6",
+            "objects": 267,
+            "path": "Levels/sk5ed2_shell/sk5ed2_shell.col.xbx",
+            "source_sha256": "839477834b8ea910f212a1d8b2662f185c43d0cf4c37e6a454b19822ae56bd64",
+            "triangles": 1888,
+            "vertices": 2983
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 73384,
+            "native_path": "collision/ff7a919942428a0e7642e0bed6ed3968770eab054246b217a4a8813316dd3155.ghsc",
+            "native_sha256": "bbf7a59e6c3ba1a68a710b24d9b5f8b053514bd2708e230033b62d9fa8a0ac3b",
+            "objects": 268,
+            "path": "Levels/sk5ed3_shell/sk5ed3_shell.col.xbx",
+            "source_sha256": "ff7a919942428a0e7642e0bed6ed3968770eab054246b217a4a8813316dd3155",
+            "triangles": 2438,
+            "vertices": 2327
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 245984,
+            "native_path": "collision/14cb16dcbd54c2d1c89c4815ffc3ae77840d4464b4b95cad28483dca644b6cba.ghsc",
+            "native_sha256": "16fd4a582b2cc7e12d7ff1adbf5a1758bb1ef4d0fe00babdf2acc1d647de0d99",
+            "objects": 218,
+            "path": "Levels/sk5ed4_shell/sk5ed4_shell.col.xbx",
+            "source_sha256": "14cb16dcbd54c2d1c89c4815ffc3ae77840d4464b4b95cad28483dca644b6cba",
+            "triangles": 7578,
+            "vertices": 9957
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 123404,
+            "native_path": "collision/2ac563986fbe324639463f22920f35dc1ff41b8161eabfef21034cbbce37bde0.ghsc",
+            "native_sha256": "fe3ac1717da8946e17d21461e5b7c9fd7e1160181d47c7b12f6eb901b7bfd19b",
+            "objects": 252,
+            "path": "Levels/sk5ed5_shell/sk5ed5_shell.col.xbx",
+            "source_sha256": "2ac563986fbe324639463f22920f35dc1ff41b8161eabfef21034cbbce37bde0",
+            "triangles": 3897,
+            "vertices": 4582
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 173588,
+            "native_path": "collision/51903ff1c94dbe9ab0425b7695c1df986a55368d2224d17fb4cf93afb9f36d4a.ghsc",
+            "native_sha256": "0508453fe0d7418d07de16dc9e46c9d4ededa8706c6aef4868f3234a882d8717",
+            "objects": 347,
+            "path": "Levels/sk5ed_shell/sk5ed_shell.col.xbx",
+            "source_sha256": "51903ff1c94dbe9ab0425b7695c1df986a55368d2224d17fb4cf93afb9f36d4a",
+            "triangles": 4494,
+            "vertices": 7778
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 707176,
+            "native_path": "collision/4c6b065224bc3b9f27422f12cdb91f1e8b40d6ab83af53b747ca234a848cdc1a.ghsc",
+            "native_sha256": "692cff40166f1208b3a7ccbc2313f72d8657ba469dcfda02be18a552d60a7170",
+            "objects": 277,
+            "path": "Levels/sk5ed/sk5ed.col.xbx",
+            "source_sha256": "4c6b065224bc3b9f27422f12cdb91f1e8b40d6ab83af53b747ca234a848cdc1a",
+            "triangles": 24176,
+            "vertices": 26141
+          },
+          {
+            "collision_version": 9,
+            "native_bytes": 539752,
+            "native_path": "collision/aecb347c6f088f6253225565557ddc2f7457b60cb0ad9540fb1cb23431f2009d.ghsc",
+            "native_sha256": "f6a2ebcbaa9f9a31ac0742b9d784b2d6188834e6680bfe8d79d5943751836ad0",
+            "objects": 259,
+            "path": "Levels/skateshop/skateshop.col.xbx",
+            "source_sha256": "aecb347c6f088f6253225565557ddc2f7457b60cb0ad9540fb1cb23431f2009d",
+            "triangles": 19724,
+            "vertices": 18161
+          }
+        ],
+        "unsupported_collision_records": 0
+      },
+      "executable_evidence": {
+        "evidence_id": "ev_32a93c99b417701c0b2dd6d1aa534975785470e33f96ff118a9ec76f0d1eeecd",
+        "operation": "REA inspect_pe_resources",
+        "source_sha256": "7dd979a2b3adb2013c2158364e5d7022fc72297ad39209262b47adb99c50b413",
+        "format": "PE32",
+        "machine": 332,
+        "meaning": "I386 Windows image, not an ARM64 runtime",
+        "resource_count": 3,
+        "limit": "Static inventory only; code not executed"
+      }
+    },
+    {
+      "title": "thug2",
+      "archive": {
+        "bytes": 2235326155,
+        "path": "THUG2_Win_ROM_EN.zip",
+        "sha256": "6568de0c5e1b14fb2544ad425a581e2a25f7bd9a34e0b60fb14377789ba7c2ed"
+      },
+      "media": [
+        {
+          "bytes": 665658336,
+          "file": "rld-thua.bin",
+          "sha256": "5e8b570d999b88ad9ffad1ffe152b9af9cd342fbde6aeba561b9ff504183e68f",
+          "zip_crc32": "efd2783e",
+          "zip_path": "THUG2_Win_ROM_EN/Game Files/CD1/rld-thua.bin"
+        },
+        {
+          "bytes": 74,
+          "file": "rld-thua.cue",
+          "sha256": "c2a6120553a08eece4a5e6ecbbc3e45993386ed4e472fc0f378f2dbe47a611e1",
+          "zip_crc32": "a2aab996",
+          "zip_path": "THUG2_Win_ROM_EN/Game Files/CD1/rld-thua.cue"
+        },
+        {
+          "bytes": 801721536,
+          "file": "rld-thub.bin",
+          "sha256": "a2f13a47a15c2453dab81fc6cd8214296b893b849dbcdd6deb9ec2407569536c",
+          "zip_crc32": "9b3cf863",
+          "zip_path": "THUG2_Win_ROM_EN/Game Files/CD2/rld-thub.bin"
+        },
+        {
+          "bytes": 74,
+          "file": "rld-thub.cue",
+          "sha256": "089c616c7fac10ab0535500507c86a2eeebaa657e91c55ee873315e51e302133",
+          "zip_crc32": "24fd6ed7",
+          "zip_path": "THUG2_Win_ROM_EN/Game Files/CD2/rld-thub.cue"
+        },
+        {
+          "bytes": 801947328,
+          "file": "rld-thuc.bin",
+          "sha256": "cc74ac7cfc458c342fdcccd6533c0a67e3102597bbe2f8bf97782ef02786ac5d",
+          "zip_crc32": "28e3514b",
+          "zip_path": "THUG2_Win_ROM_EN/Game Files/CD3/rld-thuc.bin"
+        },
+        {
+          "bytes": 74,
+          "file": "rld-thuc.cue",
+          "sha256": "5bd67d1a237f97539548cbdf2a94d2f12d54044a28f3db0845afe3d180af4829",
+          "zip_crc32": "593023e8",
+          "zip_path": "THUG2_Win_ROM_EN/Game Files/CD3/rld-thuc.cue"
+        }
+      ],
+      "completion_status": "unfinished native rewrite",
+      "receipt_sha256": "b9cdd4594d33701f43977a0c7aabb0f6cc189fd2f14c6591244af7db5fd06e52",
+      "discs": [
+        {
+          "image": "rld-thua.bin",
+          "payload_offset": 16,
+          "sector_bytes": 2352,
+          "volume_id": "THUG2_1",
+          "file_count": 84
+        },
+        {
+          "image": "rld-thub.bin",
+          "payload_offset": 16,
+          "sector_bytes": 2352,
+          "volume_id": "THUG2_2",
+          "file_count": 26
+        },
+        {
+          "image": "rld-thuc.bin",
+          "payload_offset": 16,
+          "sector_bytes": 2352,
+          "volume_id": "THUG2_3",
+          "file_count": 21
+        }
+      ],
+      "preparation": {
+        "pre3_archives": 117,
+        "unique_collision_assets": 94,
+        "level_collision_assets": 23,
+        "vertices": 544349,
+        "triangles": 466840,
+        "scenes_retained": 36,
+        "texture_dictionaries_retained": 748,
+        "qb_scripts_retained": 614,
+        "collision_assets": [
+          {
+            "collision_version": 10,
+            "native_bytes": 1366168,
+            "native_path": "collision/f0f6509448b31ec1e2f0a956ccbeac150430fc0a74a62b94d0ab0e244ab5bcf2.ghsc",
+            "native_sha256": "74ba6aeee826f697fb97ac0b60c5e32498dff0389e5608e5edbf2842268116fe",
+            "objects": 739,
+            "path": "levels/AP/AP.col.xbx",
+            "source_sha256": "f0f6509448b31ec1e2f0a956ccbeac150430fc0a74a62b94d0ab0e244ab5bcf2",
+            "triangles": 45428,
+            "vertices": 51797
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 860,
+            "native_path": "collision/f67bc155ba3b5bd0eaf4d124975da15ec6a4832b602dab237ef1a5be76437d50.ghsc",
+            "native_sha256": "afc7edc141939305f8b585ae26a8b120a1c674e6783e6fa867b7a19429b92691",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_blue/flag_blue.col.xbx",
+            "source_sha256": "f67bc155ba3b5bd0eaf4d124975da15ec6a4832b602dab237ef1a5be76437d50",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 488,
+            "native_path": "collision/e777e0a6550ca6948e7b2e24c736b554073a6d69f9381b2a453670a1d2e401b0.ghsc",
+            "native_sha256": "354f202fe980dfd3750188e749c5ebe6414691c1809a3a195364b9e24799a5a8",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_blue_base/flag_blue_base.col.xbx",
+            "source_sha256": "e777e0a6550ca6948e7b2e24c736b554073a6d69f9381b2a453670a1d2e401b0",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 488,
+            "native_path": "collision/d744f1d032217412c454f54febad05e311cab599e8bddb26df7f7bd543675e48.ghsc",
+            "native_sha256": "2a116011de762aa3713654f19ac67c33f33208fbf5b28c576d945cef1b503672",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_red_base/flag_red_base.col.xbx",
+            "source_sha256": "d744f1d032217412c454f54febad05e311cab599e8bddb26df7f7bd543675e48",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 860,
+            "native_path": "collision/cb4d1d72f269cf3300e8d7599ae219653e03d22348a021c5f0d46da1540c6eb8.ghsc",
+            "native_sha256": "2618cb79620344d2200e7259e78cac84262ea33c7822ffbf284c0da184b98d3d",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_red/flag_red.col.xbx",
+            "source_sha256": "cb4d1d72f269cf3300e8d7599ae219653e03d22348a021c5f0d46da1540c6eb8",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 488,
+            "native_path": "collision/232b03485c45951f4a6a30571d89a532ef2a7caff2b139634676374f9817088f.ghsc",
+            "native_sha256": "951bbc297cbeae364358b093ca2bd9e07eaa5d859826d4094accba81857fa337",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_yellow_base/flag_yellow_base.col.xbx",
+            "source_sha256": "232b03485c45951f4a6a30571d89a532ef2a7caff2b139634676374f9817088f",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 860,
+            "native_path": "collision/1e13cb4a5816d629c4b097fde724a38a3d89858e06278de957526fb41e92d82e.ghsc",
+            "native_sha256": "205d109bb5f2ce01d9fb528e82f75a96494d919cbb393e6c3baf46fc615657ed",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_yellow/flag_yellow.col.xbx",
+            "source_sha256": "1e13cb4a5816d629c4b097fde724a38a3d89858e06278de957526fb41e92d82e",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 488,
+            "native_path": "collision/0e8b5507bec96c1545f8c69b4aece7871159b4e76265308acb97efd64ad718be.ghsc",
+            "native_sha256": "603edeba38db098e6d9cd2f57994cf9e43eb5417e4994b1bdf0e7e188daa3245",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_green_base/flag_green_base.col.xbx",
+            "source_sha256": "0e8b5507bec96c1545f8c69b4aece7871159b4e76265308acb97efd64ad718be",
+            "triangles": 12,
+            "vertices": 21
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 860,
+            "native_path": "collision/aad78fc3e48cb66a325c27cb1dad4cd94159dc3bfdb8978f4c96292f5fb00b85.ghsc",
+            "native_sha256": "8b48ce383c243bcc38cbcdcc0643c6cd3b0da5879fba806839e9a9ef95484650",
+            "objects": 1,
+            "path": "Models/gameobjects/flags/flag_green/flag_green.col.xbx",
+            "source_sha256": "aad78fc3e48cb66a325c27cb1dad4cd94159dc3bfdb8978f4c96292f5fb00b85",
+            "triangles": 24,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 3004,
+            "native_path": "collision/8679d8ca3abfaff61a905f08edb36563b711f8a17cc89f3f07433bea323d7646.ghsc",
+            "native_sha256": "5f7c96769a05ce9c07808bac86b75dc1fcc59d509a3fb075ea687c584044f570",
+            "objects": 1,
+            "path": "Models/gameobjects/skate/letter_s/letter_s.col.xbx",
+            "source_sha256": "8679d8ca3abfaff61a905f08edb36563b711f8a17cc89f3f07433bea323d7646",
+            "triangles": 104,
+            "vertices": 108
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1324,
+            "native_path": "collision/557b689ce1ab3b99df015043f1cf21fac7f30ac730b3b01922f824d05a0d3fb9.ghsc",
+            "native_sha256": "fe772cfd685ad6a6e3afb442fb75d4b84afe423ece1962dc7f0ab4088c824b93",
+            "objects": 1,
+            "path": "Models/gameobjects/skate/letter_k/letter_k.col.xbx",
+            "source_sha256": "557b689ce1ab3b99df015043f1cf21fac7f30ac730b3b01922f824d05a0d3fb9",
+            "triangles": 44,
+            "vertices": 48
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1276,
+            "native_path": "collision/6536679686330760b2fb622130a533d350ef4c6ba1e689fd54779cb883c24f49.ghsc",
+            "native_sha256": "2c492e9ebfd32346ea2ed67eede1e40f61f28dad7ee05ed1b2e68049213e4aa7",
+            "objects": 1,
+            "path": "Models/gameobjects/skate/letter_a/letter_a.col.xbx",
+            "source_sha256": "6536679686330760b2fb622130a533d350ef4c6ba1e689fd54779cb883c24f49",
+            "triangles": 44,
+            "vertices": 44
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 876,
+            "native_path": "collision/9b6f6b6419a816a56352bbc11db70c4fdae2035815120b59b65c4858322b48fe.ghsc",
+            "native_sha256": "aff368a3bb74596c29e2bc3bd3fc001fe657b21c2f3e4a7f50df90317971b450",
+            "objects": 1,
+            "path": "Models/gameobjects/skate/letter_t/letter_t.col.xbx",
+            "source_sha256": "9b6f6b6419a816a56352bbc11db70c4fdae2035815120b59b65c4858322b48fe",
+            "triangles": 28,
+            "vertices": 32
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1324,
+            "native_path": "collision/f3cb99d67ba060a1b3b2f4282c943f8dc7358db268e6f9261da5c82b626992db.ghsc",
+            "native_sha256": "4248c88f0725127dcd3d0794bc56b1dd17fa802b0c2e2e4a74fcd4ffb06d49a4",
+            "objects": 1,
+            "path": "Models/gameobjects/skate/letter_e/letter_e.col.xbx",
+            "source_sha256": "f3cb99d67ba060a1b3b2f4282c943f8dc7358db268e6f9261da5c82b626992db",
+            "triangles": 44,
+            "vertices": 48
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1980,
+            "native_path": "collision/c15e7e59ecec2562559a35fe4aa053acc1132a79d1a2f0b5d7c7f398eef6c7b6.ghsc",
+            "native_sha256": "1b808d3b04b232937762c2476f46772621993b732564882e7298dbe3398f407d",
+            "objects": 1,
+            "path": "Models/gameobjects/combo/goal_combo_c/goal_combo_c.col.xbx",
+            "source_sha256": "c15e7e59ecec2562559a35fe4aa053acc1132a79d1a2f0b5d7c7f398eef6c7b6",
+            "triangles": 64,
+            "vertices": 76
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1500,
+            "native_path": "collision/07d872657d23e184572b5c2e033060e93c5b5142cb2bc4d4a23999f0dbccf132.ghsc",
+            "native_sha256": "a882361cfa7bb1ef78415a615fbe900c246b3b6ed8f49311dfdd432db48783fe",
+            "objects": 1,
+            "path": "Models/gameobjects/combo/goal_combo_o/goal_combo_o.col.xbx",
+            "source_sha256": "07d872657d23e184572b5c2e033060e93c5b5142cb2bc4d4a23999f0dbccf132",
+            "triangles": 52,
+            "vertices": 52
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1616,
+            "native_path": "collision/5e68ed0fd3b6ca4bedef318b25a2fcd5a75c92a9b9d0bbede4c0378fe7128b4a.ghsc",
+            "native_sha256": "b68deb94c14d3418fc9e1ce3d8c33477e4b5f4505365ffab1aef410fdc6f79b7",
+            "objects": 1,
+            "path": "Models/gameobjects/combo/goal_combo_m/goal_combo_m.col.xbx",
+            "source_sha256": "5e68ed0fd3b6ca4bedef318b25a2fcd5a75c92a9b9d0bbede4c0378fe7128b4a",
+            "triangles": 48,
+            "vertices": 67
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 2284,
+            "native_path": "collision/c24d02c6974cff433f24e298fc416e5af35d54e4dfd1901df117239a9bd6f43f.ghsc",
+            "native_sha256": "f706a84a06d9a6e3ea6a1e12e972d4f1635bab51c7cf13243e0f58fb45c1e80c",
+            "objects": 1,
+            "path": "Models/gameobjects/combo/goal_combo_b/goal_combo_b.col.xbx",
+            "source_sha256": "c24d02c6974cff433f24e298fc416e5af35d54e4dfd1901df117239a9bd6f43f",
+            "triangles": 80,
+            "vertices": 80
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 468,
+            "native_path": "collision/fa3bb5130b8e27452ccc42112a0d53e15dcf794863a3070c58d79544c1185e2a.ghsc",
+            "native_sha256": "1054412b6495e3139eb27fa8a19d0bf2e874f37cd9541e6f015ec960f43062d2",
+            "objects": 2,
+            "path": "Models/gameobjects/secret_tape/secret_tape.col.xbx",
+            "source_sha256": "fa3bb5130b8e27452ccc42112a0d53e15dcf794863a3070c58d79544c1185e2a",
+            "triangles": 16,
+            "vertices": 12
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1064,
+            "native_path": "collision/5db0184e2fb9ac19357392a93c6b79bdaae8d70626956f395506af3397a96bc0.ghsc",
+            "native_sha256": "abc10a880e9f394132c23d0bc8aec1281f3bf14912f287cb4bc8a99cf7565429",
+            "objects": 1,
+            "path": "Models/gameobjects/classic_icon/classic_icon.col.xbx",
+            "source_sha256": "5db0184e2fb9ac19357392a93c6b79bdaae8d70626956f395506af3397a96bc0",
+            "triangles": 36,
+            "vertices": 37
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1041160,
+            "native_path": "collision/03af683555019567e62070c3fcbe6edf9a3c48d081e38bdba1ba0d7ad4a5b05b.ghsc",
+            "native_sha256": "454dad33c358f091fdc708b0a9dd823f92c2c9a3d5b227fbbadef90f0f111e18",
+            "objects": 887,
+            "path": "levels/AU/AU.col.xbx",
+            "source_sha256": "03af683555019567e62070c3fcbe6edf9a3c48d081e38bdba1ba0d7ad4a5b05b",
+            "triangles": 35783,
+            "vertices": 37277
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 6140,
+            "native_path": "collision/f35e3f226a1fee17258584a3972a238d3a0e857ed75c8b054df551ea62d2257a.ghsc",
+            "native_sha256": "1a935196e3dd2d5d762765126fd89f73490fd0a721a7f4fc4f3d04763156228d",
+            "objects": 1,
+            "path": "Models/animals/anl_seagull/anl_seagull.col.xbx",
+            "source_sha256": "f35e3f226a1fee17258584a3972a238d3a0e857ed75c8b054df551ea62d2257a",
+            "triangles": 276,
+            "vertices": 140
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1112,
+            "native_path": "collision/832aa2d1143a1369b999119df39704ce4fe30793281fa8e46f63a6cdadcfde28.ghsc",
+            "native_sha256": "c8a4775f3130091f1bc963e5e92a02b74532bd6297f937b7f9a90163f58183d1",
+            "objects": 1,
+            "path": "Models/animals/anl_pigeon/anl_pigeon.col.xbx",
+            "source_sha256": "832aa2d1143a1369b999119df39704ce4fe30793281fa8e46f63a6cdadcfde28",
+            "triangles": 45,
+            "vertices": 29
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1520,
+            "native_path": "collision/e87ec9a37a2d0ea5e7e479c7c5f8cff81609d7b9e271ce7d3039b0963e34cc56.ghsc",
+            "native_sha256": "b5d9f519123110ff414a3e63d417bc3c7895ff993f30fd6d05e82ffdfca4e92b",
+            "objects": 5,
+            "path": "Models/veh/veh_cop/veh_cop.col.xbx",
+            "source_sha256": "e87ec9a37a2d0ea5e7e479c7c5f8cff81609d7b9e271ce7d3039b0963e34cc56",
+            "triangles": 42,
+            "vertices": 59
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1348,
+            "native_path": "collision/0092f5bb392eda38ec24823a5ebc2c9d6fdb242ce9b5d12f44d7841c24dc9656.ghsc",
+            "native_sha256": "89c8ceed114b4c37af0ef0283a48775038d172fd3a98cc89ed2b2534a24ce8cd",
+            "objects": 6,
+            "path": "Models/veh/veh_smart_car/veh_smart_car.col.xbx",
+            "source_sha256": "0092f5bb392eda38ec24823a5ebc2c9d6fdb242ce9b5d12f44d7841c24dc9656",
+            "triangles": 44,
+            "vertices": 40
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1324,
+            "native_path": "collision/79be2acb11640d56720cefb24aa5c74cf16a45c665d84dca78375a38f5ee2978.ghsc",
+            "native_sha256": "c307d6b8fe43cbe9034faf406aae306b1af66f1e7d2db54163237e2caa03cb71",
+            "objects": 6,
+            "path": "Models/veh/veh_rust/veh_rust.col.xbx",
+            "source_sha256": "79be2acb11640d56720cefb24aa5c74cf16a45c665d84dca78375a38f5ee2978",
+            "triangles": 44,
+            "vertices": 38
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1156,
+            "native_path": "collision/928959c0f844d1cfb93b1b48954fa1813f92c7533015fc6090d7edb25242f4da.ghsc",
+            "native_sha256": "33b4fb4b189e2970a64cb7b5879be9732e5568ab2ee3704447822782c35db662",
+            "objects": 6,
+            "path": "Models/veh/veh_van/veh_van.col.xbx",
+            "source_sha256": "928959c0f844d1cfb93b1b48954fa1813f92c7533015fc6090d7edb25242f4da",
+            "triangles": 38,
+            "vertices": 32
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1312,
+            "native_path": "collision/e0319c6a3317c576660895c8158ebba4a83b8be4b36bb9d11d54db816eb3e6d3.ghsc",
+            "native_sha256": "673b5e38a6d385ea9ab39f02bd758d7b147b0189ca7084528ad153fa4a0a036b",
+            "objects": 5,
+            "path": "Models/veh/veh_taxi/veh_taxi.col.xbx",
+            "source_sha256": "e0319c6a3317c576660895c8158ebba4a83b8be4b36bb9d11d54db816eb3e6d3",
+            "triangles": 44,
+            "vertices": 39
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1672,
+            "native_path": "collision/75274d878b081cb4b8e7f12363a5ae146bc729e828c66027047a99da650b67f4.ghsc",
+            "native_sha256": "cf5d3573ef0125fbe1fd62decf70d2c40e2d19b050f23f5b0190e6e1de8e3edb",
+            "objects": 5,
+            "path": "Models/veh/veh_sedan/veh_sedan.col.xbx",
+            "source_sha256": "75274d878b081cb4b8e7f12363a5ae146bc729e828c66027047a99da650b67f4",
+            "triangles": 47,
+            "vertices": 65
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1160840,
+            "native_path": "collision/077a7a9b23b5492a346036f27444ae4770a438b15faa158c8e37d47d0d2afb7f.ghsc",
+            "native_sha256": "ba6051a34f86f1f6630768611cadf5532bd42763a8555b9ca190b81dcbe90752",
+            "objects": 1057,
+            "path": "levels/BA/BA.col.xbx",
+            "source_sha256": "077a7a9b23b5492a346036f27444ae4770a438b15faa158c8e37d47d0d2afb7f",
+            "triangles": 35367,
+            "vertices": 47465
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 26260,
+            "native_path": "collision/0cf9a0d7be15b32a5d85ba47d3aea05992f67697bd86a91fca95c17822cc0e2e.ghsc",
+            "native_sha256": "0c8e74283620f69eb4ab2872393a16c2abe7b625ded9afbb1ce6804ed6dbb762",
+            "objects": 1,
+            "path": "Models/animals/anl_bull/anl_bull.col.xbx",
+            "source_sha256": "0cf9a0d7be15b32a5d85ba47d3aea05992f67697bd86a91fca95c17822cc0e2e",
+            "triangles": 1187,
+            "vertices": 602
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 20,
+            "native_path": "collision/5a3a90731bfba76f0bd394953a9ab4b9b05dcfa5ea759820c645502117cdac39.ghsc",
+            "native_sha256": "b3be856d42d8684c16cb9c0f3d282f5863bb7c673da71818cfbd8cf5ee05ca25",
+            "objects": 0,
+            "path": "Models/gameobjects/pickups/Flower_Pot/Flower_Pot.col.xbx",
+            "source_sha256": "5a3a90731bfba76f0bd394953a9ab4b9b05dcfa5ea759820c645502117cdac39",
+            "triangles": 0,
+            "vertices": 0
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 5884,
+            "native_path": "collision/118531c3eb8e3a19dc63b0dcd369159cf55a3b382db62e6c152f0a5028c715ea.ghsc",
+            "native_sha256": "bd235a519f6007472e8d00b60cb2272ab4b50ebbe58196ff0941fceff867879f",
+            "objects": 2,
+            "path": "Models/veh/ba/veh_ba_bridge_south/veh_ba_bridge_south.col.xbx",
+            "source_sha256": "118531c3eb8e3a19dc63b0dcd369159cf55a3b382db62e6c152f0a5028c715ea",
+            "triangles": 176,
+            "vertices": 250
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 5708,
+            "native_path": "collision/6400111741637f19fda081fe48388ec713c9bfb36314af46f3987c5a287af9c5.ghsc",
+            "native_sha256": "de9269ab4f9ee23d22a5a79e74f1b4809bc31e6abe083000fb73b9a69e430291",
+            "objects": 2,
+            "path": "Models/veh/ba/veh_ba_bridge_north/veh_ba_bridge_north.col.xbx",
+            "source_sha256": "6400111741637f19fda081fe48388ec713c9bfb36314af46f3987c5a287af9c5",
+            "triangles": 168,
+            "vertices": 246
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 364,
+            "native_path": "collision/d6656e828f314c9f44cb0f603912a29efeb98b462800235eb1c56b8cb7c0a8b6.ghsc",
+            "native_sha256": "9eafd783145c8a555320adc6c08ca3236f0a3581caec7a993ec8a32b6efefd25",
+            "objects": 3,
+            "path": "Models/veh/veh_scooter/veh_scooter.col.xbx",
+            "source_sha256": "d6656e828f314c9f44cb0f603912a29efeb98b462800235eb1c56b8cb7c0a8b6",
+            "triangles": 11,
+            "vertices": 8
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 10348,
+            "native_path": "collision/f3105ec75cf372c36b70eea329d10d554861eead6655beab97ba85a408f3820d.ghsc",
+            "native_sha256": "51eb558c82f66cf5fd35ed61a9279ecfb8a180566b3fd252864d1e8d50b9e628",
+            "objects": 1,
+            "path": "Models/veh/ba/veh_ba_tram/veh_ba_tram.col.xbx",
+            "source_sha256": "f3105ec75cf372c36b70eea329d10d554861eead6655beab97ba85a408f3820d",
+            "triangles": 299,
+            "vertices": 460
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 10976,
+            "native_path": "collision/498c37b43ee757704e4ba0d4d6ccd90c5cc84ad2a7e2437d8a5c85dceefc4a68.ghsc",
+            "native_sha256": "39fe87149d2b54a0bcd3a57236969a374c5aab4ce1340597863da07b3c5f6680",
+            "objects": 1,
+            "path": "Models/veh/ba/veh_ba_boat/veh_ba_boat.col.xbx",
+            "source_sha256": "498c37b43ee757704e4ba0d4d6ccd90c5cc84ad2a7e2437d8a5c85dceefc4a68",
+            "triangles": 351,
+            "vertices": 443
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 204,
+            "native_path": "collision/99782805a6b2bf66c49925fef90eb4f39540aa2211d18a6e66cf6195a1bac72b.ghsc",
+            "native_sha256": "52f4751a7828b061fdd21ea8b400527fa1e54d34eb1abb856b8363a1fb673da9",
+            "objects": 1,
+            "path": "Models/gameobjects/pickups/Tapas/Tapas.col.xbx",
+            "source_sha256": "99782805a6b2bf66c49925fef90eb4f39540aa2211d18a6e66cf6195a1bac72b",
+            "triangles": 4,
+            "vertices": 8
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1149232,
+            "native_path": "collision/a31a66071424d960f948285a4d2f7f890fced8dc6c0f3a2453feb25d242f5802.ghsc",
+            "native_sha256": "c5dfdb2fecea8e9d29ba6553af042a8b47d1b628d216afd6155f56a3a93668c4",
+            "objects": 1386,
+            "path": "levels/BE/BE.col.xbx",
+            "source_sha256": "a31a66071424d960f948285a4d2f7f890fced8dc6c0f3a2453feb25d242f5802",
+            "triangles": 35474,
+            "vertices": 45697
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1232,
+            "native_path": "collision/7d614b56900d8692ac1fb0dad187badc17dbd37bce62620799fa26bc7052d5cf.ghsc",
+            "native_sha256": "e9bedc1f4314f00e1344137dcc0605714ce00df6bf36ecb670cf80b1601c7a66",
+            "objects": 1,
+            "path": "Models/animals/anl_bat/anl_bat.col.xbx",
+            "source_sha256": "7d614b56900d8692ac1fb0dad187badc17dbd37bce62620799fa26bc7052d5cf",
+            "triangles": 48,
+            "vertices": 35
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1244,
+            "native_path": "collision/4ad6320e880175492a1d819cd8dc20586a46efff860daf57c18352d9329d6cc8.ghsc",
+            "native_sha256": "5c76f7c050cbb11c30b8f618cef7fe7cf0986e5f0624ec0e4ce345a369d0b387",
+            "objects": 6,
+            "path": "Models/veh/veh_Benz_Van/veh_Benz_van.col.xbx",
+            "source_sha256": "4ad6320e880175492a1d819cd8dc20586a46efff860daf57c18352d9329d6cc8",
+            "triangles": 42,
+            "vertices": 34
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 204,
+            "native_path": "collision/1a8b5889d1ad0aa4be4a410a28a8c927eb4d7477df0f68bcf4827d7cb0c721e1.ghsc",
+            "native_sha256": "ffbee2de9db3a6326a9bbc9de4e2244651db1e24e3fa68dd992a959998e4e1d5",
+            "objects": 1,
+            "path": "Models/gameobjects/pickups/Beer_Stein/Beer_Stein.col.xbx",
+            "source_sha256": "1a8b5889d1ad0aa4be4a410a28a8c927eb4d7477df0f68bcf4827d7cb0c721e1",
+            "triangles": 4,
+            "vertices": 8
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1104572,
+            "native_path": "collision/95ad2014550157b66b722955517418a6890c1ddffdc118f3a54c8aaca18c27c5.ghsc",
+            "native_sha256": "6674d2997a069c430efcf8c5c0e9228cab1d379c8187f8cff7a5320de654050d",
+            "objects": 1151,
+            "path": "levels/BO/BO.col.xbx",
+            "source_sha256": "95ad2014550157b66b722955517418a6890c1ddffdc118f3a54c8aaca18c27c5",
+            "triangles": 34083,
+            "vertices": 44300
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 3316,
+            "native_path": "collision/0d9688208418803c2bc4308bd8a5493089db72e0bdbd9f0016dd4b3ae24a3d7d.ghsc",
+            "native_sha256": "e702e5bfafae00b52c896933d7d4ac5c8e440a9ffff521cb74c3c354df2dc9be",
+            "objects": 7,
+            "path": "Models/veh/veh_half_pipe/veh_half_pipe.col.xbx",
+            "source_sha256": "0d9688208418803c2bc4308bd8a5493089db72e0bdbd9f0016dd4b3ae24a3d7d",
+            "triangles": 104,
+            "vertices": 122
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 500,
+            "native_path": "collision/8d83ef274ea8d6f2418c92b84bff188dc4bb737cf7803a04e8645ee10982b2ba.ghsc",
+            "native_sha256": "a7a7e6b9067d7ed3aea9c3a8715e42c7668457e576f366569002034d670e4e16",
+            "objects": 1,
+            "path": "Models/gameobjects/projectiles/apple/apple.col.xbx",
+            "source_sha256": "8d83ef274ea8d6f2418c92b84bff188dc4bb737cf7803a04e8645ee10982b2ba",
+            "triangles": 18,
+            "vertices": 14
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 4512,
+            "native_path": "collision/02727c28e6ce0c4dd1abd861120e8b74aeffb91911d2e51dc351efa9c808b3d1.ghsc",
+            "native_sha256": "04f0d9448035ed62a150282d579fc007dfe80b209954799822577473a0d2157b",
+            "objects": 6,
+            "path": "Models/veh/veh_duck/veh_duck.col.xbx",
+            "source_sha256": "02727c28e6ce0c4dd1abd861120e8b74aeffb91911d2e51dc351efa9c808b3d1",
+            "triangles": 154,
+            "vertices": 157
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1596,
+            "native_path": "collision/66b759e81d606101b84a95de5c3a8bd46cd0189f70e8f76e9f7bdc32ab4a0234.ghsc",
+            "native_sha256": "1ba0b5eb33bee8ca91c5750a2362ddbd4ce4dfa11604b3e924f03b8b39d9c7fd",
+            "objects": 5,
+            "path": "Models/veh/veh_wrangler/veh_wrangler.col.xbx",
+            "source_sha256": "66b759e81d606101b84a95de5c3a8bd46cd0189f70e8f76e9f7bdc32ab4a0234",
+            "triangles": 61,
+            "vertices": 40
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 928504,
+            "native_path": "collision/255d5528835ba994255d872847239c6575502a366fbd30c0623660e7d3e04c5a.ghsc",
+            "native_sha256": "e8735cdac3f77d81b192b4bf5ded9def0be5d3558f5d81cab32d641bfb4b3f7e",
+            "objects": 486,
+            "path": "levels/ca/ca.col.xbx",
+            "source_sha256": "255d5528835ba994255d872847239c6575502a366fbd30c0623660e7d3e04c5a",
+            "triangles": 32162,
+            "vertices": 33519
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 205412,
+            "native_path": "collision/749751a0e0b7bed878ca5d3720a49644a185986f3edfc061477fa2ea323573f7.ghsc",
+            "native_sha256": "0758b1ef708f6c01eb2c3f02b9ae30ae6ec9fb9cb67781f21196f0b1fe9a6775",
+            "objects": 389,
+            "path": "levels/DJ/DJ.col.xbx",
+            "source_sha256": "749751a0e0b7bed878ca5d3720a49644a185986f3edfc061477fa2ea323573f7",
+            "triangles": 7020,
+            "vertices": 6978
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1367212,
+            "native_path": "collision/18b2c575ac31c016a560c2639e78be459095ee1b5dc9fbb10e3969ed11f0df8e.ghsc",
+            "native_sha256": "645009476b7383e8c60a3401cd35f7768c2653aaa5a0881268223056473f25ae",
+            "objects": 1009,
+            "path": "levels/LA/LA.col.xbx",
+            "source_sha256": "18b2c575ac31c016a560c2639e78be459095ee1b5dc9fbb10e3969ed11f0df8e",
+            "triangles": 44678,
+            "vertices": 52344
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1228,
+            "native_path": "collision/454475e58cfef95892943ee28843c536d56871bb8fb919f52c6ed046cdc512b6.ghsc",
+            "native_sha256": "206e0c45725d9d95450da33e0b14cc3c3a5ee93fa1af7aecb4bf8f9f93086c4f",
+            "objects": 2,
+            "path": "Models/veh/veh_galaxie/veh_galaxie.col.xbx",
+            "source_sha256": "454475e58cfef95892943ee28843c536d56871bb8fb919f52c6ed046cdc512b6",
+            "triangles": 38,
+            "vertices": 46
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1588,
+            "native_path": "collision/35a8c1cc2c2c92d9c0b3ed5fd314c020e0b006043816e6472400ce494636cff9.ghsc",
+            "native_sha256": "88c9f3134a92739526ec2292bc0086f375743c657c97b03f6639458c57ab56fb",
+            "objects": 6,
+            "path": "Models/veh/veh_chevy_impala/veh_chevy_impala.col.xbx",
+            "source_sha256": "35a8c1cc2c2c92d9c0b3ed5fd314c020e0b006043816e6472400ce494636cff9",
+            "triangles": 56,
+            "vertices": 44
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1972,
+            "native_path": "collision/912cbf2be13968a751346ee1d094298e97c5df5a46bcb6625598ca9ad46e0dd2.ghsc",
+            "native_sha256": "f5d4648999be2a38663ba0a566c93b85fa2bdd824ce2201ce99a26b405a3cb41",
+            "objects": 6,
+            "path": "Models/veh/veh_custom/veh_custom.col.xbx",
+            "source_sha256": "912cbf2be13968a751346ee1d094298e97c5df5a46bcb6625598ca9ad46e0dd2",
+            "triangles": 68,
+            "vertices": 60
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1308,
+            "native_path": "collision/ef830bb165638b86f04165036bdc214e8d9eed63693cdd60044593b5d2bbd76c.ghsc",
+            "native_sha256": "df3b3147e9f18554f82013b4b8181c37577d7ce10007ed22923aa7d119d4c2ff",
+            "objects": 5,
+            "path": "Models/veh/ny/veh_policecar_ny/veh_policecar_ny.col.xbx",
+            "source_sha256": "ef830bb165638b86f04165036bdc214e8d9eed63693cdd60044593b5d2bbd76c",
+            "triangles": 46,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1196,
+            "native_path": "collision/e83f67d2a0f4e25d167a5021e5b259d8dc1c23a09c915f17c217376e44dc6b8b.ghsc",
+            "native_sha256": "d2716983956245d22a4845a73c8d83360b10c4443d6d558c89285c847d288076",
+            "objects": 5,
+            "path": "Models/veh/veh_limo/veh_limo.col.xbx",
+            "source_sha256": "e83f67d2a0f4e25d167a5021e5b259d8dc1c23a09c915f17c217376e44dc6b8b",
+            "triangles": 42,
+            "vertices": 32
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1308,
+            "native_path": "collision/311a52af1442060ea858610cf008d5eebcf17dc534cf9dad8a3b604300a14050.ghsc",
+            "native_sha256": "2745a7b6c80bb48e6c21305ba5bfc70858b1aa96e9a2c3707cc7698d8aa47785",
+            "objects": 5,
+            "path": "Models/veh/nj/veh_policecar_nj/veh_policecar_nj.col.xbx",
+            "source_sha256": "311a52af1442060ea858610cf008d5eebcf17dc534cf9dad8a3b604300a14050",
+            "triangles": 46,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1892,
+            "native_path": "collision/f0f1a81d6fb629b7d8965f45ce3248888f441505447bcc5080f22097b7b2cf3d.ghsc",
+            "native_sha256": "6462ee4f1f7ed4608fec1ed48b09266017f4ae9291f3d39f75593b35216bbdee",
+            "objects": 5,
+            "path": "Models/veh/veh_dcshoetruck/veh_dcshoetruck.col.xbx",
+            "source_sha256": "f0f1a81d6fb629b7d8965f45ce3248888f441505447bcc5080f22097b7b2cf3d",
+            "triangles": 66,
+            "vertices": 58
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1472,
+            "native_path": "collision/f3efd781772ee82874bf29f8a68dcad69f3ca90fddfa638f14c32b582957ddbd.ghsc",
+            "native_sha256": "803803f2a5973eb7b148359a586627cc0438d6359b2624f3a313998face78ac3",
+            "objects": 6,
+            "path": "Models/veh/veh_lada/veh_lada.col.xbx",
+            "source_sha256": "f3efd781772ee82874bf29f8a68dcad69f3ca90fddfa638f14c32b582957ddbd",
+            "triangles": 45,
+            "vertices": 49
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 2956,
+            "native_path": "collision/72ae714d5991ccbee7b3337518b814a933616533bc1959d92c1f3d4a4b46030e.ghsc",
+            "native_sha256": "3856a9d9403c7a68cc72fb87578fc182c01eb99d8c3014fd03eeac9dc0ca10cc",
+            "objects": 5,
+            "path": "Models/veh/veh_liberty/veh_liberty.col.xbx",
+            "source_sha256": "72ae714d5991ccbee7b3337518b814a933616533bc1959d92c1f3d4a4b46030e",
+            "triangles": 128,
+            "vertices": 64
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 165060,
+            "native_path": "collision/e61507473224001c23ac2a9cd2fa9b9bb985453509d0275113e6fee7db065026.ghsc",
+            "native_sha256": "0c24217b1329d7da018cb2f4216873372848601b24385ca30cea83a29094c04f",
+            "objects": 86,
+            "path": "levels/mainmenu/mainmenu.col.xbx",
+            "source_sha256": "e61507473224001c23ac2a9cd2fa9b9bb985453509d0275113e6fee7db065026",
+            "triangles": 5887,
+            "vertices": 5732
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 124,
+            "native_path": "collision/d47f7e0c330649682a3764496b3f10290b4e2fca5c1d8af0175727a67e03f438.ghsc",
+            "native_sha256": "5f72e0a70f97dee89c8e7450d6a389e1e59d079b96f07fa746ad1d04904c79c8",
+            "objects": 1,
+            "path": "Models/options_clouds/options_clouds.col.xbx",
+            "source_sha256": "d47f7e0c330649682a3764496b3f10290b4e2fca5c1d8af0175727a67e03f438",
+            "triangles": 2,
+            "vertices": 4
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 124,
+            "native_path": "collision/bafb1dc8a90d4b0ef6b454db224174dfce45bc6aca87762cea99ee51333ee2f3.ghsc",
+            "native_sha256": "cef0d87f87d91e845d8cb0e3f3d756ba04a52df7a206ef4a584980491dc8c430",
+            "objects": 1,
+            "path": "Models/UI_bg/UI_bg.col.xbx",
+            "source_sha256": "bafb1dc8a90d4b0ef6b454db224174dfce45bc6aca87762cea99ee51333ee2f3",
+            "triangles": 2,
+            "vertices": 4
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 949724,
+            "native_path": "collision/67133b88d3d6f6a3de30cb4934a5ffd39e22a01fc5c8497506712c7015cfd471.ghsc",
+            "native_sha256": "e8907624f9b44689191eacaf97674961d2057666e89405b50e7a72b93791eb35",
+            "objects": 1517,
+            "path": "levels/NO/NO.col.xbx",
+            "source_sha256": "67133b88d3d6f6a3de30cb4934a5ffd39e22a01fc5c8497506712c7015cfd471",
+            "triangles": 29313,
+            "vertices": 37024
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1604,
+            "native_path": "collision/cf53f4ead2970009300c670896d98ba3bed3805688ec9a8c46b25d3c87877b7d.ghsc",
+            "native_sha256": "10a67657eaad9be4c391d1bcbdd4beaf6bd9341976ef867b22b3452e0e3f49bd",
+            "objects": 5,
+            "path": "Models/veh/veh_mardi/veh_mardi.col.xbx",
+            "source_sha256": "cf53f4ead2970009300c670896d98ba3bed3805688ec9a8c46b25d3c87877b7d",
+            "triangles": 57,
+            "vertices": 46
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1636,
+            "native_path": "collision/cc7f1396eaf0794226f01d4923a3d2ca76799de1279cc7b0ba06aab77e4a97cd.ghsc",
+            "native_sha256": "57d59a9b569b6e50c1e28c2734e4a98670ce1bd75449fb0335248c320e9b3ec9",
+            "objects": 2,
+            "path": "Models/veh/veh_streetcar/veh_streetcar.col.xbx",
+            "source_sha256": "cc7f1396eaf0794226f01d4923a3d2ca76799de1279cc7b0ba06aab77e4a97cd",
+            "triangles": 50,
+            "vertices": 64
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 364,
+            "native_path": "collision/5b797d5bc90a5a926d79b4b550acbf2d8a8bcd9f4bc959c394c55bb045daed74.ghsc",
+            "native_sha256": "c6780c5c4393634c2eff489244271268aea6e74ebc7fad2cf4fe8111a0d48661",
+            "objects": 2,
+            "path": "Models/gameobjects/pickups/Voodoo_Doll/Voodoo_Doll.col.xbx",
+            "source_sha256": "5b797d5bc90a5a926d79b4b550acbf2d8a8bcd9f4bc959c394c55bb045daed74",
+            "triangles": 8,
+            "vertices": 14
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 452,
+            "native_path": "collision/e902e9bd27ec01c4e7596b13c692ed9d427f69e1008c2daf1ecc02c5563b8ebb.ghsc",
+            "native_sha256": "b093f2876f05518139c0236af225acc3a32fd6b54d685ef171ea2de745ea56ad",
+            "objects": 2,
+            "path": "Models/gameobjects/pickups/Crystal_Ball/Crystal_Ball.col.xbx",
+            "source_sha256": "e902e9bd27ec01c4e7596b13c692ed9d427f69e1008c2daf1ecc02c5563b8ebb",
+            "triangles": 12,
+            "vertices": 16
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 383792,
+            "native_path": "collision/2660877a8e1da6c1c19d63f004faafa5e8f55a7b0f7fe389f4751342b34b7fd7.ghsc",
+            "native_sha256": "30f5350afd324ad95e8948bf32590782af2ccf173319bda7080068cea787ee22",
+            "objects": 936,
+            "path": "levels/PH/PH.col.xbx",
+            "source_sha256": "2660877a8e1da6c1c19d63f004faafa5e8f55a7b0f7fe389f4751342b34b7fd7",
+            "triangles": 11649,
+            "vertices": 14577
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 469484,
+            "native_path": "collision/a13d20ff5960c4dfebc1e17c3b7be543812c99419945a5223ef2a1262848006a.ghsc",
+            "native_sha256": "48edaf6fe1023cd6649b7c7f0b60bc757af33d4cacf61b4e6d2f40adb3ff83ee",
+            "objects": 570,
+            "path": "levels/SC/SC.col.xbx",
+            "source_sha256": "a13d20ff5960c4dfebc1e17c3b7be543812c99419945a5223ef2a1262848006a",
+            "triangles": 14838,
+            "vertices": 18198
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 627136,
+            "native_path": "collision/50af552d49d10ae55c66e8cf28919571bdb9b0c0d008e6c6f2b7c7afbeb29617.ghsc",
+            "native_sha256": "423e57b77b5e701e5052ed27e26f0f03e9d85dd566d82fc120788607025239c7",
+            "objects": 454,
+            "path": "levels/SE2/SE2.col.xbx",
+            "source_sha256": "50af552d49d10ae55c66e8cf28919571bdb9b0c0d008e6c6f2b7c7afbeb29617",
+            "triangles": 22676,
+            "vertices": 21117
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 11260,
+            "native_path": "collision/d9cbc3c1b84d55c4ee915286e8e8e191ce42956e4772588f3b8d9827b3a893bd.ghsc",
+            "native_sha256": "02b444431dcc3bb78fefccb7a28671c7a2565837828ac74515af3b7f30b7ee59",
+            "objects": 1,
+            "path": "Models/animals/anl_shark/anl_shark.col.xbx",
+            "source_sha256": "d9cbc3c1b84d55c4ee915286e8e8e191ce42956e4772588f3b8d9827b3a893bd",
+            "triangles": 506,
+            "vertices": 260
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1089744,
+            "native_path": "collision/c741c91af7a8d88cacce1be4f1575740a8951059011326e7111073cf2f0a8c08.ghsc",
+            "native_sha256": "cc57af5043887decac3960916e2b2337c311f910db695c974602f9db4d9ad95c",
+            "objects": 964,
+            "path": "levels/SE/SE.col.xbx",
+            "source_sha256": "c741c91af7a8d88cacce1be4f1575740a8951059011326e7111073cf2f0a8c08",
+            "triangles": 36637,
+            "vertices": 40033
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 300,
+            "native_path": "collision/8c3aecb21a4d2e6886facf71160034617d79bc8ed9a9a76011e19241186f7779.ghsc",
+            "native_sha256": "0879f57cd6157f4d7c4b8a813303319da103f489fb46aad8a6fc5051b29e1217",
+            "objects": 1,
+            "path": "Models/veh/veh_smallrobot/veh_smallrobot.col.xbx",
+            "source_sha256": "8c3aecb21a4d2e6886facf71160034617d79bc8ed9a9a76011e19241186f7779",
+            "triangles": 10,
+            "vertices": 8
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 332,
+            "native_path": "collision/814bd09f4506977e3eb69b328a1b725563fc5ba2a828ee073a8c501180732b91.ghsc",
+            "native_sha256": "dc2f62b10e3a990788179c00e0715b5c9c92ac8ec37640fb9b51d6f1a528427a",
+            "objects": 1,
+            "path": "Models/veh/veh_smallrobot2/veh_smallrobot2.col.xbx",
+            "source_sha256": "814bd09f4506977e3eb69b328a1b725563fc5ba2a828ee073a8c501180732b91",
+            "triangles": 12,
+            "vertices": 8
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 19060,
+            "native_path": "collision/20eb88d0d145998f1714e5f8bda8fce524fee59df249b5c4d277bd816c6c3432.ghsc",
+            "native_sha256": "3a7a0779753906d77c23bdcdd6d3bf4e6acf81677d2f925432db9aacc2687dc4",
+            "objects": 182,
+            "path": "levels/Sk5Ed2_Shell/Sk5Ed2_Shell.col.xbx",
+            "source_sha256": "20eb88d0d145998f1714e5f8bda8fce524fee59df249b5c4d277bd816c6c3432",
+            "triangles": 368,
+            "vertices": 732
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 26816,
+            "native_path": "collision/ef779ea5f49b1ec727fbe4faf1a6bb571d6ab5ce1894fcd7927d86d5edb32d5a.ghsc",
+            "native_sha256": "faf2712a43fa9109765fbba38d9cd8f99dd073aa2a15c10ace5be5a65ba0cd3b",
+            "objects": 257,
+            "path": "levels/Sk5Ed3_Shell/Sk5Ed3_Shell.col.xbx",
+            "source_sha256": "ef779ea5f49b1ec727fbe4faf1a6bb571d6ab5ce1894fcd7927d86d5edb32d5a",
+            "triangles": 516,
+            "vertices": 1031
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 20176,
+            "native_path": "collision/fddc7978085082c850e5c3d915365144a95086ace0f1d3f1dfe20c15e7891f44.ghsc",
+            "native_sha256": "90dd4a3a2afc37089558ae13166b5e94219a5f66b9ef463fe32a61fea948ae6e",
+            "objects": 193,
+            "path": "levels/Sk5Ed4_Shell/Sk5Ed4_Shell.col.xbx",
+            "source_sha256": "fddc7978085082c850e5c3d915365144a95086ace0f1d3f1dfe20c15e7891f44",
+            "triangles": 389,
+            "vertices": 775
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 18012,
+            "native_path": "collision/f2a470a96e3d9155e1f5ac3768034319dfa89fa9faecb085c2e7eef1e5e631b6.ghsc",
+            "native_sha256": "67498dbd803611b8e5ab87e3f215eaa7201e10519f0ff225d7d565ff01fa9ab8",
+            "objects": 173,
+            "path": "levels/SK5Ed5_Shell/SK5Ed5_Shell.col.xbx",
+            "source_sha256": "f2a470a96e3d9155e1f5ac3768034319dfa89fa9faecb085c2e7eef1e5e631b6",
+            "triangles": 346,
+            "vertices": 692
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 640860,
+            "native_path": "collision/2a18cd4076ae9b43987592af80848ba8e8f42dfcb54c7cd0a5c1a11e868cbe18.ghsc",
+            "native_sha256": "bf448a850352893ea9dac7359262085c1408f03316b2419b6313f441a8be91e8",
+            "objects": 436,
+            "path": "levels/Sk5Ed/Sk5Ed.col.xbx",
+            "source_sha256": "2a18cd4076ae9b43987592af80848ba8e8f42dfcb54c7cd0a5c1a11e868cbe18",
+            "triangles": 21574,
+            "vertices": 23766
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1196,
+            "native_path": "collision/f54b9d4b169569fed6a7d36122e360205f584c5c3d5782549d4f5ce38332d858.ghsc",
+            "native_sha256": "4c831f7a50985774e608844777f6d6dc099b2e5455e1328f3bf09f2e167ee167",
+            "objects": 5,
+            "path": "Models/veh/veh_minibaja/veh_minibaja.col.xbx",
+            "source_sha256": "f54b9d4b169569fed6a7d36122e360205f584c5c3d5782549d4f5ce38332d858",
+            "triangles": 42,
+            "vertices": 32
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1660,
+            "native_path": "collision/20319b46e570e056b3aa23794e5eee96b959f3f6283d1c5621a93e502abf4957.ghsc",
+            "native_sha256": "e4ff7f5254320428f3e83e7ed3340ee2dd52290dcfc2eb3843ca16f2a3a0f59d",
+            "objects": 6,
+            "path": "Models/veh/veh_transam/veh_transam.col.xbx",
+            "source_sha256": "20319b46e570e056b3aa23794e5eee96b959f3f6283d1c5621a93e502abf4957",
+            "triangles": 56,
+            "vertices": 50
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 18588,
+            "native_path": "collision/f97f5b7d9952b1066f91655b9a4b40165aa41652caae65331d9bea23eb64ff57.ghsc",
+            "native_sha256": "e78522f1d4c6472ef04721c5159968b419cbcbb3ef1e53a0ecaa8ac4759f1534",
+            "objects": 178,
+            "path": "levels/Sk5Ed_Shell/Sk5Ed_Shell.col.xbx",
+            "source_sha256": "f97f5b7d9952b1066f91655b9a4b40165aa41652caae65331d9bea23eb64ff57",
+            "triangles": 358,
+            "vertices": 714
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 732080,
+            "native_path": "collision/9785426511e1fe1e23409602ec17138f6e16bab1dbdfbe6504ea3c3b64175996.ghsc",
+            "native_sha256": "13d3e2496deddbdccee2ed6ce785a4aaa7439f33087bed38a5863eeea8972a01",
+            "objects": 1079,
+            "path": "levels/ST/ST.col.xbx",
+            "source_sha256": "9785426511e1fe1e23409602ec17138f6e16bab1dbdfbe6504ea3c3b64175996",
+            "triangles": 23460,
+            "vertices": 27567
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 12560,
+            "native_path": "collision/5e3a9ec852cc326b6152de8168c8765caec9912ce78cf869e4c752668b623dc7.ghsc",
+            "native_sha256": "bb034a4bc5136378ae3828d7dc6a6857426f95212b10622d90d693857703552e",
+            "objects": 1,
+            "path": "Models/animals/anl_dog/anl_dog.col.xbx",
+            "source_sha256": "5e3a9ec852cc326b6152de8168c8765caec9912ce78cf869e4c752668b623dc7",
+            "triangles": 570,
+            "vertices": 283
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1404,
+            "native_path": "collision/90f0a3443b7bb5467813689a94c27012c3cc8b07134158c727f2cacc77484806.ghsc",
+            "native_sha256": "8ca9053c257dca20f161a205c706f0b0639e7bff9747c1ed2498ee38db808387",
+            "objects": 5,
+            "path": "Models/veh/veh_jihad/veh_jihad.col.xbx",
+            "source_sha256": "90f0a3443b7bb5467813689a94c27012c3cc8b07134158c727f2cacc77484806",
+            "triangles": 52,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1356,
+            "native_path": "collision/1df49c3d26d40e75a9ac75204f09e5b501d2885cf0378a67654b9e611d18baa9.ghsc",
+            "native_sha256": "79f481eac44105528f7e07e43d1daa7475bd3e17e9be0135adb0b1eb1332c599",
+            "objects": 5,
+            "path": "Models/veh/veh_sub/veh_sub.col.xbx",
+            "source_sha256": "1df49c3d26d40e75a9ac75204f09e5b501d2885cf0378a67654b9e611d18baa9",
+            "triangles": 49,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 3608,
+            "native_path": "collision/f56639896f98a57b9baa8600955e1689f56bbbcce6061c1abfaf591c19d744cd.ghsc",
+            "native_sha256": "b99abac1a0d6ba92345337784f777398dfd553d16d92d0a2c396102a6d3e5d33",
+            "objects": 2,
+            "path": "Models/gameobjects/pickups/Skunk/Skunk.col.xbx",
+            "source_sha256": "f56639896f98a57b9baa8600955e1689f56bbbcce6061c1abfaf591c19d744cd",
+            "triangles": 138,
+            "vertices": 111
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 924,
+            "native_path": "collision/16866305e517652a79af4c212cdcb6b4f84e53d464160ca2db6c06e0af0dc728.ghsc",
+            "native_sha256": "ff58dfc5049c453c3540adabcf3c42601598208cd2701c4db3c2e9f38ce6dc2b",
+            "objects": 1,
+            "path": "Models/gameobjects/pickups/Dog_Food/Dog_Food.col.xbx",
+            "source_sha256": "16866305e517652a79af4c212cdcb6b4f84e53d464160ca2db6c06e0af0dc728",
+            "triangles": 28,
+            "vertices": 36
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 67316,
+            "native_path": "collision/01b747d319b93da2188ba273589a6b66194cc8c0932bfc778c43665b002e46ac.ghsc",
+            "native_sha256": "8e4dd2d831074ef830aaaf618750a42605cfeb9cc9b7b7f7a9381313cbdc176c",
+            "objects": 56,
+            "path": "levels/TestLevel/TestLevel.col.xbx",
+            "source_sha256": "01b747d319b93da2188ba273589a6b66194cc8c0932bfc778c43665b002e46ac",
+            "triangles": 2250,
+            "vertices": 2496
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 2840,
+            "native_path": "collision/3d9a26996ad53f9930e9080cdd417cfad458654f7be52bd3b7b1e76420be03ff.ghsc",
+            "native_sha256": "2b6b5a5ef4f8fc3966f4751e4b50996c8c3d63b00f998aed5715ba9f19a9c3b8",
+            "objects": 2,
+            "path": "Models/veh/veh_test/veh_test.col.xbx",
+            "source_sha256": "3d9a26996ad53f9930e9080cdd417cfad458654f7be52bd3b7b1e76420be03ff",
+            "triangles": 108,
+            "vertices": 87
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 7580,
+            "native_path": "collision/7a07b4e535225cc3504490fcce9bc88c6d3c94742f52ff9502fe657d2dccb863.ghsc",
+            "native_sha256": "806e697e9ff13e03ce8c0b4c0908716cbdb67d383e47b9c4bc4fbd2516bf2355",
+            "objects": 2,
+            "path": "Models/gameobjects/pickups/Skateboard/Skateboard.col.xbx",
+            "source_sha256": "7a07b4e535225cc3504490fcce9bc88c6d3c94742f52ff9502fe657d2dccb863",
+            "triangles": 300,
+            "vertices": 226
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 4692,
+            "native_path": "collision/dde1533d93ee0c6f3cca3b1ca738b22823c77a19fd3e912d760c2aa44f27b418.ghsc",
+            "native_sha256": "8f4d2e09e0c23144b8589322eddb81d20f4c8321e087a7f9d4a015916cb3456e",
+            "objects": 2,
+            "path": "Models/gameobjects/pickups/Hoagie/Hoagie.col.xbx",
+            "source_sha256": "dde1533d93ee0c6f3cca3b1ca738b22823c77a19fd3e912d760c2aa44f27b418",
+            "triangles": 145,
+            "vertices": 192
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 631624,
+            "native_path": "collision/a95932a891474b0ffdd5c60e0b35c39b8be2ba070a5ffa78beeff426220747b4.ghsc",
+            "native_sha256": "7196eb1dafcc5092141c2f68848df14ae01a3cba0b5f9584d18236e8e5374e39",
+            "objects": 605,
+            "path": "levels/TR/TR.col.xbx",
+            "source_sha256": "a95932a891474b0ffdd5c60e0b35c39b8be2ba070a5ffa78beeff426220747b4",
+            "triangles": 19934,
+            "vertices": 24845
+          },
+          {
+            "collision_version": 10,
+            "native_bytes": 1364,
+            "native_path": "collision/74d29853d3f809df2516fca34628f25834f52a14e9744e08d00048559899b727.ghsc",
+            "native_sha256": "892acf4cf4707d08fc99aab87c82c9d01ae46ed637e1c3315bdb21aa7fc3050e",
+            "objects": 1,
+            "path": "Models/veh/veh_forklift/veh_forklift.col.xbx",
+            "source_sha256": "74d29853d3f809df2516fca34628f25834f52a14e9744e08d00048559899b727",
+            "triangles": 57,
+            "vertices": 34
+          }
+        ],
+        "unsupported_collision_records": 0
+      },
+      "disc_files": [
+        {
+          "bytes": 8491002,
+          "image": "rld-thua.bin",
+          "path": "ALLOTH~1.CAB",
+          "sha256": "d3bd9975df364577159c02ca5ad6031a01c644a545041d9ee18bec57b0f4651b"
+        },
+        {
+          "bytes": 93106960,
+          "image": "rld-thub.bin",
+          "path": "LEVELS.CAB",
+          "sha256": "73c94378ce8c4ac4d5bda017890c4640c13ea6129810a938e63f2c496a8237c8"
+        },
+        {
+          "bytes": 187083546,
+          "image": "rld-thub.bin",
+          "path": "PRE.CAB",
+          "sha256": "5edb9b6521a899a89d6ef5c8e205db5f351269e35183347e887931b7a8b0b102"
+        }
+      ],
+      "cabinet_members": {
+        "ALLOTH~1.CAB": 2704,
+        "LEVELS.CAB": 472,
+        "PRE.CAB": 153
+      },
+      "limitations": [
+        "All three discs readable; complete installed-game coverage unverified",
+        "Only selected CABs prepared; MSI name mapping and other CAB groups unfinished",
+        "No THUG2 native gameplay implementation yet"
+      ]
+    }
+  ]
+}
