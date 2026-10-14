@@ -64,13 +64,31 @@ EVENT_FIELDS = {
                  1: "swing_flags (0x102104f9: 1 first stroke/teed,0x10 toe,0x20 heel,0x10000/0x20000 slight toe/heel,0x400..0x8000 shot type)",
                  2: "lie_terrain_flags (0x1000 tee box, 0x8000 on tee, 0x2 rough, 0x8 bunker, 0x80000000 weed/pine)",
                  3: "distance_to_pin_inches", 5: "power_percent (swing+0x305 / 14.0 * 100)",
-                 8: "strokes_this_hole", 12: "unknown 0x357", 14: "model_flags", 20: "sub_terrain_type",
-                 21: "ball_terrain_flags", 27: "model_type"}},
-    2: {"name": "shot result: sub 1 in flight (predicted), sub 2 ball stopped", "confidence": "inferred from editor descriptions",
-        "bits": {0: "club_mask", 1: "shot_type_flags", 2: "lie_flags_at_address", 3: "result_distance_to_pin_inches",
-                 4: "shot_distance_inches", 7: "par", 8: "stroke_number", 10: "miss_direction (1 left,2 right,4 short,8 long)",
-                 12: "score_relative_code", 15: "start_distance_to_pin_inches", 21: "result_terrain_flags (0x4 green, 0x4000 in hole)",
-                 29: "suppression_flags"}},
+                 8: "strokes_this_hole", 12: "TrueSwing tempo flags (0x10214548: 1/2, 0 for click meters)",
+                 14: "model_flags", 20: "sub_terrain_type", 21: "ball_terrain_flags", 27: "model_type"}},
+    2: {"name": "shot (ShotEvent fill 0x102146cb): sub 1 in flight, 2 stopped, 19 before the shot, 11/27 club/turn",
+        "confidence": "high (decompiled builder; see PGA2005-COMMENTARY.md)", "available_mask": "0x6fffffdf",
+        "bits": {0: "club_mask (0x1021038a, from GetLastClub)",
+                 1: "shot_flags (0x102104f9): 1 first stroke or ball on tee, style 0-2 0x400, 3 0x800, 4 punch 0x1000, "
+                    "5 lob 0x2000, 6 putt 0x2, 7 chip 0x4, 8 pick 0x4000, 9 0x8000",
+                 2: "terrain flags at the golfer's address", 3: "inches to pin: from the ball/predicted end when sub 2 or "
+                 "that point is on green (flag 4), else CPlayer::GetDistanceFromHole(false)",
+                 4: "inches golfer->ball/predicted end (start distance to pin if bit 1 value == 3)",
+                 5: "not provided (reads bit 6)", 6: "hole number (CPlayer vt+0xdc)", 7: "par",
+                 8: "strokes this hole before the shot (after it at sub 2)",
+                 9: "score code 0x1021088a: stroke = round score to par (+ this hole once holed at sub 2); "
+                    "match = 1 up, 2 down, 4 dormie, 8 won, 0x10 lost",
+                 10: "miss vs ideal line 0x10212c19: 1 left, 2 right, 4 short, 8 long", 11: "lateral miss inches",
+                 12: "flight index (0x3f3, set by the in-flight raisers; 0 otherwise)", 13: "wind speed (course+0x581)",
+                 14: "model flags (1 male, 2 female)", 15: "same value as bit 3", 16: "wind vs aim: 1 L->R, 2 R->L, "
+                 "4 head, 0x10 tail; vs ideal line 8/0x20", 17: "depth miss inches", 18: "putts this hole (CPlayer+0x15ff)",
+                 19: "stroke: strokes behind the leader; match: holes left when dormie else |match score|",
+                 20: "green slope/break flags when the point is on green (0x10212e7b), else sub-terrain type",
+                 21: "terrain flags at ball/predicted end (0x4000 in hole)", 22: "same value as bit 4",
+                 23: "|ideal elevation - ball elevation| (0x102135c1)", 24: "1 ideal higher or level, 2 lower",
+                 25: "constant 18 (0x10212b9f)", 26: "game format (settings+0x13: 1 stroke, 2 match, 7 skins ...)",
+                 27: "golfer model type (1 Tiger Woods)", 28: "not provided (reads bit 29)",
+                 29: "game flags (0x102124e8)", 30: "same value as bit 29"}},
     3: {"name": "ball collision (CGolfBall::CheckForCollisionSound 0x10136ed0, builder 0x102137ad)", "confidence": "high",
         "bits": {2: "sound_id (TCL surface +0x2c / texture +0x23 / structure +0x2c / 804 for pin)",
                  5: "impact_percent = magnitude / 0.5 * 100", 21: "terrain_flags_at_impact (0x40 water)"}},
@@ -158,6 +176,67 @@ CROWD_EVENTS = [
     ("crowd.background_cheer", "Background - Random cheers from other holes"),
 ]
 MUSIC_EVENTS = [("music.menu", "Intro music"), ("music.end_of_game", "End of game music")]
+
+# --------------------------------------------------------------------------
+# Commentary and shot-result scripts (docs/research/PGA2005-COMMENTARY.md)
+# --------------------------------------------------------------------------
+COMMENTARY_FILE = "commentary.json"            # runtime rule tables (announcer, analyst, gallery)
+COMMENTARY_FILES_FILE = "commentary-files.json"  # per-file provenance, kept out of the runtime table
+COMMENTARY_SCRIPTS = (("announcer", "announcer.stn", "sounds_-_commentary", "commentary"),
+                      ("analyst", "analyst.stn", "sounds_-_commentary", "commentary"))
+# SituationEvent+0x27d, the "available value" mask each constructor sets.
+# Condition n compares value[popcount(mask & (bit - 1))] (FUN_10215b87 via
+# FUN_10215dc7/0x10215da1: values start at +0x33f), so a condition on a bit
+# the event does not provide reads the next provided value.
+EVENT_MASKS = {
+    1: (0x0830512F, "SwingEvent ctor 0x102141db; CommentatorSwingEvent 0x102157b3; fill 0x1021424d"),
+    2: (0x6FFFFFDF, "ShotEvent ctor 0x10214632; CommentatorShotEvent 0x1021574f; fill 0x102146cb"),
+    3: (0x00200024, "CollisionEvent ctor 0x1021373d; fill 0x102137ad"),
+    4: (0x00000380, "ScoringEvent ctor 0x1021365d; fill 0x102136b3"),
+    5: (0x00006040, "BackgroundEvent ctor 0x10214fd0; fill 0x1021502f"),
+    7: (0x08005000, "DelayEvent ctor 0x10215346; fill 0x102153a6"),
+    8: (0x6FFFFFDF, "ShotPrepEvent ctor 0x10214f9e (ShotEvent values, class 8)"),
+    9: (0x778A62CA, "LocationEvent ctor 0x102150e8; CommentatorLocationEvent 0x10215781; fill 0x10215126"),
+    10: (0x0C004005, "CommentatorUserEvent ctor 0x102157f2; fill 0x10215824 (plain UserEvent mask is 0)"),
+    11: (0x77FFFFFF, "CameraEvent ctor 0x1021387a; fill 0x102138df"),
+    12: (0x7C822246, "CommentatorIntroEvent ctor 0x102154a1; fill 0x102154d5"),
+}
+# Commentary event classes/subs and the ScriptCommand method that raises them
+# (exported from Engine.dll; the callers live in the SafeDisc'd TW2005.exe).
+COMMENTARY_EVENTS = {
+    "1/3": "Swing (ScriptCommand::Swing 0x100609af, CommentatorSwingEvent)",
+    "2/1": "ball in flight, once per new flight index (ScriptCommand::CommentatorBallInFlight 0x10062dc5)",
+    "2/2": "ball stopped (ScriptCommand::EndShot 0x1005fe8d)",
+    "2/19": "before the shot (ScriptCommand::BeginShot 0x10060634 / QueueBeginShotComment 0x100601e8)",
+    "9/28": "hole start (ScriptCommand::BeginHole 0x1005f2fd)",
+    "9/29": "hole end (ScriptCommand::EndHole 0x1005fc54)",
+    "10/10": "club selection (ScriptCommand::OnClubSelectionComment 0x10060bf3)",
+    "10/23": "shot setup (ScriptCommand::OnShotSetupComment 0x10061043)",
+    "10/24": "aim (ScriptCommand::OnAimComment 0x10060e1b)",
+    "12/5": "rough (ScriptCommand::RoughComment 0x1005eec5)",
+    "12/6": "tournament/course intro (ScriptCommand::BeginTournament 0x1005e3c5)",
+    "12/7": "round format (ScriptCommand::RoundFormatComment 0x1005ea70)",
+    "12/8": "weather/course state (ScriptCommand::WeatherComment 0x1005e837)",
+    "12/9": "greens (ScriptCommand::GreensComment 0x1005eca9)",
+    "12/20": "wind (ScriptCommand::WindComment 0x1005e5fe)",
+}
+# Hard-coded interpreter rules shared by every commentary line (static analysis).
+COMMENTARY_INTERPRETER = {
+    "one_line_at_a_time": "action type 8 is dropped (not queued) while the last commentary sample from any script is "
+                          "still playing; after 16 consecutive drops the handle is reset (FUN_102160a5, globals "
+                          "0x1038c838/0x104503cc)",
+    "no_repeat_ms": 20000,
+    "no_repeat": "SoundResponse::Invoke 0x102173e2 skips a type 10/11 response whose file equals the previous "
+                 "commentary file when the previous one started < 20000 ms ago (StampClock 0x10450298)",
+    "frequency": "Script::IsIgnored 0x1020d17b: type 8 uses Script+0x86 = 3 when CMachineSettings flag 0x1000 "
+                 "(commentary on, default) else 0 (off); 3 never ignores, 0 always ignores",
+    "probability": "random(100)+1 <= action probability, skipped while ForceRandomActions is set (QueuedBeginShot)",
+    "response_choice": "uniform among the action's responses with the fewest plays (FUN_10216d78); commentator "
+                       "events return type filter 0 (all responses)",
+    "sequence": "action file flag bit 0 becomes 0x4000: every response plays in order (ScriptAction ctor 0x10215e27)",
+    "slider_default_percent": {"tv_announce": 35, "crowd": 47, "ambient": 100, "golfer": 80, "music": 35,
+                               "source": "CMachineSettings::SuggestSound 0x102314f7"},
+}
 # CSoundCommand::Play(InterfaceSounds) 0x10070247: hard-coded table, response
 # id 1000+n, type 2 (ambient slider), mode 1 (static).
 INTERFACE_SOUNDS = [(1, "interface.select", "select.wav"), (2, "interface.accept", "accept.wav"),
@@ -411,6 +490,8 @@ def parse_stn(data: bytes) -> dict:
                            "match_any_bit": bool(mask >> 31), "conditions": conditions,
                            "actions": [a for a in struct.unpack_from("<10H", record, 0x42) if a != 0xFFF0],
                            "single_action": bool(struct.unpack_from("<I", record, 0x56)[0] & 1) if sit_size == 0x5B else False,
+                           # +0x56: bit 0 one random action, bit 1 key moment (Script::IsKeyMoment 0x1020d8a1)
+                           "flags": struct.unpack_from("<I", record, 0x56)[0] if sit_size == 0x5B else 0,
                            "priority": record[0x5A] if sit_size == 0x5B else 100})
     actions = []
     for i in range(n_act):
@@ -691,8 +772,13 @@ def atomic_write(path: Path, data: bytes):
 
 class Importer:
     def __init__(self, source: Path, output: Path, courses: list[str], course_source: CourseSource,
-                 music: bool = False, dry_run: bool = False, materials_root: Path | None = None):
+                 music: bool = False, dry_run: bool = False, materials_root: Path | None = None,
+                 commentary: bool = True):
         self.materials_root = materials_root
+        self.commentary = commentary
+        # Commentary MP3s (about 3,290 files) are listed separately so that
+        # audio.json stays small; see COMMENTARY_FILES_FILE.
+        self.commentary_files: dict[str, dict] = {}
         self.index = SourceIndex(source)
         self.output = output
         self.courses = courses
@@ -719,14 +805,15 @@ class Importer:
         else:
             raise FormatError(f"Unsupported audio file {source.name}")
         key = str(relative)
-        if key in self.files:
+        table = self.commentary_files if category == "commentary" else self.files
+        if key in table:
             raise FormatError(f"Two different sources map to {key}")
         if not self.dry_run:
             atomic_write(self.output / relative, output)
         info.update({"path": key, "bytes": len(output), "sha256": sha256(output),
                      "preload": suffix == ".wav" and len(output) <= PRELOAD_LIMIT,
                      "source": {"path": self.index.relative(source), "bytes": len(data), "sha256": sha256(data)}})
-        self.files[key] = info
+        table[key] = info
         self.by_source[source] = key
         return key
 
@@ -739,7 +826,10 @@ class Importer:
                 continue
             key = self.add(path, category, folder)
             if note:
-                self.files[key].setdefault("notes", []).append(f"referenced as {name}: {note}")
+                table = self.commentary_files if category == "commentary" else self.files
+                notes = table[key].setdefault("notes", [])
+                if f"referenced as {name}: {note}" not in notes:
+                    notes.append(f"referenced as {name}: {note}")
             keys.append(key)
         return keys
 
@@ -816,6 +906,7 @@ class Importer:
             for name in ("music.menu", "music.end_of_game"):
                 if name in events:
                     events[name]["positional"] = False
+        commentary = self.commentary_tables(gallery, sources)
         courses = {}
         for code in self.courses:
             courses[code] = self.course(code)
@@ -842,13 +933,90 @@ class Importer:
             "surface_sound_ids": surface,
             "courses": courses,
             "files": dict(sorted(self.files.items())),
+            "commentary_files": self.commentary_files,  # moved to COMMENTARY_FILES_FILE by write_outputs()
+            "commentary_bytes": sum(f["bytes"] for f in self.commentary_files.values()),
             "totals_bytes": dict(sorted(totals.items())) | {"all": sum(totals.values())},
             "missing_sources": self.missing,
             "unresolved_events": unresolved,
             "warnings": self.warnings,
             "provenance": {"source_root": str(self.index.root), "scripts": sources},
             "rules_file": RULES_FILE,
+            "commentary_file": COMMENTARY_FILE,
             "rules": rules,  # moved to RULES_FILE by write_outputs()
+            "commentary": commentary,  # moved to COMMENTARY_FILE by write_outputs()
+        }
+
+    def script_table(self, stn: dict, script: str, category: str, prefer: str, classes=None) -> dict:
+        """Runtime form of one decoded situation script: every situation of the
+        selected event classes with its literal conditions, all actions and all
+        responses (resolved to imported paths; None is silence: an absent file
+        or an editor placeholder such as "no commentary")."""
+        situations = [s for s in stn["situations"] if classes is None or s["event_class"] in classes]
+        responses, silent, missing = [], 0, []
+        for response in stn["responses"]:
+            entry = {"t": response["type"]}
+            if response["kind"] == "sound":
+                name = response["file"]
+                path, note = find_with_engine_fallback(self.index, name, None, prefer)
+                if path is None:
+                    entry["f"], entry["n"] = None, name
+                    if name.lower().endswith((".wav", ".mp3")):
+                        missing.append(name)
+                    else:
+                        silent += 1
+                else:
+                    entry["f"] = self.resolve([name], category, prefer, context=f"{script} response {response['index']}")[0]
+            else:
+                entry["f"], entry["n"] = None, response.get("kind", "")
+            responses.append(entry)
+        table = {
+            "source": script,
+            "situations": [{"i": s["index"], "c": s["event_class"], "s": s["event_sub"], "p": s["priority"],
+                            "one": s["single_action"], "key": bool(s["flags"] & 2), "any": s["match_any_bit"],
+                            "if": [[c["bit"], c["op"], c["value"]] for c in s["conditions"]],
+                            "do": s["actions"], "d": s.get("description", "")} for s in situations],
+            "actions": [{"t": a["type"], "p": a["probability"], "fl": a["flags"],
+                         # File flag bit 0 becomes 0x4000 "play every response in order" unless the
+                         # action is positional (0x10/0x400/0x1000) or type 0xff (ctor 0x10215e27).
+                         "seq": bool(a["flags"] & 1) and not (a["flags"] & 0x1410) and a["type"] != 0xFF,
+                         "r": a["responses"]} for a in stn["actions"]],
+            "responses": responses,
+        }
+        summary = {"situations": len(table["situations"]), "actions": len(stn["actions"]), "responses": len(responses),
+                   "files": len({r["f"] for r in responses if r["f"]}), "silent_placeholders": silent,
+                   "missing_files": sorted(set(missing)),
+                   "event_class_subs": sorted({f"{s['c']}/{s['s']}" for s in table["situations"]},
+                                              key=lambda k: tuple(map(int, k.split("/"))))}
+        return table, summary
+
+    def commentary_tables(self, gallery: dict, sources: dict) -> dict:
+        """announcer.stn and analyst.stn (TV commentary) plus the gallery's
+        class-2 shot rules, all driven by the same shot-event values."""
+        scripts, summary, warnings = {}, {}, []
+        table, info = self.script_table(gallery, "gallery.stn", "crowd", "sounds_-_gallery", classes={2})
+        scripts["gallery"], summary["gallery"] = table, info
+        if self.commentary:
+            for name, filename, prefer, category in COMMENTARY_SCRIPTS:
+                try:
+                    stn, sources[filename] = self.stn(filename)
+                except FileNotFoundError:
+                    warnings.append(f"{filename} not found; {name} commentary not imported")
+                    continue
+                scripts[name], summary[name] = self.script_table(stn, filename, category, prefer)
+        self.warnings.extend(warnings)
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "generator": "Tools/import_pga2005_audio.py",
+            "method": "Static decoding of announcer.stn, analyst.stn and gallery.stn; no original code executed. "
+                      "See docs/research/PGA2005-COMMENTARY.md.",
+            "event_masks": {str(k): v[0] for k, v in sorted(EVENT_MASKS.items())},
+            "event_mask_evidence": {str(k): v[1] for k, v in sorted(EVENT_MASKS.items())},
+            "event_fields": {str(k): v for k, v in EVENT_FIELDS.items() if k in (1, 2)},
+            "commentary_events": COMMENTARY_EVENTS,
+            "interpreter": COMMENTARY_INTERPRETER,
+            "selection": SELECTION,
+            "scripts": scripts,
+            "summary": summary,
         }
 
     def course(self, code: str) -> dict:
@@ -947,6 +1115,14 @@ def write_outputs(output: Path, result: dict):
     needed only for a faithful rule engine) go to a separate file."""
     result = dict(result)
     rules = result.pop("rules")
+    commentary = result.pop("commentary", None)
+    commentary_files = result.pop("commentary_files", {})
+    if commentary is not None:
+        atomic_write(output / COMMENTARY_FILE, (json.dumps(commentary, separators=(",", ":")) + "\n").encode())
+        atomic_write(output / COMMENTARY_FILES_FILE, (json.dumps({
+            "schema_version": SCHEMA_VERSION, "generator": "Tools/import_pga2005_audio.py",
+            "note": "Commentary MP3s are byte-identical copies of the original files.",
+            "files": dict(sorted(commentary_files.items()))}, indent=1) + "\n").encode())
     atomic_write(output / RULES_FILE, (json.dumps({
         "schema_version": SCHEMA_VERSION, "generator": "Tools/import_pga2005_audio.py",
         "condition_ops": CONDITION_OPS, "event_fields": EVENT_FIELDS, "selection": SELECTION,
@@ -968,6 +1144,8 @@ def main(argv=None) -> int:
                         help="Optional <CODE>/materials.json (from prepare_pga2005.py) for the surface -> sound id table")
     parser.add_argument("--courses", nargs="*", default=["PBL", "TUR"])
     parser.add_argument("--music", action="store_true", help="Also import the menu/end-of-game MP3s")
+    parser.add_argument("--no-commentary", action="store_true",
+                        help="Skip the TV commentary MP3s (about 163 MB); the gallery shot rules are still written")
     parser.add_argument("--dry-run", action="store_true", help="Decode and report without writing files")
     parser.add_argument("--strict", action="store_true", help="Fail on unresolved events or missing course data")
     args = parser.parse_args(argv)
@@ -976,7 +1154,8 @@ def main(argv=None) -> int:
     course_source = CourseSource(args.course_data, args.courses_image)
     try:
         result = Importer(args.source, args.output, [c.upper() for c in args.courses], course_source,
-                          music=args.music, dry_run=args.dry_run, materials_root=args.materials_root).run()
+                          music=args.music, dry_run=args.dry_run, materials_root=args.materials_root,
+                          commentary=not args.no_commentary).run()
     finally:
         course_source.close()
     missing_course_data = [w for w in result["warnings"] if "not found" in w]
@@ -990,6 +1169,14 @@ def main(argv=None) -> int:
     for category, size in totals.items():
         if category != "all":
             print(f"  {category:10s} {size / 1e6:7.2f} MB")
+    commentary = result["commentary"]["summary"]
+    if result["commentary_files"]:
+        print(f"  commentary {result['commentary_bytes'] / 1e6:7.2f} MB in {len(result['commentary_files'])} MP3s "
+              f"(copied unchanged; {COMMENTARY_FILES_FILE})")
+    for name, info in commentary.items():
+        print(f"  {name}: {info['situations']} situations, {info['actions']} actions, {info['responses']} responses, "
+              f"{info['files']} files, {info['silent_placeholders']} silent placeholders, "
+              f"{len(info['missing_files'])} missing files")
     if result["missing_sources"]:
         print(f"  {len(result['missing_sources'])} referenced files are absent from the original media (listed in audio.json).")
     for warning in result["warnings"]:
