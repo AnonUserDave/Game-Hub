@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "body_sha256": "90d52fc5c20d64d033d135d16146f5da01e369681373f74756cf33c562de0cda",
+  "body_bytes": 24576,
+  "method": "direct static selected-byte reconstruction; private clean6502 listing, no target or firmware execution",
+  "actor_list_slots": 33,
+  "monster_parent_slots": 8,
+  "rock_slots": 5,
+  "special_raster_callbacks": 4,
+  "spawn_record_bytes": 13,
+  "player_field_cache_bytes": 11520,
+  "windows": [
+    {
+      "name": "trainer-helper-install",
+      "address": "$7213",
+      "body_offset": 4627,
+      "bytes": 40,
+      "sha256": "de0080ad009ed81f136e106861bed849136db85c6f2f7a2a5b91d3eb72f972b3"
+    },
+    {
+      "name": "installed-input-helper-source",
+      "address": "$723B",
+      "body_offset": 4667,
+      "bytes": 18,
+      "sha256": "ac0b3fffa6af1326e12e9f3fdca6c8a494b8f3b55cf86a814866cfa060099cdc"
+    },
+    {
+      "name": "foreground-dispatcher",
+      "address": "$8086",
+      "body_offset": 8326,
+      "bytes": 393,
+      "sha256": "b8771a384c4f85a13e297880577e23d3965a6f7604f1cfb1865c8a9c0e949021"
+    },
+    {
+      "name": "player-directions-and-rock-obstruction",
+      "address": "$8260",
+      "body_offset": 8800,
+      "bytes": 576,
+      "sha256": "d1fb4abb16fcf584adf6d6568dca42db46a1c0157325b201ff4468eec25e902f"
+    },
+    {
+      "name": "hose-create-cleanup-and-masks",
+      "address": "$84A0",
+      "body_offset": 9376,
+      "bytes": 844,
+      "sha256": "af291eba792466daadae090dc2b3278be45152dcb03ed529f7caf897f3e81d09"
+    },
+    {
+      "name": "movement-input",
+      "address": "$96D1",
+      "body_offset": 14033,
+      "bytes": 48,
+      "sha256": "184cb97e57a17c116a8c79fb722e533b8eeeb556bba4a79f0b762ddc120d5253"
+    },
+    {
+      "name": "bitmap-probes-and-dig-writers",
+      "address": "$9701",
+      "body_offset": 14081,
+      "bytes": 448,
+      "sha256": "f2027a8eba7056d88bd71dc3081654243227a6226e69bc9f70d96f2e43a058a5"
+    },
+    {
+      "name": "alignment-direction-dispatch",
+      "address": "$98C1",
+      "body_offset": 14529,
+      "bytes": 49,
+      "sha256": "7ce0a904fdf3996e4bad3d1d66f33dc43746df5055cb8c577b78f5df70c454be"
+    },
+    {
+      "name": "score-addition-and-extra-life",
+      "address": "$9955",
+      "body_offset": 14677,
+      "bytes": 77,
+      "sha256": "7dcc5f363c6c17d949d163eb1b1d0be692647ad979e7ab6517109502bfd4e9a1"
+    },
+    {
+      "name": "extra-life-table",
+      "address": "$9991",
+      "body_offset": 14737,
+      "bytes": 17,
+      "sha256": "a2e8bb25312c1fb756cda30821ccc59103c5ebf9f623db7e0039cc9fa41cd845"
+    },
+    {
+      "name": "foreground-busy-wait",
+      "address": "$9AB5",
+      "body_offset": 15029,
+      "bytes": 8,
+      "sha256": "4f2891fd521c77661b80a98aef200d990865e849daf8f676478e4957a35d57a3"
+    },
+    {
+      "name": "life-entrance-and-player-field-swap",
+      "address": "$A094",
+      "body_offset": 16532,
+      "bytes": 416,
+      "sha256": "140fb5e253fc97c9d4bf880fbeaf6744141fe732ce04195fdb5a77e47714c3a6"
+    },
+    {
+      "name": "tunnel-and-spawn-initialization",
+      "address": "$A355",
+      "body_offset": 17237,
+      "bytes": 300,
+      "sha256": "4ebd0c96355bfb15f0ecc1dc32857e7d4a95b24653161ff65ec33b6da8d24261"
+    },
+    {
+      "name": "raster-list-sort-and-builder",
+      "address": "$A881",
+      "body_offset": 18561,
+      "bytes": 382,
+      "sha256": "e404440490f6ee95e4267bbb3e94a0389768812464eccfbdc01f7bb7f34bc56c"
+    },
+    {
+      "name": "raster-irq-and-sprite-assignment",
+      "address": "$A9FF",
+      "body_offset": 18943,
+      "bytes": 183,
+      "sha256": "7d17d7393316e0e151e83927413f0255db5e40b2c13a3877288d16536caedab7"
+    },
+    {
+      "name": "master-countdown-callback",
+      "address": "$AAB6",
+      "body_offset": 19126,
+      "bytes": 37,
+      "sha256": "022f8280d01df1de734e503977a393a575e398bad7c64b58f6af484ec640c5db"
+    },
+    {
+      "name": "world-rock-pump-ai-callback",
+      "address": "$AADB",
+      "body_offset": 19163,
+      "bytes": 206,
+      "sha256": "d6c612bdaf2c73e5957bb261d52a1e9f372c676ae4af6cef301599f8737195b6"
+    },
+    {
+      "name": "inflation-contact-and-transitions",
+      "address": "$ABA9",
+      "body_offset": 19369,
+      "bytes": 978,
+      "sha256": "8141224ebf84d761e20998e48f1885f77dc67f6161894b3dec2bbd835b46f96d"
+    },
+    {
+      "name": "inflation-score-depth-table",
+      "address": "$ADC2",
+      "body_offset": 19906,
+      "bytes": 4,
+      "sha256": "0dbea64d4275627cbbd092e72a44ebfe30cdc170993b539cc5ba587ce30995d4"
+    },
+    {
+      "name": "monster-ai-fire-and-movement",
+      "address": "$AFAB",
+      "body_offset": 20395,
+      "bytes": 1518,
+      "sha256": "416ffc37d948226aa668e081db2bd1efa87e3c3f6584f552507ad63bf4be6e0e"
+    },
+    {
+      "name": "rock-shake-fall-crush-score",
+      "address": "$B599",
+      "body_offset": 21913,
+      "bytes": 561,
+      "sha256": "16c156b36ce84f86c03f40c08986d98fb6f2105b07aa6fbbe8d87d1c96980fa7"
+    },
+    {
+      "name": "multi-crush-score-table",
+      "address": "$B7CA",
+      "body_offset": 22474,
+      "bytes": 9,
+      "sha256": "3adb1c01354e928255e7df1298c496b664657daea01d8720c91560305a7c2cc9"
+    },
+    {
+      "name": "bitmap-monster-probes",
+      "address": "$B7D3",
+      "body_offset": 22483,
+      "bytes": 193,
+      "sha256": "fa98dd87682295ace8766943cffbf700da73a34dc60f42e512f5e84a98e5a1b7"
+    },
+    {
+      "name": "death-retry-gameover",
+      "address": "$B894",
+      "body_offset": 22676,
+      "bytes": 357,
+      "sha256": "64e0b774e24c98afa50d7fc5016553cc93b7d8425ec6d5979836682ce0afd8c1"
+    },
+    {
+      "name": "audio-request-and-clock-entry",
+      "address": "$BA0E",
+      "body_offset": 23054,
+      "bytes": 127,
+      "sha256": "a3b582b6111fd7707579eeb42076c4f51f4bb11133991ebb23e44c65cb60b373"
+    }
+  ],
+  "limits": [
+    "No native Dig Dug gameplay, original comparison, physical controller or M1 acceptance is claimed.",
+    "Raster order/lateness, video region and wall-clock busy-wait duration remain unqualified.",
+    "Cooldown-table provenance, source font and some carry/nonlocal continuation paths need further reconstruction."
+  ]
+}

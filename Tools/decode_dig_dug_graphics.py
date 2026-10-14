@@ -205,8 +205,9 @@ def decode_levels(body: Body) -> dict:
         records = body.read(pointer, 13)
         placements = []
         # $A402 starts count13 then decrements before reading; slot21 starts
-        # at record12. The source loop stops after slot2, consuming only10.
-        for source_index, slot in zip(range(12, 2, -1), (21, 18, 15, 12, 9, 6, 5, 4, 3, 2)):
+        # at record12. $A449 skips one DEY below slot8, so monsters decrement
+        # by2 (odd slots21...7), then five rocks decrement by1 (6...2).
+        for source_index, slot in zip(range(12, -1, -1), (21, 19, 17, 15, 13, 11, 9, 7, 6, 5, 4, 3, 2)):
             value = records[source_index]
             x_index, y_index = value >> 4, value & 15
             if x_index >= len(horizontal) or y_index >= len(vertical):

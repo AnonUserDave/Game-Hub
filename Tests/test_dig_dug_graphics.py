@@ -116,7 +116,11 @@ class DigDugGraphicsTests(unittest.TestCase):
         self.assertEqual(len(prepared["levels"]["layouts"]), 16)
         self.assertEqual(sum(record["available"] for record in prepared["levels"]["spawns"]), 15)
         self.assertFalse(prepared["levels"]["spawns"][0]["available"])
-        self.assertTrue(all(len(record["placements"]) == 10 for record in prepared["levels"]["spawns"][1:]))
+        expected_slots = [21, 19, 17, 15, 13, 11, 9, 7, 6, 5, 4, 3, 2]
+        expected_indices = list(range(12, -1, -1))
+        for record in prepared["levels"]["spawns"][1:]:
+            self.assertEqual([placement["slot"] for placement in record["placements"]], expected_slots)
+            self.assertEqual([placement["recordIndex"] for placement in record["placements"]], expected_indices)
         for record in receipt["windows"]:
             offset, count = record["body_offset"], record["bytes"]
             self.assertEqual(hashlib.sha256(body[offset:offset + count]).hexdigest(), record["sha256"])
