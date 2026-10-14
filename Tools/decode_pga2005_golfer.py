@@ -35,8 +35,9 @@ ANGLE = 2 * math.pi / 65536
 # Xbox D3DFORMAT codes observed in the character texture directory.
 XBOX_DXT = {0x0C: b"DXT1", 0x0E: b"DXT3", 0x0F: b"DXT5"}
 
-# Tiger Woods signature clips (prefix "t") plus a generic putt stroke.
-DEFAULT_CLIPS = ("tdlful50", "t7lful01", "twlful50", "tdlwag03", "tdlpre01", "gplptt01")
+# Tiger Woods signature clips (prefix "t") plus a generic putt stroke and waggle.
+DEFAULT_CLIPS = ("tdlful50", "t7lful01", "twlful50", "tdlwag03", "tdlpre01", "gplptt01",
+                 "t3lful50", "t3lwag52", "t7lwag02", "twlwag02", "gplwag02")
 CLIP_ROLES = {
     "tdlful50": "Tiger driver full swing (address, backswing, downswing, follow-through)",
     "t7lful01": "Tiger 7-iron full swing",
@@ -44,7 +45,41 @@ CLIP_ROLES = {
     "tdlwag03": "Tiger driver waggle at address (idle/address loop candidate)",
     "tdlpre01": "Tiger driver pre-shot routine",
     "gplptt01": "Generic putting stroke (no Tiger-specific putt clip found)",
+    "t3lful50": "Tiger 3-iron full swing (club bone IG_iron3)",
+    "t3lwag52": "Tiger 3-iron waggle at address",
+    "t7lwag02": "Tiger 7-iron waggle at address",
+    "twlwag02": "Tiger wedge waggle at address",
+    "gplwag02": "Generic putter waggle at address",
 }
+
+# SKA header flag 0x10 (data): the club root channel is stored relative to the
+# right hand instead of the rig. Full swings and waggles set it; putts and
+# pre-shot walks (flag clear) keep the club in rig space. With the hand as
+# parent every full swing puts the club face on the ball (origin) at address
+# and impact. The decoder rewrites those channels into rig space so all clips
+# share the skeleton's hierarchy.
+SKA_CLUB_IN_RIGHT_HAND = 0x10
+CLUB_ROOT_BONE = "IG_driver"
+CLUB_HEAD_BONE = "IG_driver_head"
+CLUB_HAND_BONE = "IG_RHand"
+
+# GlbChar.xbx CLB resource: six club models. Their kind follows the suffix
+# of their visibility-set names (one set per manufacturer head).
+CLUB_KIND_SUFFIXES = (("_dv", "driver"), ("_w", "fairway_wood"), ("_p", "putter"),
+                      ("_3i", "iron3"), ("_7i", "iron7"), ("_wg", "wedge"))
+# Head model per club for Tiger. The player's equipment lives in the obfuscated
+# .plr files (not decoded), so these Nike heads and the "tig_p" putter are an
+# assumption; any listed set in golfer.json -> clubs -> available_heads works.
+TIGER_CLUB_HEADS = {"driver": "nike_ig_dv", "fairway_wood": "nike_t40_w", "iron3": "nike_bl_3I",
+                    "iron7": "nike_bl_7I", "wedge": "nike_forg_wg", "putter": "tig_p"}
+# Motion set per club model: (full swing or putt stroke, address waggle). There
+# is no Tiger fairway-wood clip; the driver motion is used for it.
+CLUB_MOTIONS = {"driver": ("tdlful50", "tdlwag03"), "fairway_wood": ("tdlful50", "tdlwag03"),
+                "iron3": ("t3lful50", "t3lwag52"), "iron7": ("t7lful01", "t7lwag02"),
+                "wedge": ("twlful50", "twlwag02"), "putter": ("gplptt01", "gplwag02")}
+# Assumed world size: one model unit is one yard, so Tiger stands 1.865 m with
+# his cap (he is 1.85 m). The engine's own per-player scale is runtime data.
+ASSUMED_METERS_PER_UNIT = 0.9144
 
 
 class FormatError(ValueError):
@@ -115,6 +150,18 @@ def matrix_from(q, t):
             2 * (x * y - z * w), 1 - 2 * (x * x + z * z), 2 * (y * z + x * w), 0.0,
             2 * (x * z + y * w), 2 * (y * z - x * w), 1 - 2 * (x * x + y * y), 0.0,
             t[0], t[1], t[2], 1.0]
+
+
+def qslerp(a, b, t):
+    dot = sum(x * y for x, y in zip(a, b))
+    if dot < 0:
+        b, dot = tuple(-c for c in b), -dot
+    if dot > 0.9995:
+        return qnormalize(tuple(x + (y - x) * t for x, y in zip(a, b)))
+    theta = math.acos(min(1.0, dot))
+    sa, sb = math.sin((1 - t) * theta), math.sin(t * theta)
+    s = math.sin(theta)
+    return qnormalize(tuple((x * sa + y * sb) / s for x, y in zip(a, b)))
 
 
 def inverse_rigid(q, t):
@@ -535,27 +582,8 @@ def build_mesh(character: dict) -> dict:
         decoded = decode_node(model, skin, node, lists[index])
         if decoded is None:
             continue
-        base = len(vertices)
-        first_index = len(triangles) * 3
-        # The strips carry no consistent winding (the original draws the golfer with
-        # D3DRS_CULLMODE = NONE, BodyC::SetupGolferRenderStates 0x1019a579), so each
-        # triangle is oriented counter-clockwise about its stored vertex normals.
-        for a, b, c in decoded["triangles"]:
-            pa, pb_, pc = (decoded["vertices"][i][0] for i in (a, b, c))
-            e1 = [pb_[k] - pa[k] for k in range(3)]
-            e2 = [pc[k] - pa[k] for k in range(3)]
-            face = (e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2],
-                    e1[0] * e2[1] - e1[1] * e2[0])
-            normal = [sum(decoded["vertices"][i][1][k] for i in (a, b, c)) for k in range(3)]
-            if sum(f * n for f, n in zip(face, normal)) >= 0:
-                kept += 1
-                triangles.append((base + a, base + b, base + c))
-            else:
-                flipped += 1
-                triangles.append((base + a, base + c, base + b))
-        for vertex in decoded["vertices"]:
-            influences = skin["blends"][vertex[3]]
-            vertices.append((vertex[0], vertex[1], vertex[2], influences))
+        base, first_index, k, f = append_node(decoded, skin["blends"], vertices, triangles)
+        kept, flipped = kept + k, flipped + f
         material = node_material(model, node)
         submeshes.append({
             "node": index, "render_type": node[3], "sets": sorted(node_sets.get(index, [])),
@@ -565,6 +593,147 @@ def build_mesh(character: dict) -> dict:
             **material})
     return {"vertices": vertices, "triangles": triangles, "submeshes": submeshes,
             "strip_parity_agreement": kept / max(1, kept + flipped), "reoriented": flipped}
+
+
+def append_node(decoded, blends, vertices, triangles):
+    """Append one decoded render node; returns (first vertex, first index, kept, flipped)."""
+    base = len(vertices)
+    first_index = len(triangles) * 3
+    kept = flipped = 0
+    # The strips carry no consistent winding (the original draws the golfer with
+    # D3DRS_CULLMODE = NONE, BodyC::SetupGolferRenderStates 0x1019a579), so each
+    # triangle is oriented counter-clockwise about its stored vertex normals.
+    for a, b, c in decoded["triangles"]:
+        pa, pb_, pc = (decoded["vertices"][i][0] for i in (a, b, c))
+        e1 = [pb_[k] - pa[k] for k in range(3)]
+        e2 = [pc[k] - pa[k] for k in range(3)]
+        face = (e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2],
+                e1[0] * e2[1] - e1[1] * e2[0])
+        normal = [sum(decoded["vertices"][i][1][k] for i in (a, b, c)) for k in range(3)]
+        if sum(f * n for f, n in zip(face, normal)) >= 0:
+            kept += 1
+            triangles.append((base + a, base + b, base + c))
+        else:
+            flipped += 1
+            triangles.append((base + a, base + c, base + b))
+    for vertex in decoded["vertices"]:
+        vertices.append((vertex[0], vertex[1], vertex[2], blends[vertex[3]]))
+    return base, first_index, kept, flipped
+
+
+# --------------------------------------------------------------------------
+# Clubs: GlbChar.xbx CLB resource (layout from data; loader not traced)
+# --------------------------------------------------------------------------
+
+def club_kind(sets: dict) -> str:
+    names = [name.lower() for name in sets if name not in ("shadow", "default")]
+    scores = {kind: sum(name.endswith(suffix) for name in names) for suffix, kind in CLUB_KIND_SUFFIXES}
+    kind = max(scores, key=scores.get)
+    if not names or scores[kind] * 2 <= len(names):
+        raise FormatError("Unrecognised club model")
+    return kind
+
+
+def parse_clb(data: bytes) -> list[dict]:
+    """u32 count (four copies), then per club: u32 index, f32 head-bone length,
+    u32 size (twice) and a version-4 skin block of 102 bones whose model block
+    (version 8) holds the grip, shaft and every manufacturer head. Data layout:
+    the six records end exactly at the resource size."""
+    header = unpack("<4I", data, 0, "CLB header")
+    count = header[0]
+    if not 0 < count <= 16 or header != (count,) * 4:
+        raise FormatError("Bad CLB header")
+    clubs, p = [], 0x10
+    for _ in range(count):
+        index, head_length, size, size2 = unpack("<IfII", data, p, "club record")
+        if size != size2 or size <= 0 or not (math.isfinite(head_length) and 0 < head_length < 4):
+            raise FormatError("Bad club record")
+        base = p + 0x10
+        need(data, base, size, "club skin block")
+        skin = parse_skin(data, base, size)
+        model = parse_model(data, skin["model_offset"], base + size)
+        clubs.append({"index": index, "kind": club_kind(model["sets"]), "head_length": head_length,
+                      "skin": skin, "model": model})
+        p = base + size
+    if p != len(data):
+        raise FormatError("CLB records do not end at the resource size")
+    if len({c["kind"] for c in clubs}) != len(clubs):
+        raise FormatError("Duplicate club kinds")
+    return clubs
+
+
+def load_clubs(media: Path) -> tuple[list[dict], dict]:
+    path = media / "Golfer" / "chars" / "GlbChar.xbx"
+    data = path.read_bytes()
+    resources = [r for r in read_container(data) if r["tag"] == "CLB " and r["kind"] == 1]
+    if len(resources) != 1:
+        raise FormatError("Expected exactly one CLB resource")
+    payload = resource_payload(data, resources[0])
+    return parse_clb(payload), {"file": str(path.relative_to(media)), "sha256": sha256(data),
+                                "clb_bytes": len(payload), "clb_sha256": sha256(payload)}
+
+
+def chain_bind(bind: list, parents: list) -> list:
+    """World (Hamilton) transforms from source bind records (stored conjugated)."""
+    world = []
+    for i, parent in enumerate(parents):
+        q, t = qnormalize(qconj(bind[i][0])), tuple(bind[i][1])
+        if parent < 0:
+            world.append((q, t))
+        else:
+            pq, pt = world[parent]
+            rt = qrotate(pq, t)
+            world.append((qnormalize(qmul(pq, q)), tuple(pt[k] + rt[k] for k in range(3))))
+    return world
+
+
+def build_club_mesh(clubs: list[dict], skeleton: dict, heads: dict) -> dict:
+    """Grip and shaft (set "default") plus one head per club, in each club's own
+    bind space. Every vertex is rigid on IG_driver, IG_driver_Break or
+    IG_driver_head (skin blends 98-100)."""
+    parents = [b["parent"] for b in skeleton["bones"] if not b.get("synthetic")]
+    index_of = {b["name"]: b["index"] for b in skeleton["bones"]}
+    if CLUB_ROOT_BONE not in index_of or CLUB_HEAD_BONE not in index_of:
+        raise FormatError("Skeleton lacks the club bones")
+    vertices, triangles, submeshes, info = [], [], [], {}
+    for club in clubs:
+        model, skin, kind = club["model"], club["skin"], club["kind"]
+        head = heads.get(kind)
+        if head not in model["sets"]:
+            raise FormatError(f"Club head set {head!r} missing from the {kind} model")
+        lists = node_buffer_lists(model)
+        parts = []
+        for nodes, role in ((model["sets"]["default"], None), (model["sets"][head], "head")):
+            for n in nodes:
+                decoded = decode_node(model, skin, model["nodes"][n], lists[n])
+                if decoded is None:
+                    raise FormatError("Club node is not a skinned node")
+                base, first_index, _, _ = append_node(decoded, skin["blends"], vertices, triangles)
+                material = node_material(model, model["nodes"][n])
+                texture = (material["base"] or {}).get("texture") or ""
+                bones = sorted({b for v in decoded["vertices"] for b, _ in skin["blends"][v[3]]})
+                parts.append(len(submeshes))
+                submeshes.append({"club": kind, "node": n, "part": role or ("grip" if "gr" in texture else "shaft"),
+                                  "first_index": first_index, "index_count": len(decoded["triangles"]) * 3,
+                                  "first_vertex": base, "vertex_count": len(decoded["vertices"]),
+                                  "bones": bones, **material})
+        if len(skin["bind"]) < len(parents):
+            raise FormatError("Club skin has fewer bones than the character skeleton")
+        world = chain_bind(skin["bind"], parents)
+        bones = {}
+        used = {b for i in parts for b in submeshes[i]["bones"]}
+        for index in sorted(used | {index_of[CLUB_ROOT_BONE], index_of[CLUB_HEAD_BONE]}):
+            q, t = world[index]
+            iq, it = inverse_rigid(q, t)
+            bones[str(index)] = {"name": skeleton["bones"][index]["name"], "bind_local": {"rotation": rounded(qnormalize(qconj(skin["bind"][index][0]))),
+                                                "translation": rounded(skin["bind"][index][1])},
+                                 "bind_world": {"rotation": rounded(q), "translation": rounded(t)},
+                                 "inverse_bind_matrix": rounded(matrix_from(iq, it))}
+        info[kind] = {"index": club["index"], "head_set": head, "head_length": round(club["head_length"], 6),
+                      "position_scale_source": model["position_scale"], "submeshes": parts, "bones": bones,
+                      "available_heads": sorted(n for n in model["sets"] if n not in ("shadow", "default")),
+                      "motions": dict(zip(("swing", "address"), CLUB_MOTIONS.get(kind, (None, None))))}
+    return {"vertices": vertices, "triangles": triangles, "submeshes": submeshes, "clubs": info}
 
 
 def node_material(model, node):
@@ -853,7 +1022,68 @@ def clip_poses(clip: dict, skeleton: dict) -> tuple[list, list]:
             rt = tuple(t) if t is not None else tuple(bind["translation"])
             pose.append((rq, rt))
         frames.append(pose)
+    resolve_club_space(frames, skeleton, clip.get("flags", 0))
     return frames, channel_flags
+
+
+def resolve_club_space(frames: list, skeleton: dict, ska_flags: int) -> bool:
+    """Rewrite a right-hand-relative club channel (SKA flag 0x10) into the club
+    root's skeleton parent space, frame by frame. Returns whether it applied."""
+    if not ska_flags & SKA_CLUB_IN_RIGHT_HAND:
+        return False
+    index_of = {b.get("name"): i for i, b in enumerate(skeleton["bones"])}
+    club, hand = index_of.get(CLUB_ROOT_BONE), index_of.get(CLUB_HAND_BONE)
+    if club is None or hand is None:
+        raise FormatError("Hand-relative club channel without club and hand bones")
+    parent = skeleton["bones"][club]["parent"]
+    for pose in frames:
+        world = world_pose(skeleton, pose)
+        hq, ht = world[hand]
+        cq, ct = pose[club]
+        wq = qnormalize(qmul(hq, cq))
+        rt = qrotate(hq, ct)
+        wt = tuple(rt[k] + ht[k] for k in range(3))
+        if parent >= 0:
+            iq, it = inverse_rigid(*world[parent])
+            lt = qrotate(iq, wt)
+            wq, wt = qnormalize(qmul(iq, wq)), tuple(lt[k] + it[k] for k in range(3))
+        pose[club] = (wq, wt)
+    return True
+
+
+def pose_at(frames: list, fps: float, seconds: float) -> list:
+    """Local pose between stored frames: slerp rotations, lerp translations."""
+    f = max(0.0, min(len(frames) - 1.0, seconds * fps))
+    i = min(len(frames) - 2, int(f)) if len(frames) > 1 else 0
+    a = f - i
+    if len(frames) == 1 or a <= 0:
+        return list(frames[i])
+    return [(qslerp(q0, q1, a), tuple(x + (y - x) * a for x, y in zip(t0, t1)))
+            for (q0, t0), (q1, t1) in zip(frames[i], frames[i + 1])]
+
+
+def club_contact(skeleton: dict, pose: list, club: dict, mesh: dict) -> tuple:
+    """Lowest point of one club's grip, shaft and head for a resolved pose, with
+    the head bone at the club's own length (clips carry no head translation)."""
+    index_of = {b["name"]: b["index"] for b in skeleton["bones"]}
+    head = index_of[CLUB_HEAD_BONE]
+    posed = list(pose)
+    posed[head] = (posed[head][0], tuple(club["bones"][str(head)]["bind_local"]["translation"]))
+    world = world_pose(skeleton, posed)
+    lowest = None
+    for sub in (mesh["submeshes"][i] for i in club["submeshes"]):
+        for position, _, _, influences in mesh["vertices"][sub["first_vertex"]:sub["first_vertex"] + sub["vertex_count"]]:
+            bone = influences[0][0]
+            bind = club["bones"][str(bone)]["bind_world"]
+            iq, it = inverse_rigid(tuple(bind["rotation"]), tuple(bind["translation"]))
+            local = qrotate(iq, position)
+            local = tuple(local[k] + it[k] for k in range(3))
+            q, t = world[bone]
+            r = qrotate(q, local)
+            point = tuple(r[k] + t[k] for k in range(3))
+            if lowest is None or point[1] < lowest[1]:
+                lowest = point
+    return lowest
 
 
 def write_clip(clip: dict, frames: list, channel_flags: list) -> bytes:
@@ -1031,7 +1261,8 @@ def load_character(media: Path, character_id: str) -> tuple[dict, dict]:
 
 
 def run(media: Path, output: Path, character_id: str, clips: list[str],
-        preview: Path | None, all_textures: bool, write_dds: bool = False) -> dict:
+        preview: Path | None, all_textures: bool, write_dds: bool = False,
+        clubs: bool = True) -> dict:
     character, provenance = load_character(media, character_id)
     mesh = build_mesh(character)
     skeleton = build_skeleton(character)
@@ -1042,11 +1273,18 @@ def run(media: Path, output: Path, character_id: str, clips: list[str],
     mesh_bytes = write_mesh(mesh)
     atomic_write(output / "golfer_mesh.bin", mesh_bytes)
 
+    club_mesh = club_bytes = club_source = None
+    if clubs:
+        club_models, club_source = load_clubs(media)
+        club_mesh = build_club_mesh(club_models, skeleton, TIGER_CLUB_HEADS)
+        club_bytes = write_mesh(club_mesh)
+        atomic_write(output / "club_mesh.bin", club_bytes)
+
     fxx_path = media / "Golfer" / "CHARTEX" / f"{character_id}alltex.fxx"
     fxx = fxx_path.read_bytes()
     model = character["model"]
-    wanted = {layer["texture"] for s in mesh["submeshes"] for layer in (s["base"], s["decal"])
-              if layer and layer["texture"]}
+    wanted = {layer["texture"] for s in mesh["submeshes"] + (club_mesh or {}).get("submeshes", [])
+              for layer in (s["base"], s["decal"]) if layer and layer["texture"]}
     if all_textures:
         variants = {name.lower() for name in model["variant_textures"]}
         wanted |= {name for name in character["textures"] if name.lower() in variants}
@@ -1071,7 +1309,8 @@ def run(media: Path, output: Path, character_id: str, clips: list[str],
         texture_info[name] = {"file": f"textures/{name}.png", "width": w, "height": h,
                               "source_format": XBOX_DXT[entry["format"]].decode(),
                               "source_bytes": entry["mips"][0][1],
-                              "source_mips": entry["mip_count"], "rgba_bytes": w * h * 4}
+                              "source_mips": entry["mip_count"], "rgba_bytes": w * h * 4,
+                              "translucent_texels": sum(1 for a in rgba[3::4] if a < 255)}
 
     skeleton_json = {"schema": 1, "units": "golfer model units (see golfer.json)",
                      "convention": "Hamilton quaternions [x,y,z,w]; world = parent ⊗ local; "
@@ -1099,9 +1338,30 @@ def run(media: Path, output: Path, character_id: str, clips: list[str],
                 "frames": clip["frame_count"], "fps": round(1 / clip["seconds_per_frame"], 4),
                 "seconds": round((clip["frame_count"] - 1) * clip["seconds_per_frame"], 4),
                 "club_bone": clip["club_bone"], "events": clip["events"],
+                "ska_flags": clip["flags"],
+                "club_space": ("right hand (SKA flag 0x10), rewritten to rig space"
+                               if clip["flags"] & SKA_CLUB_IN_RIGHT_HAND else "rig"),
                 "phases_frames": swing_phases(clip), "bytes": len(data),
                 "animated_rotation_bones": sum(1 for f in flags if f & 1),
                 "translation_bones": sum(1 for f in flags if f & 4)}
+        kind = next((k for k, motion in CLUB_MOTIONS.items() if name in motion), None)
+        if club_mesh and kind in club_mesh["clubs"]:
+            phases = info["phases_frames"] or {}
+            keys = {"first": 0, "last": len(frames) - 1}
+            for label, phase, end in (("takeaway", "backswing", 0), ("top", "backswing", 1),
+                                      ("impact", "downswing", 1), ("impact", "stroke", 1)):
+                if phase in phases:
+                    keys[label] = phases[phase][end]
+            contact = {label: [f, rounded(club_contact(skeleton, frames[f], club_mesh["clubs"][kind], club_mesh), 4)]
+                       for label, f in keys.items()}
+            impact = next((t for i, t in clip["events"] if i == 2 and t > 0), None)
+            if impact is not None:
+                pose = pose_at(frames, 1 / clip["seconds_per_frame"], impact)
+                contact["impact_event"] = [round(impact, 4),
+                                           rounded(club_contact(skeleton, pose, club_mesh["clubs"][kind], club_mesh), 4)]
+            info["club_contact"] = {"club": kind, "frames": contact,
+                                    "note": "lowest club point, model units, ball at the origin; "
+                                            "impact_event is interpolated at the event time"}
         clip_info.append(info)
         phases = info["phases_frames"] or {}
         if preview_clip is None and "backswing" in phases:
@@ -1132,6 +1392,8 @@ def run(media: Path, output: Path, character_id: str, clips: list[str],
                                              "SkeletonC::CreateWorldMatrix 0x101b262d"},
         "coordinate_system": {"up": "+Y", "character_faces": "+Z", "character_left": "+X",
                               "bind_pose": "T-pose, pelvis at origin",
+                              "swing_frame": "right-handed golfer: ball at the rig origin on the ground (y = 0), "
+                                             "target line along +X, the golfer stands on -Z facing +Z",
                               "animated_poses": "root translation is ground-relative (pelvis ~0.99 units up)"},
         "mesh": {"file": "golfer_mesh.bin", "format": "PGAGMSH1 (see docs/research/PGA2005-GOLFER.md)",
                  "bytes": len(mesh_bytes), "vertices": len(mesh["vertices"]), "triangles": triangles,
@@ -1141,6 +1403,14 @@ def run(media: Path, output: Path, character_id: str, clips: list[str],
                  "reoriented_triangles": mesh["reoriented"],
                  "strip_order_agreement": round(mesh["strip_parity_agreement"], 4),
                  "max_influences": 3, "submeshes": mesh["submeshes"]},
+        "clubs": None if not club_mesh else {
+            "file": "club_mesh.bin", "format": "PGAGMSH1; vertices in each club's own bind space",
+            "source": club_source, "bytes": len(club_bytes),
+            "vertices": len(club_mesh["vertices"]), "triangles": len(club_mesh["triangles"]),
+            "head_choice": "assumption: Nike heads and the tig_p putter (player equipment .plr not decoded)",
+            "head_length_note": "IG_driver_head local translation per club; clips carry no head translation",
+            "submeshes": club_mesh["submeshes"], "kinds": club_mesh["clubs"]},
+        "assumed_meters_per_unit": ASSUMED_METERS_PER_UNIT,
         "visibility_sets": model["sets"],
         "shirt_variants": {"sets": model["variant_sets"], "textures": model["variant_textures"]},
         "skeleton": {"file": "skeleton.json", "bones": len(skeleton["bones"])},
@@ -1150,6 +1420,7 @@ def run(media: Path, output: Path, character_id: str, clips: list[str],
             "mesh_file_bytes": len(mesh_bytes),
             "texture_source_dxt_bytes": sum(t.get("source_bytes", 0) for t in texture_info.values()),
             "texture_rgba_bytes": sum(t.get("rgba_bytes", 0) for t in texture_info.values()),
+            "club_mesh_file_bytes": len(club_bytes or b""),
             "clip_bytes": sum(c.get("bytes", 0) for c in clip_info)},
     }
     atomic_write(output / "golfer.json", (json.dumps(manifest, indent=1) + "\n").encode())
@@ -1192,11 +1463,12 @@ def main():
     parser.add_argument("--all-textures", action="store_true", help="also decode shirt variant textures")
     parser.add_argument("--dds", action="store_true",
                         help="also write the source DXT1/DXT3 blocks as .dds (BC1/BC2 upload, no RGBA expansion)")
+    parser.add_argument("--no-clubs", action="store_true", help="skip the GlbChar.xbx club models")
     args = parser.parse_args()
     if not re.fullmatch(r"\d\d", args.character):
         parser.error("--character must be two digits")
     manifest = run(args.media, args.output, args.character, args.clip or list(DEFAULT_CLIPS),
-                   args.preview, args.all_textures, args.dds)
+                   args.preview, args.all_textures, args.dds, clubs=not args.no_clubs)
     mesh = manifest["mesh"]
     print(f"character {manifest['character']}: {mesh['vertices']} vertices, {mesh['triangles']} triangles "
           f"({mesh['default_visible_triangles']} default-visible), {len(manifest['textures'])} textures, "

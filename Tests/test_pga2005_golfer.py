@@ -284,6 +284,47 @@ class SkeletonTests(unittest.TestCase):
         self.assertEqual(skeleton["bones"][-1]["name"], "IG_Gball1")
 
 
+class ClubTests(unittest.TestCase):
+    def test_kind_from_set_suffixes(self):
+        self.assertEqual(golfer.club_kind({"shadow": [0], "nike_dv": [1], "ea_dv": [2], "default": [3]}), "driver")
+        self.assertEqual(golfer.club_kind({"cl_bb_wg": [1], "nike_pro_pwg": [2], "ea_wg": [3]}), "wedge")
+        self.assertEqual(golfer.club_kind({"cl_bb_w": [1], "ea_w": [2]}), "fairway_wood")
+        self.assertEqual(golfer.club_kind({"cl_bb_7I": [1]}), "iron7")
+        with self.assertRaises(FormatError):
+            golfer.club_kind({"shadow": [0], "default": [1]})
+
+    def test_clb_header_and_sizes_validated(self):
+        with self.assertRaises(FormatError):
+            golfer.parse_clb(struct.pack("<4I", 2, 2, 2, 3))
+        with self.assertRaises(FormatError):      # record sizes disagree
+            golfer.parse_clb(struct.pack("<4I", 1, 1, 1, 1) + struct.pack("<IfII", 0, 0.7, 0x40, 0x50))
+        with self.assertRaises(FormatError):      # implausible head length
+            golfer.parse_clb(struct.pack("<4I", 1, 1, 1, 1) + struct.pack("<IfII", 0, 9.0, 0x40, 0x40))
+
+    def test_hand_relative_club_channel_resolved_to_rig_space(self):
+        quarter = (0.0, 0.0, math.sqrt(0.5), math.sqrt(0.5))      # +90 degrees about Z
+        skeleton = {"bones": [
+            {"name": "IG_rig", "parent": -1}, {"name": golfer.CLUB_HAND_BONE, "parent": 0},
+            {"name": golfer.CLUB_ROOT_BONE, "parent": 0}]}
+        pose = [((0, 0, 0, 1), (0, 0, 0)), (quarter, (1, 0, 0)), ((0, 0, 0, 1), (0, 1, 0))]
+        self.assertFalse(golfer.resolve_club_space([list(pose)], skeleton, 0x02))
+        frames = [list(pose)]
+        self.assertTrue(golfer.resolve_club_space(frames, skeleton, golfer.SKA_CLUB_IN_RIGHT_HAND))
+        q, t = frames[0][2]
+        self.assertTrue(close(t, (0, 0, 0)))                     # hand (1,0,0) + rotated (0,1,0) -> (-1,0,0)
+        self.assertTrue(close(q, quarter))
+        world = golfer.world_pose(skeleton, frames[0])
+        self.assertTrue(close(world[2][1], (0, 0, 0)))
+
+    def test_pose_interpolation(self):
+        half = (0.0, math.sin(math.pi / 4), 0.0, math.cos(math.pi / 4))
+        frames = [[((0, 0, 0, 1), (0, 0, 0))], [(half, (2, 0, 0))]]
+        mid = golfer.pose_at(frames, 30, 1 / 60)
+        self.assertTrue(close(mid[0][1], (1, 0, 0)))
+        self.assertTrue(close(mid[0][0], (0, math.sin(math.pi / 8), 0, math.cos(math.pi / 8))))
+        self.assertEqual(golfer.pose_at(frames, 30, 5)[0][1], (2, 0, 0))
+
+
 @unittest.skipUnless((MEDIA / "Golfer/chars/01char.xbx").is_file(), "original media absent")
 class RealMediaTests(unittest.TestCase):
     @classmethod
@@ -337,6 +378,45 @@ class RealMediaTests(unittest.TestCase):
             self.assertEqual(len(clip["poses"]), 321)
             self.assertEqual(manifest["mesh"]["triangles"], 6900)
             self.assertTrue((Path(tmp) / "textures/htface.png").is_file())
+            clubs = golfer.read_mesh((Path(tmp) / "club_mesh.bin").read_bytes())
+            self.assertEqual(len(clubs["submeshes"]), len(manifest["clubs"]["submeshes"]))
+            self.assertTrue((Path(tmp) / "textures/nikeigndvr.png").is_file())
+
+    def test_clubs_decode_with_their_head_lengths(self):
+        clubs, source = golfer.load_clubs(MEDIA)
+        self.assertEqual(source["clb_bytes"], 0xA1070)
+        lengths = {c["kind"]: round(c["head_length"], 3) for c in clubs}
+        self.assertEqual(lengths, {"driver": 0.717, "fairway_wood": 0.717, "putter": 0.486,
+                                   "iron3": 0.586, "iron7": 0.522, "wedge": 0.498})
+        mesh = golfer.build_club_mesh(clubs, self.skeleton, golfer.TIGER_CLUB_HEADS)
+        self.assertEqual(set(mesh["clubs"]), set(lengths))
+        for sub in mesh["submeshes"]:
+            self.assertTrue(set(sub["bones"]) <= {98, 99, 100}, sub)
+        heads = [s for s in mesh["submeshes"] if s["part"] == "head"]
+        self.assertTrue(all(s["bones"] == [100] for s in heads))
+
+    def test_full_swings_meet_the_ball_at_impact(self):
+        """Hand-relative club channels plus per-club head lengths put the club
+        on the ball (rig origin) at each clip's impact event."""
+        clubs, _ = golfer.load_clubs(MEDIA)
+        mesh = golfer.build_club_mesh(clubs, self.skeleton, golfer.TIGER_CLUB_HEADS)
+        motions = (MEDIA / "Golfer/chars/motions.tbf").read_bytes()
+        entries = golfer.read_tbf(motions)
+        for kind, (swing, address) in golfer.CLUB_MOTIONS.items():
+            offset, size = entries[swing + ".ska"]
+            clip = golfer.parse_ska(motions[offset:offset + size])
+            frames, _ = golfer.clip_poses(clip, self.skeleton)
+            impact = next(t for i, t in clip["events"] if i == 2)
+            pose = golfer.pose_at(frames, 1 / clip["seconds_per_frame"], impact)
+            low = golfer.club_contact(self.skeleton, pose, mesh["clubs"][kind], mesh)
+            self.assertLess(math.hypot(low[0], low[2]), 0.2, (kind, swing, low))
+            self.assertLess(abs(low[1]), 0.15, (kind, swing, low))
+            offset, size = entries[address + ".ska"]
+            clip = golfer.parse_ska(motions[offset:offset + size])
+            frames, _ = golfer.clip_poses(clip, self.skeleton)
+            low = golfer.club_contact(self.skeleton, frames[-1], mesh["clubs"][kind], mesh)
+            self.assertLess(abs(low[1]), 0.05, (kind, address, low))       # soled at address
+            self.assertLess(math.hypot(low[0], low[2]), 0.15, (kind, address, low))
 
 
 if __name__ == "__main__":
