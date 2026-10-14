@@ -159,6 +159,10 @@ enum PGAOriginalSceneBuilder {
                 drift.toValue = NSValue(scnMatrix4: SCNMatrix4MakeTranslation(1, 0.5, 0))
                 drift.duration = 240; drift.repeatCount = .infinity
                 material.diffuse.addAnimation(SCNAnimation(caAnimation: drift), forKey: "drift")
+                // Modern touch, a few ALU ops per water pixel: two crossing
+                // procedural ripples tilt the normal for moving sun glints, and
+                // a Fresnel term mixes in sky colour at grazing angles.
+                material.shaderModifiers = [.surface: Self.waterSurface]
             }
             return material
         }
@@ -167,6 +171,17 @@ enum PGAOriginalSceneBuilder {
         node.castsShadow = false
         return node
     }
+
+    static let waterSurface = """
+    float t = scn_frame.time;
+    float2 p = _surface.diffuseTexcoord * 6.2831853;
+    float3 ripple = float3(sin(p.x * 3.1 + t * 0.9) + 0.6 * sin(p.y * 4.7 - t * 1.3), 0.0,
+                           cos(p.y * 3.7 + t * 0.7) + 0.6 * cos(p.x * 5.3 + t * 1.1));
+    _surface.normal = normalize(_surface.normal + ripple * 0.045);
+    float facing = saturate(dot(_surface.normal, _surface.view));
+    float fresnel = 0.08 + 0.55 * pow(1.0 - facing, 4.0);
+    _surface.diffuse.rgb = mix(_surface.diffuse.rgb, float3(0.56, 0.66, 0.78), fresnel);
+    """
 }
 
 /// A top-down minimap rendered from the hole's own triangles, rotated so the
