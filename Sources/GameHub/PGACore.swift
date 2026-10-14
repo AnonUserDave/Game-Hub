@@ -1064,3 +1064,84 @@ enum PGAStandings {
         }
     }
 }
+
+// MARK: - Shot preview (commentary)
+
+/// The precalculated end of an original-course shot: the analog of
+/// CGolfBall::PreCalculateBall and EndPosition (CGolfBall vtable +0x58, which
+/// the shot event builder 0x102146cb reads during flight). Native terrain and
+/// flight code; see docs/research/PGA2005-COMMENTARY.md.
+struct PGAShotPreview: Equatable {
+    /// Ball centre in meters where the shot stops, holes out or meets a penalty surface.
+    var end: PGAVector
+    /// Flight ticks from impact to that point (the recorded path length).
+    var totalTicks: Int
+    var holed = false
+    var hazard: PGASurface?
+    /// StopBall's next lie index (sub-terrain record) at the end.
+    var lieIndex = 0
+}
+
+/// Steps a copy of the active flight in bounded slices on the caller's
+/// thread (the terrain adapter caches surfaces and is not thread-safe), so
+/// the precalculation never costs a whole flight in one frame.
+struct PGAShotPreviewer {
+    private var copy: PGABallFlight
+    private let adapter: PGABallTerrainAdapter
+    private var lie = 0
+    private(set) var result: PGAShotPreview?
+
+    fileprivate init(copy: PGABallFlight, adapter: PGABallTerrainAdapter) { self.copy = copy; self.adapter = adapter }
+
+    /// Runs at most `ticks` flight ticks; returns the preview once the copy
+    /// stops, holes out or meets water/out of bounds (like `stepOriginal`).
+    mutating func advance(ticks: Int) -> PGAShotPreview? {
+        if let result { return result }
+        let lift = PGAVector(x: 0, y: PGASimulation.ballRadius, z: 0)
+        var budget = ticks
+        while !copy.isFinished && budget > 0 {
+            budget -= 1
+            for change in copy.step(terrain: adapter) {
+                switch change {
+                case let .impact(position, _, _, surface, _, _):
+                    let flags = surface.records[0].flags
+                    if flags & (PGABallSurfaceFlag.water | PGABallSurfaceFlag.outOfBounds) != 0 {
+                        result = PGAShotPreview(end: adapter.frame.meters(position) + lift, totalTicks: copy.tick,
+                                                hazard: flags & PGABallSurfaceFlag.water != 0 ? .water : .out)
+                        return result
+                    }
+                case let .holed(position):
+                    result = PGAShotPreview(end: adapter.frame.meters(position) + lift, totalTicks: copy.tick, holed: true)
+                    return result
+                case let .outOfWorld(position):
+                    result = PGAShotPreview(end: adapter.frame.meters(position) + lift, totalTicks: copy.tick, hazard: .out)
+                    return result
+                case let .stopped(next):
+                    lie = next ?? 0
+                default: break
+                }
+            }
+        }
+        guard copy.isFinished else { return nil }
+        result = PGAShotPreview(end: adapter.frame.meters(copy.position) + lift, totalTicks: copy.tick, lieIndex: lie)
+        return result
+    }
+}
+
+extension PGASimulation {
+    /// Ticks the active original flight has played.
+    var flightTicks: Int? { flight?.tick }
+
+    /// A previewer for the active original flight; nil on the generated
+    /// practice course or when no shot is in the air.
+    func shotPreviewer() -> PGAShotPreviewer? {
+        guard let flight else { return nil }
+        return PGAShotPreviewer(copy: flight, adapter: flightTerrains[holeIndex])
+    }
+
+    /// The whole preview at once (tests and tools).
+    func previewShot() -> PGAShotPreview? {
+        var previewer = shotPreviewer()
+        return previewer?.advance(ticks: .max)
+    }
+}
