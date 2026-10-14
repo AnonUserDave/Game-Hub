@@ -32,6 +32,7 @@ def prepare_install(media_dir: Path) -> Path:
 from decode_pga2005_terrain import decode
 from decode_pga2005_library import decode_materials
 from decode_pga2005_holes import decode_holes
+import decode_pga2005_golfer
 
 
 def save_json(path, value):
@@ -91,6 +92,11 @@ def main():
     # Original sounds and per-course ambience (needs the course materials above).
     if import_pga2005_audio.main(["--courses", *args.courses]) != 0:
         raise SystemExit("Audio import failed")
+    # Original golfer (Tiger Woods 01char), his clubs and swing clips.
+    golfer = decode_pga2005_golfer.run(install, root / "Library/Imported/pga2005/golfer", "01",
+                                       list(decode_pga2005_golfer.DEFAULT_CLIPS), None, False)
+    print(f"Golfer: {golfer['mesh']['vertices']} vertices, {golfer['clubs']['triangles']} club triangles, "
+          f"{len(golfer['clips'])} clips")
 
 
 if __name__ == "__main__":

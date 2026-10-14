@@ -128,6 +128,7 @@ final class PGAGameSession: ObservableObject {
 
     private func install(_ course: PGAOriginalPlayableCourse, indexSeconds: Double) {
         original = course
+        renderer.loadOriginalGolfer(root: GameStore.workspaceRoot())
         renderer.useOriginalBallShadow(hud.image("ball-shadow"))
         renderer.useOriginalAimArrow(hud.image("aim-arrow"))
         let checks = course.validation
@@ -373,7 +374,7 @@ final class PGAGameSession: ObservableObject {
             if !simulation.events.isEmpty { playSounds(simulation.takeEvents()) }
         }
         if previousPhase != simulation.phase {
-            if simulation.phase == .airborne || simulation.phase == .rolling { renderer.animateSwing() }
+            if !isOriginal && (simulation.phase == .airborne || simulation.phase == .rolling) { renderer.animateSwing() }
             previousPhase = simulation.phase
         }
         renderer.update(simulation, cameraMode: cameraMode, zoom: cameraZoom, delta: delta)
@@ -554,6 +555,8 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     private let aimMarker = SCNNode()
     private let golfer = SCNNode()
     private let clubPivot = SCNNode()
+    var originalGolfer: PGAOriginalGolfer?
+    var originalGolferLoading = false
     private var content = SCNNode()
     private var flag = SCNNode()
     private var cameraPosition = PGAVector.zero
@@ -708,6 +711,7 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
     }
 
     func build(hole: PGAHole) {
+        originalGolfer?.node.isHidden = true
         content.removeFromParentNode(); content = SCNNode(); scene.rootNode.addChildNode(content)
         content.addChildNode(makeTerrain(hole: hole))
         makeTrees(hole: hole)
@@ -748,7 +752,8 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
             // SceneKit faces -Z at zero yaw; the simulation's heading is atan2(x, z).
             aimArrow.eulerAngles.y = CGFloat(simulation.heading + .pi)
         }
-        golfer.isHidden = simulation.phase.inMotion || simulation.phase == .holed || (!simulation.course.isOriginal && cameraMode == 2) || content.childNodes.isEmpty
+        golfer.isHidden = originalGolfer != nil || simulation.phase.inMotion || simulation.phase == .holed ||
+            (!simulation.course.isOriginal && cameraMode == 2) || content.childNodes.isEmpty
         let side = PGAVector(x: -direction.z, y: 0, z: direction.x)
         let golferPosition = position + side * 1.1 + direction * -0.15
         golfer.position = SCNVector3(golferPosition.x, simulation.groundHeight(x: golferPosition.x, z: golferPosition.z, near: position.y), golferPosition.z)
@@ -787,6 +792,8 @@ final class PGARenderer: NSObject, SCNSceneRendererDelegate {
         if let directedPose { camera.camera?.fieldOfView = directedPose.fieldOfView / zoom }
         camera.position = Self.vector(cameraPosition)
         camera.look(at: Self.vector(cameraTarget))
+        originalGolfer?.update(simulation, cameraPosition: cameraPosition, delta: delta,
+                               sceneReady: content.childNodes.isEmpty == false && (simulation.course.isOriginal || cameraMode != 2))
         freshCamera = false
         SCNTransaction.commit()
     }

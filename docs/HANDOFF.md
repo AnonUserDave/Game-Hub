@@ -12,6 +12,8 @@ Work on the owner's laptop is paused at his request. His son continues on an M5 
 
 The 2026-10-13 son's checkpoint added playable original gameplay on all 11 courses, corrected the course model (each hole is its own world; the source is left-handed), applied statically recovered patch-selection and surface rules, fixed a dark-image color-space bug and a session memory leak, and added round setup, hot-seat multiplayer, match play and skins. The second wave added native original audio, the exact original tri-click meter, and static decodes of the ball flight, trees and sky, the golfer, and the camera director. Original-course shots now use a Swift port of the statically reconstructed `CBallFlight`; generated practice keeps its provisional model. All of it was checked on the M5 only. Agreement between Swift and Python is not comparison with a running original game.
 
+The decoded Tiger 01 mesh, textures, clubs and swing clips now load on a worker and replace the generated golfer during original-course play when local prepared media are present. One rig is reused across holes. A native build and focused scene/shot test passed on the M5 Pro; live appearance and animation alignment were not checked because offscreen Metal access was unavailable in that test environment.
+
 ## Development environments
 
 **Son's M5 (current).** macOS 26.3, Xcode at `/Applications/Xcode.app` (Swift 6.3.1), Homebrew Python 3 with Pillow, Homebrew `unshield` 1.6.2 and OpenJDK 21/26. REA 6.4.0 is the global MCP server (`/opt/homebrew/bin/rea`), with a working Ghidra provider at `~/Desktop/Tools/ghidra_12.1.2`. REA's Ghidra session timed out during Engine.dll auto-analysis; direct `Tools/analyze_pga2005_ghidra.py` headless runs worked (88 s auto-analysis). Extracted DLLs are in the ignored `Library/SourceMedia/pga2005/engine/Executable`; the Ghidra database is in `Library/Research/ghidra-projects/pga2005-physics`. Git identity: the son's own.
@@ -28,6 +30,7 @@ The 2026-10-13 son's checkpoint added playable original gameplay on all 11 cours
 | Golf simulation (Foundation only) | `PGACore.swift` (simulation, rules, multiplayer turns, game types, snapshots, event queue), `PGABallFlight.swift` (reconstructed original flight and terrain/frame adapter), `PGATerrain.swift` (terrain protocol, original surface properties and sound ids), `PGASwingMeter.swift` (original tri-click meter) |
 | Original course model | `PGAOriginalPlayable.swift` (GHPC v3 data, condition selector, transform, per-hole terrain, 18-hole assembly, round setup and store, course catalog), `PGAOriginalCollision.swift` (CSR floor index) |
 | Golf rendering, HUD and session | `PGAGame.swift` (session, renderer), `PGAOriginalHoleScene.swift` (per-hole buffers, textures, minimap), `PGAOriginalHUD.swift` (original HUD art, meter dial, scorecard, loading screen, round setup), `PGAView.swift`, `PGAMetalView.swift` |
+| Original scene additions | `PGAOriginalScenery.swift`, `PGAOriginalSky.swift`, `PGAOriginalVegetation.swift` (decoded sky, trees, billboards and panoramas); `PGAOriginalGolfer.swift` (skinned Tiger mesh, clubs and animation); `PGACameraDirector.swift` (four decoded camera scripts, partial native playback) |
 | Audio | `PGAAudio.swift` (rules from `audio.json`, AVAudioEngine playback, ambience) |
 | Original Course Lab | `PGAOriginalCourse.swift` |
 | Game metadata | `Library/Manifests/*.json` |
@@ -36,7 +39,7 @@ The 2026-10-13 son's checkpoint added playable original gameplay on all 11 cours
 
 ## Original data and evidence
 
-Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` extracts the install cabinets in pure Python and regenerates `Library/Imported/pga2005/` (all 11 courses, HUD art, audio and original scenery). The objects decoder is now part of preparation; the golfer and camera decoders still run separately (`decode_pga2005_golfer.py`, `decode_pga2005_cameras.py`).
+Archives are in the workspace root and intentionally untracked. `python3 Tools/prepare_pga2005.py` extracts the install cabinets in pure Python and regenerates `Library/Imported/pga2005/` (all 11 courses, HUD art, audio, original scenery and Tiger golfer assets). The objects and golfer decoders are part of preparation; the camera decoder still runs separately (`decode_pga2005_cameras.py`).
 
 - **GHPC v3** (`terrain.ghpc`) keeps v2's vertex and triangle records, adds a 48-byte header with a patch count, and ends with one 20-byte record per source patch: layer field, first vertex, vertex count, first triangle, triangle count.
 - **Patch layers.** The layer field is `tagPatch::PatchLayerInfoS`. Its low five bits are the owning hole; the higher bits are course-condition variants. Holes are separate overlapping worlds, so play and the Lab show one hole at a time. The standard selector is `0x420` (CHole::Load). See the ledger.
@@ -49,7 +52,7 @@ The static analysis for patch selection, flag bits, lie-record rules and coeffic
 ## Next work, in order
 
 1. **Publish the checkpoint.** The son's GitHub account has read-only access, so local commits are not on GitHub yet. Either the owner adds `Pablo-Rogers` as a collaborator, or the son pushes to a fork and opens a pull request. Then `git push origin main`.
-2. **Merge the remaining `golfer` branch** from `.worktrees/golfer` (git-ignored via `.git/info/exclude`). The native camera director, `CBallFlight` port and original scenery renderer are on `main`. Compare behavior and visuals against a running original game; camera flight-progress and landing values are approximations. Expand the bag to the original clubs and add wind/settings UI with save tests.
+2. **Validate the integrated original gameplay.** The native camera director, `CBallFlight` port, scenery renderer and skinned golfer are on `main`. Compare behavior and visuals against a running original game; camera flight-progress and landing values are approximations. Check golfer size, materials, clip alignment and scene performance. Expand the bag to the original clubs and add wind/settings UI with save tests.
 3. **Weather and time of day.** The original blends two of 40 `renderN.ini` presets (`RenderCommand::renderIni1/2`); research is in progress. Then fog, global diffuse, terrain/tree contrast, sky type and the original lens flare per preset, and a setup choice.
 4. **M1 acceptance**, when the owner makes the laptop available: every course at fullscreen 2560 × 1600 for 30 minutes; FPS, p95/p99 frame time, footprint, swap, thermals and load time.
 5. **Rules.** INI OB polygons (`[Hole N OB k]`), lateral water-hazard drops, the original tee/pin selection.

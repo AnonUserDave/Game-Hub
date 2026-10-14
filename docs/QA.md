@@ -25,6 +25,8 @@ Remaining physical-input checks include shoulders/D-pad/menu, every gameplay map
 
 ## Son's M5 checkpoint (development checks, not M1 acceptance)
 
+Golfer branch follow-up, 2026-10-13, Apple M5 Pro MacBook Pro with 24 GB: optimized native ARM64 build passed; `PGAOriginalGolferTests` passed with locally prepared original media; 28 Python golfer decoder tests passed. The full Swift suite ran 45 tests with one failure in the existing `PGAAudioTests.testEnginePlaysSwingImpactAndAmbience` because `AVAudioEngine` could not create an output component in this test environment. The opt-in golfer tee snapshot could not render because `MTLCreateSystemDefaultDevice()` returned nil. No live visual result or M1 performance claim follows from these checks.
+
 2026-10-13, M5 MacBook Pro / 24 GB / macOS 26.3, optimized arm64 build, windowed (2720 × 1782 backing pixels). None of this substitutes for the M1 acceptance run.
 
 | Check | Evidence and outcome |

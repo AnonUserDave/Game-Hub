@@ -18,6 +18,7 @@ final class PGASnapshotTests: XCTestCase {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         let code = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_COURSE"] ?? "PBL"
         let course = try PGAOriginalPlayableCourse.load(code: code, root: root)
+        let golferAssets = try? PGAOriginalGolferAssets.load(root: root)
         let holes = ProcessInfo.processInfo.environment["GAMEHUB_SNAPSHOT_HOLES"]?.split(separator: ",").compactMap { Int($0) } ?? Array(1...18)
         let directory = URL(fileURLWithPath: output, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -43,6 +44,7 @@ final class PGASnapshotTests: XCTestCase {
                 XCTAssertNotNil(trees, "Decoded trees must be present in the original-course scene")
                 renderer.useOriginalBallShadow(art.image("ball-shadow"))
                 renderer.useOriginalAimArrow(art.image("aim-arrow"))
+                if let golferAssets { renderer.useOriginalGolfer(golferAssets) }
                 let device = try XCTUnwrap(MTLCreateSystemDefaultDevice())
                 let snapshot = SCNRenderer(device: device, options: nil)
                 snapshot.scene = renderer.scene
