@@ -70,7 +70,7 @@ struct PGAOriginalSwingMeter: View {
                     let pivot = CGPoint(x: 128 * unit, y: 128 * unit), ring = CGPoint(x: 126 * unit, y: 135 * unit)
                     // Radial tick from radius 76 out to the painted ring (radius 96 about a centre 2 left, 7 down).
                     func tick(_ degrees: Double, _ kind: PGATriClickMeter.Tick) {
-                        let a = degrees * .pi / 180, d = CGPoint(x: cos(a), y: -sin(a))
+                        let a = CGFloat(degrees) * .pi / 180, d = CGPoint(x: cos(a), y: -sin(a))
                         let o = CGPoint(x: pivot.x - ring.x, y: pivot.y - ring.y), r = 96 * unit
                         let b = o.x * d.x + o.y * d.y, outer = -b + sqrt(max(0, b * b - (o.x * o.x + o.y * o.y - r * r)))
                         var path = Path()
@@ -95,7 +95,7 @@ struct PGAMeterSector: Shape {
     func path(in rect: CGRect) -> Path {
         let center = CGPoint(x: rect.midX, y: rect.midY), radius = rect.width / 2 * 1.42
         func point(_ degrees: Double) -> CGPoint {
-            let a = degrees * .pi / 180
+            let a = CGFloat(degrees) * .pi / 180
             return CGPoint(x: center.x + cos(a) * radius, y: center.y - sin(a) * radius)
         }
         var path = Path()

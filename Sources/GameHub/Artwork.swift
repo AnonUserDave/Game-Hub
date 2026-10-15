@@ -299,7 +299,8 @@ private struct MediaPainter {
         for (x, y, size) in rocks {
             var rock = Path()
             for i in 0..<9 {
-                let angle = Double(i) / 9 * .pi * 2, radius = size * a.height * (i % 2 == 0 ? 1 : 0.72)
+                let angle: CGFloat = CGFloat(i) / 9 * .pi * 2
+                let radius = size * a.height * (i % 2 == 0 ? 1 : 0.72)
                 let point = CGPoint(x: a.minX + x * a.width + cos(angle) * radius, y: a.minY + y * a.height + sin(angle) * radius)
                 if i == 0 { rock.move(to: point) } else { rock.addLine(to: point) }
             }
